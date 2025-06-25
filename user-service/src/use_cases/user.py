@@ -42,4 +42,4 @@ class AuthUseCase:
         if not verify_password(data.password, user.hashed_password):
             return None
 
-        return UserResponse.model_validate(user)
+        return UserResponse.model_validate(user, from_attributes=True)
