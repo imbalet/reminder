@@ -1,6 +1,6 @@
 from datetime import datetime
 from uuid import UUID, uuid4
-from sqlalchemy import ForeignKey, text
+from sqlalchemy import ForeignKey, DateTime, text
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
 
 
@@ -16,7 +16,7 @@ class UserOrm(Base):
     email: Mapped[str] = mapped_column(unique=True)
     hashed_password: Mapped[str]
     registered_at: Mapped[datetime] = mapped_column(
-        server_default=text("TIMEZONE('utc', now())")
+        DateTime(timezone=True), server_default=text("TIMEZONE('utc', now())")
     )
 
     def __init__(
@@ -36,9 +36,9 @@ class RefreshTokensOrm(Base):
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     token_hash: Mapped[str] = mapped_column(unique=True)
     created_at: Mapped[datetime] = mapped_column(
-        server_default=text("TIMEZONE('utc', now())")
+        DateTime(timezone=True), server_default=text("TIMEZONE('utc', now())")
     )
-    expires_at: Mapped[datetime]
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     def __init__(
         self,
