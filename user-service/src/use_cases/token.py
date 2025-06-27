@@ -71,7 +71,7 @@ class RefreshTokenPairUseCase:
             _generate_token_pair(user.id)
         )
 
-        await self.token_service.revoke_token(str(token_data.jti))
+        await self.token_service.revoke_token(token_data.jti)
         await self.token_service.save(
             jti=jti,
             token_hash=new_refresh_token_hash,

@@ -3,11 +3,11 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
-from sqlalchemy.exc import IntegrityError, NoReferenceError
+from sqlalchemy.exc import IntegrityError
 
 from src.schemas import UserResponse, UserInDB
 from src.models import UserOrm
-from src.exceptions import AlreadyExistsError, NotFoundError, Entity
+from src.exceptions import AlreadyExistsError, Entity
 
 
 class UserService:
