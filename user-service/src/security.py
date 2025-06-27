@@ -11,7 +11,7 @@ from src.schemas import (
     RefreshTokenData,
 )
 
-SECRET_KEY = config.SECRET_KEY
+PRIVATE_KEY = config.SECRET_KEY
 ALGORITHM = config.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = config.ACCESS_TOKEN_EXPIRE_MINUTES
 
@@ -36,7 +36,7 @@ def get_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def generate_token(data: dict, expires_delta: timedelta) -> GeneratedToken:
+def generate_token(data: dict, expires_delta: timedelta, private_key) -> GeneratedToken:
     """Generate a JWT for provided user data
 
     Args:
@@ -50,21 +50,27 @@ def generate_token(data: dict, expires_delta: timedelta) -> GeneratedToken:
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, private_key, algorithm=ALGORITHM)
     return GeneratedToken(token=encoded_jwt, expiration_time=expire)
 
 
-def create_access_token(data: AccesTokenData) -> GeneratedToken:
+def create_access_token(data: AccesTokenData, kid: str, private_key) -> GeneratedToken:
     expires_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    return generate_token({"sub": str(data.user_id)}, expires_delta)
-
-
-def create_refresh_token(data: RefreshTokenData) -> GeneratedToken:
-    expires_delta: timedelta = timedelta(days=config.REFRESH_TOKEN_EXPIRE_DAYS)
     return generate_token(
-        {"sub": str(data.user_id), "jti": str(data.jti)}, expires_delta
+        {"sub": str(data.user_id), "kid": str(kid)}, expires_delta, private_key
     )
 
 
-def decode_jwt(token: str):
-    return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+def create_refresh_token(
+    data: RefreshTokenData, kid: str, private_key
+) -> GeneratedToken:
+    expires_delta: timedelta = timedelta(days=config.REFRESH_TOKEN_EXPIRE_DAYS)
+    return generate_token(
+        {"sub": str(data.user_id), "jti": str(data.jti), "kid": str(kid)},
+        expires_delta,
+        private_key,
+    )
+
+
+def decode_jwt(token: str, public_key):
+    return jwt.decode(token, public_key, algorithms=[ALGORITHM])

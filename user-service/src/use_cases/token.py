@@ -9,13 +9,19 @@ from src.security import (
 )
 
 
-def _generate_token_pair(user_id: UUID):
+def _generate_token_pair(user_id: UUID, key_pair):
     jti = uuid4()
     refresh_token = create_refresh_token(
-        data=RefreshTokenData(user_id=user_id, jti=jti)
+        data=RefreshTokenData(user_id=user_id, jti=jti),
+        private_key=key_pair.private_key,
+        kid=key_pair.kid,
     )
     refresh_token_hash = get_hash(refresh_token.token)
-    access_token = create_access_token(data=AccesTokenData(user_id=user_id))
+    access_token = create_access_token(
+        data=AccesTokenData(user_id=user_id),
+        private_key=key_pair.private_key,
+        kid=key_pair.kid,
+    )
     return access_token, refresh_token, refresh_token_hash, jti
 
 
@@ -27,14 +33,14 @@ class CreateTokenPairUseCase:
         self.token_service = token_service
         self.user_service = user_service
 
-    async def execute(self, user_id: UUID) -> TokenPair | None:
+    async def execute(self, user_id: UUID, key_pair) -> TokenPair | None:
         user = await self.user_service.get_user(user_id)
 
         if user is None:
             return None
 
         access_token, refresh_token, refresh_token_hash, jti = _generate_token_pair(
-            user.id
+            user.id, key_pair
         )
 
         await self.token_service.save(
@@ -58,7 +64,7 @@ class RefreshTokenPairUseCase:
         self.token_service = token_service
         self.user_service = user_service
 
-    async def execute(self, token_data: RefreshTokenData) -> TokenPair | None:
+    async def execute(self, token_data: RefreshTokenData, key_pair) -> TokenPair | None:
         token = await self.token_service.find_by_jti(jti=token_data.jti)
         if token is None:
             return None
@@ -68,7 +74,10 @@ class RefreshTokenPairUseCase:
             return None
 
         new_access_token, new_refresh_token, new_refresh_token_hash, jti = (
-            _generate_token_pair(user.id)
+            _generate_token_pair(
+                user.id,
+                key_pair,
+            )
         )
 
         await self.token_service.revoke_token(token_data.jti)

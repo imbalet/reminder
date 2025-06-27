@@ -16,12 +16,14 @@ from src.schemas import (
     UserResponse,
     UserAuth,
     RefreshTokenData,
+    KeyPair,
 )
 from src.config import config
 from src.dependencies import (
     get_user_service,
     get_token_service,
     get_refresh_token_data,
+    get_last_key_pair,
 )
 
 
@@ -56,6 +58,7 @@ async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     user_service: Annotated[UserService, Depends(get_user_service)],
     token_service: Annotated[RefreshTokenService, Depends(get_token_service)],
+    key_pair: Annotated[KeyPair, Depends(get_last_key_pair)],
 ) -> TokenResponse:
     auth_uc = AuthUseCase(user_service)
     token_uc = CreateTokenPairUseCase(token_service, user_service)
@@ -68,7 +71,7 @@ async def login(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token_pair = await token_uc.execute(user_id=user.id)
+    token_pair = await token_uc.execute(user_id=user.id, key_pair=key_pair)
     if token_pair is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -89,12 +92,15 @@ async def refresh_token(
     user_service: Annotated[UserService, Depends(get_user_service)],
     token_service: Annotated[RefreshTokenService, Depends(get_token_service)],
     refresh_token_data: Annotated[RefreshTokenData, Depends(get_refresh_token_data)],
+    key_pair: Annotated[KeyPair, Depends(get_last_key_pair)],
 ):
     token_uc = RefreshTokenPairUseCase(
         token_service=token_service, user_service=user_service
     )
 
-    token_pair = await token_uc.execute(token_data=refresh_token_data)
+    token_pair = await token_uc.execute(
+        token_data=refresh_token_data, key_pair=key_pair
+    )
     if token_pair is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

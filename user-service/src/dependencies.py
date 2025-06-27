@@ -4,8 +4,8 @@ import jwt
 from fastapi import HTTPException, Depends, status, Request
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from src.services import RefreshTokenService, UserService
-from src.schemas import AccesTokenData, RefreshTokenData
+from src.services import RefreshTokenService, UserService, SecurityService
+from src.schemas import AccesTokenData, RefreshTokenData, KeyPair
 from src.security import oauth2_scheme, decode_jwt
 
 
@@ -25,6 +25,16 @@ def get_token_service(
     return RefreshTokenService(session_factory)
 
 
+def get_security_service(req: Request) -> SecurityService:
+    return req.app.state.security_service
+
+
+def get_last_key_pair(
+    security_servise: Annotated[SecurityService, Depends(get_security_service)],
+) -> KeyPair:
+    return security_servise.get_last_key_pair()
+
+
 def get_refresh_token_from_cookies(request: Request):
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
@@ -36,6 +46,7 @@ def get_refresh_token_from_cookies(request: Request):
 
 def get_access_token_data(
     token: Annotated[str, Depends(oauth2_scheme)],
+    key_pair: Annotated[KeyPair, Depends(get_last_key_pair)],
 ) -> AccesTokenData:
     """Get data from JWT
 
@@ -49,7 +60,7 @@ def get_access_token_data(
         AccesTokenData: DTO with user data fields
     """
     try:
-        payload = decode_jwt(token)
+        payload = decode_jwt(token, key_pair.public_key)
         id = payload.get("sub")
         if id is None:
             raise HTTPException(
@@ -74,6 +85,7 @@ def get_access_token_data(
 
 def get_refresh_token_data(
     token: Annotated[str, Depends(get_refresh_token_from_cookies)],
+    key_pair: Annotated[KeyPair, Depends(get_last_key_pair)],
 ) -> RefreshTokenData:
     """Get data from JWT
 
@@ -87,7 +99,7 @@ def get_refresh_token_data(
         RefreshTokenData: DTO with user data fields
     """
     try:
-        payload = decode_jwt(token)
+        payload = decode_jwt(token, key_pair.public_key)
         user_id = payload.get("sub")
         jti = payload.get("jti")
         if user_id is None:

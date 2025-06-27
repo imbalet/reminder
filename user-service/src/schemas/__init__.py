@@ -12,3 +12,4 @@ from .user import (  # noqa
     UserRegisterRequset,
     UserResponse,
 )
+from .keys import KeyPair  # noqa
