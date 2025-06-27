@@ -2,8 +2,10 @@ from typing import cast
 from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy.exc import IntegrityError, NoReferenceError
 from src.schemas.user import UserResponse, UserInDB
 from src.models import UserOrm
+from src.exceptions import AlreadyExistsError, NotFoundError, Entity
 
 
 class UserService:
@@ -14,13 +16,18 @@ class UserService:
     async def create_user(
         self, name: str, email: str, hashed_password: str
     ) -> UserResponse:
-        async with self.session_factory() as session:
-            session = cast(AsyncSession, session)
-            new_user = UserOrm(name=name, email=email, hashed_password=hashed_password)
-            session.add(new_user)
-            await session.commit()
-            await session.refresh(new_user)
-            return UserResponse.model_validate(new_user, from_attributes=True)
+        try:
+            async with self.session_factory() as session:
+                session = cast(AsyncSession, session)
+                new_user = UserOrm(
+                    name=name, email=email, hashed_password=hashed_password
+                )
+                session.add(new_user)
+                await session.commit()
+                await session.refresh(new_user)
+                return UserResponse.model_validate(new_user, from_attributes=True)
+        except IntegrityError as e:
+            raise AlreadyExistsError(Entity.USER, "User already exists") from e
 
     async def get_user(self, user_id: UUID) -> UserInDB | None:
         async with self.session_factory() as session:
