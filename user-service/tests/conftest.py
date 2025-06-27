@@ -1,9 +1,11 @@
 import os
+
 import dotenv
 import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from src.models import Base
+from src.services import RefreshTokenService, UserService
 
 
 @pytest.fixture
@@ -41,3 +43,13 @@ async def async_session_factory():
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
+
+@pytest.fixture
+def user_service(async_session_factory):
+    return UserService(async_session_factory)
+
+
+@pytest.fixture
+def token_service(async_session_factory):
+    return RefreshTokenService(async_session_factory)
