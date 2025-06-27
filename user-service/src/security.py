@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
+
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 from passlib.context import CryptContext
 
 from src.config import config
-
-from src.schemas.token import (
+from src.schemas import (
     GeneratedToken,
     AccesTokenData,
     RefreshTokenData,

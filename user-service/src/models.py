@@ -1,5 +1,6 @@
 from datetime import datetime
 from uuid import UUID, uuid4
+
 from sqlalchemy import ForeignKey, DateTime, text
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
 

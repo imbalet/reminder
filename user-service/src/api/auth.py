@@ -3,13 +3,14 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status, APIRouter, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
-from src.services.token_service import RefreshTokenService
-from src.services.user_service import UserService
-from src.use_cases.user import AuthUseCase, RegisterUserUseCase
-from src.use_cases.token import CreateTokenPairUseCase, RefreshTokenPairUseCase
-from src.schemas.token import TokenResponse
-from src.schemas.user import UserRegisterRequset, UserResponse, UserAuth
-
+from src.services import RefreshTokenService, UserService
+from src.use_cases import (
+    AuthUseCase,
+    CreateTokenPairUseCase,
+    RegisterUserUseCase,
+    RefreshTokenPairUseCase,
+)
+from src.schemas import TokenResponse, UserRegisterRequset, UserResponse, UserAuth
 from src.config import config
 from src.dependencies import (
     get_user_service,

@@ -4,7 +4,8 @@ from uuid import UUID
 
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
-from src.schemas.token import RefreshTokenData
+
+from src.schemas import RefreshTokenData
 from src.models import RefreshTokensOrm
 
 

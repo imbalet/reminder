@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from src.config import config
 from src.database import create_tables
-from src.api.auth import router as auth_router
+from src.api import auth_router
 
 
 @asynccontextmanager

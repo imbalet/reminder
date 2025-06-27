@@ -1,9 +1,11 @@
 from typing import cast
 from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from sqlalchemy.exc import IntegrityError, NoReferenceError
-from src.schemas.user import UserResponse, UserInDB
+
+from src.schemas import UserResponse, UserInDB
 from src.models import UserOrm
 from src.exceptions import AlreadyExistsError, NotFoundError, Entity
 

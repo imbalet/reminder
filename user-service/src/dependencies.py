@@ -1,12 +1,11 @@
 from typing import Annotated
+
 import jwt
 from fastapi import HTTPException, Depends, status, Request
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from src.services.token_service import RefreshTokenService
-from src.services.user_service import UserService
-from src.schemas.token import AccesTokenData, RefreshTokenData
-
+from src.services import RefreshTokenService, UserService
+from src.schemas import AccesTokenData, RefreshTokenData
 from src.security import oauth2_scheme, decode_jwt
 
 
