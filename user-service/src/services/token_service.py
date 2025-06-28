@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import cast
 from uuid import UUID
 
 from sqlalchemy import delete
@@ -13,15 +12,14 @@ from src.exceptions import NotFoundError, AlreadyExistsError, Entity
 
 class RefreshTokenService:
 
-    def __init__(self, session_factory: async_sessionmaker) -> None:
-        self.session_factory: async_sessionmaker = session_factory
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+        self.session_factory = session_factory
 
     async def save(
         self, jti: UUID, token_hash: str, expiration_time: datetime, user_id: UUID
     ) -> RefreshTokenData:
         try:
             async with self.session_factory() as session:
-                session = cast(AsyncSession, session)
                 new_token = RefreshTokensOrm(
                     jti=jti,
                     user_id=user_id,
@@ -44,7 +42,6 @@ class RefreshTokenService:
 
     async def find_by_jti(self, jti: UUID) -> RefreshTokenData | None:
         async with self.session_factory() as session:
-            session = cast(AsyncSession, session)
             res = await session.get(RefreshTokensOrm, jti)
             if res is None:
                 return None
@@ -52,14 +49,12 @@ class RefreshTokenService:
 
     async def revoke_token(self, jti: UUID) -> None:
         async with self.session_factory() as session:
-            session = cast(AsyncSession, session)
             query = delete(RefreshTokensOrm).filter_by(jti=jti)
             await session.execute(query)
             await session.commit()
 
     async def revoke_for_user(self, user_id: UUID) -> None:
         async with self.session_factory() as session:
-            session = cast(AsyncSession, session)
             query = delete(RefreshTokensOrm).filter_by(user_id=user_id)
             await session.execute(query)
             await session.commit()

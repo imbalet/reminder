@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from sqlalchemy import select
@@ -12,15 +11,14 @@ from src.exceptions import AlreadyExistsError, Entity
 
 class UserService:
 
-    def __init__(self, session_factory: async_sessionmaker) -> None:
-        self.session_factory: async_sessionmaker = session_factory
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+        self.session_factory = session_factory
 
     async def create_user(
         self, name: str, email: str, hashed_password: str
     ) -> UserResponse:
         try:
             async with self.session_factory() as session:
-                session = cast(AsyncSession, session)
                 new_user = UserOrm(
                     name=name, email=email, hashed_password=hashed_password
                 )
@@ -33,7 +31,6 @@ class UserService:
 
     async def get_user(self, user_id: UUID) -> UserInDB | None:
         async with self.session_factory() as session:
-            session = cast(AsyncSession, session)
             result = await session.get(UserOrm, user_id)
             if result is None:
                 return None
@@ -41,7 +38,6 @@ class UserService:
 
     async def get_user_by_email(self, email: str) -> UserInDB | None:
         async with self.session_factory() as session:
-            session = cast(AsyncSession, session)
             stmt = select(UserOrm).where(UserOrm.email == email)
             result = await session.execute(stmt)
             res = result.scalar()

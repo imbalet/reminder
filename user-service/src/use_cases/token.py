@@ -1,7 +1,7 @@
 from uuid import UUID, uuid4
 
 from src.services import UserService, RefreshTokenService
-from src.schemas import TokenPair, RefreshTokenData, AccesTokenData
+from src.schemas import TokenPair, RefreshTokenData, AccesTokenData, KeyPair
 from src.security import (
     create_refresh_token,
     create_access_token,
@@ -9,7 +9,7 @@ from src.security import (
 )
 
 
-def _generate_token_pair(user_id: UUID, key_pair):
+def _generate_token_pair(user_id: UUID, key_pair: KeyPair):
     jti = uuid4()
     refresh_token = create_refresh_token(
         data=RefreshTokenData(user_id=user_id, jti=jti),
@@ -33,7 +33,7 @@ class CreateTokenPairUseCase:
         self.token_service = token_service
         self.user_service = user_service
 
-    async def execute(self, user_id: UUID, key_pair) -> TokenPair | None:
+    async def execute(self, user_id: UUID, key_pair: KeyPair) -> TokenPair | None:
         user = await self.user_service.get_user(user_id)
 
         if user is None:
@@ -64,7 +64,9 @@ class RefreshTokenPairUseCase:
         self.token_service = token_service
         self.user_service = user_service
 
-    async def execute(self, token_data: RefreshTokenData, key_pair) -> TokenPair | None:
+    async def execute(
+        self, token_data: RefreshTokenData, key_pair: KeyPair
+    ) -> TokenPair | None:
         token = await self.token_service.find_by_jti(jti=token_data.jti)
         if token is None:
             return None

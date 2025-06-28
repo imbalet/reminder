@@ -1,15 +1,12 @@
 from datetime import datetime, timedelta, timezone
 
+from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 from passlib.context import CryptContext
 
 from src.config import config
-from src.schemas import (
-    GeneratedToken,
-    AccesTokenData,
-    RefreshTokenData,
-)
+from src.schemas import GeneratedToken, AccesTokenData, RefreshTokenData
 
 PRIVATE_KEY = config.SECRET_KEY
 ALGORITHM = config.ALGORITHM
@@ -36,7 +33,9 @@ def get_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def generate_token(data: dict, expires_delta: timedelta, private_key) -> GeneratedToken:
+def generate_token(
+    data: dict, expires_delta: timedelta, private_key: rsa.RSAPrivateKey
+) -> GeneratedToken:
     """Generate a JWT for provided user data
 
     Args:
@@ -54,7 +53,9 @@ def generate_token(data: dict, expires_delta: timedelta, private_key) -> Generat
     return GeneratedToken(token=encoded_jwt, expiration_time=expire)
 
 
-def create_access_token(data: AccesTokenData, kid: str, private_key) -> GeneratedToken:
+def create_access_token(
+    data: AccesTokenData, kid: str, private_key: rsa.RSAPrivateKey
+) -> GeneratedToken:
     expires_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     return generate_token(
         {"sub": str(data.user_id), "kid": str(kid)}, expires_delta, private_key
@@ -62,7 +63,7 @@ def create_access_token(data: AccesTokenData, kid: str, private_key) -> Generate
 
 
 def create_refresh_token(
-    data: RefreshTokenData, kid: str, private_key
+    data: RefreshTokenData, kid: str, private_key: rsa.RSAPrivateKey
 ) -> GeneratedToken:
     expires_delta: timedelta = timedelta(days=config.REFRESH_TOKEN_EXPIRE_DAYS)
     return generate_token(
@@ -72,5 +73,5 @@ def create_refresh_token(
     )
 
 
-def decode_jwt(token: str, public_key):
+def decode_jwt(token: str, public_key: rsa.RSAPublicKey):
     return jwt.decode(token, public_key, algorithms=[ALGORITHM])

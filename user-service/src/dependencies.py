@@ -2,7 +2,7 @@ from typing import Annotated
 
 import jwt
 from fastapi import HTTPException, Depends, status, Request
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 from src.services import RefreshTokenService, UserService, SecurityService
 from src.schemas import AccesTokenData, RefreshTokenData, KeyPair
@@ -14,14 +14,16 @@ def get_async_session_factory(req: Request):
 
 
 def get_user_service(
-    session_factory: Annotated[async_sessionmaker, Depends(get_async_session_factory)],
-):
+    session_factory: Annotated[
+        async_sessionmaker[AsyncSession], Depends(get_async_session_factory)
+    ],
+) -> UserService:
     return UserService(session_factory)
 
 
 def get_token_service(
-    session_factory: Annotated[async_sessionmaker, Depends(get_async_session_factory)],
-):
+    session_factory: Annotated[async_sessionmaker[AsyncSession], Depends(get_async_session_factory)],
+) -> RefreshTokenService:
     return RefreshTokenService(session_factory)
 
 

@@ -25,7 +25,7 @@ class SecurityService:
         self.secret_path = secret_path
 
     @classmethod
-    def load_keys(cls, path=".secrets"):
+    def load_keys(cls, path: str = ".secrets"):
         key_path = Path(path)
         if not key_path.is_dir():
             raise ValueError(f"Secrets directory not found at {key_path.resolve()}")
