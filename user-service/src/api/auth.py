@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status, APIRouter, Request, Response
+from fastapi import Depends, HTTPException, status, APIRouter, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
 from src.services import RefreshTokenService, UserService
@@ -10,13 +10,18 @@ from src.use_cases import (
     RegisterUserUseCase,
     RefreshTokenPairUseCase,
 )
-from src.schemas import TokenResponse, UserRegisterRequset, UserResponse, UserAuth
+from src.schemas import (
+    TokenResponse,
+    UserRegisterRequset,
+    UserResponse,
+    UserAuth,
+    RefreshTokenData,
+)
 from src.config import config
 from src.dependencies import (
     get_user_service,
     get_token_service,
     get_refresh_token_data,
-    get_refresh_token_from_cookies,
 )
 
 
@@ -83,14 +88,13 @@ async def refresh_token(
     response: Response,
     user_service: Annotated[UserService, Depends(get_user_service)],
     token_service: Annotated[RefreshTokenService, Depends(get_token_service)],
-    refresh_token: Annotated[str, Depends(get_refresh_token_from_cookies)],
+    refresh_token_data: Annotated[RefreshTokenData, Depends(get_refresh_token_data)],
 ):
     token_uc = RefreshTokenPairUseCase(
         token_service=token_service, user_service=user_service
     )
-    user_data = get_refresh_token_data(refresh_token)
 
-    token_pair = await token_uc.execute(token_data=user_data)
+    token_pair = await token_uc.execute(token_data=refresh_token_data)
     if token_pair is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -108,12 +112,11 @@ async def refresh_token(
 @router.post("/logout")
 async def logout(
     response: Response,
-    request: Request,
     token_service: Annotated[RefreshTokenService, Depends(get_token_service)],
+    refresh_token_data: Annotated[RefreshTokenData, Depends(get_refresh_token_data)],
 ):
-    refresh_token = request.cookies.get("refresh_token")
-    if refresh_token:
-        await token_service.revoke_token(refresh_token)
+    if refresh_token_data:
+        await token_service.revoke_token(refresh_token_data.jti)
 
     response.delete_cookie(key="refresh_token", path="/api/auth/refresh")
 
