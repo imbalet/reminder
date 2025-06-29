@@ -38,7 +38,7 @@ def set_token_to_cookie(response: Response, new_refresh_token: str):
         secure=True,
         samesite="lax",
         max_age=config.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
-        path="/api/auth/refresh",
+        path="/api/auth",
     )
 
 
@@ -122,6 +122,6 @@ async def logout(
     if refresh_token_data:
         await token_service.revoke_token(refresh_token_data.jti)
 
-    response.delete_cookie(key="refresh_token", path="/api/auth/refresh")
+    response.delete_cookie(key="refresh_token", path="/api/auth")
 
     return {"message": "Successfully logged out"}
