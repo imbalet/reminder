@@ -26,12 +26,12 @@ class ReminderCreate(BaseModel):
 
     title: str = Field(min_length=3, max_length=100)
     content: str = Field(min_length=3, max_length=2048)
-    user_id: UUID
     remind_date: datetime
 
 
 class ReminderResponse(ReminderCreate):
     id: UUID
+    user_id: UUID
     created_at: datetime
     edited_at: datetime | None
 
