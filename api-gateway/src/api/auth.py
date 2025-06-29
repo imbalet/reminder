@@ -1,7 +1,6 @@
-import functools
-from typing import Callable, Any, Annotated
+from typing import Annotated
 
-from fastapi import Depends, HTTPException, APIRouter, Response
+from fastapi import Depends, APIRouter, Response
 from fastapi.security import OAuth2PasswordRequestForm
 import httpx
 
@@ -12,31 +11,13 @@ from src.schemas import (
 )
 from src.config import config
 from src.dependencies import get_refresh_token_from_cookies
-
+from .utils import error_handler
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
-def error_handeler(func: Callable) -> Callable:
-    @functools.wraps(func)
-    async def wrapper(*args: Any, **kwargs: Any) -> Any:
-        try:
-            return await func(*args, **kwargs)
-        except httpx.HTTPStatusError as e:
-            raise HTTPException(
-                status_code=e.response.status_code,
-                detail=e.response.json(),
-            )
-        except httpx.RequestError as e:
-            raise HTTPException(
-                status_code=503, detail=f"Service unavailable: {str(e)}"
-            )
-
-    return wrapper
-
-
 @router.post("/register")
-@error_handeler
+@error_handler
 async def register(
     reg_data: UserRegisterRequset,
 ) -> UserResponse:
@@ -47,7 +28,7 @@ async def register(
 
 
 @router.post("/login")
-@error_handeler
+@error_handler
 async def login(
     response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
@@ -72,7 +53,7 @@ async def login(
 
 
 @router.post("/refresh")
-@error_handeler
+@error_handler
 async def refresh_token(
     response: Response,
     token: Annotated[str, Depends(get_refresh_token_from_cookies)],
@@ -87,7 +68,7 @@ async def refresh_token(
 
 
 @router.post("/logout")
-@error_handeler
+@error_handler
 async def logout(
     response: Response,
     token: Annotated[str, Depends(get_refresh_token_from_cookies)],

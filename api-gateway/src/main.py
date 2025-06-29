@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from src.api.auth import router
+from src.api import auth_router, reminder_router
 
 app = FastAPI(
     swagger_ui_parameters={
@@ -7,4 +7,5 @@ app = FastAPI(
         "withCredentials": True,
     },
 )
-app.include_router(router)
+app.include_router(auth_router)
+app.include_router(reminder_router)
