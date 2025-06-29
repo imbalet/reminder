@@ -1,11 +1,9 @@
 from contextlib import asynccontextmanager
-from typing import Annotated
 
-from fastapi import Depends, FastAPI
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
-
+from src.api import router as reminders_router
 from src.config import config
 from src.database import create_tables
 
@@ -38,3 +36,4 @@ app = FastAPI(
         "withCredentials": True,
     },
 )
+app.include_router(reminders_router)
