@@ -2,10 +2,12 @@ from typing import Annotated
 
 import jwt
 from fastapi import HTTPException, Depends, status, Request
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from pydantic import ValidationError
 
 from src.services import RefreshTokenService, UserService, SecurityService
-from src.schemas import AccesTokenData, RefreshTokenData, KeyPair
+from src.schemas import AccesTokenData, RefreshTokenData, KeyPair, UserAuth
 from src.security import oauth2_scheme, decode_jwt
 
 
@@ -22,7 +24,9 @@ def get_user_service(
 
 
 def get_token_service(
-    session_factory: Annotated[async_sessionmaker[AsyncSession], Depends(get_async_session_factory)],
+    session_factory: Annotated[
+        async_sessionmaker[AsyncSession], Depends(get_async_session_factory)
+    ],
 ) -> RefreshTokenService:
     return RefreshTokenService(session_factory)
 
@@ -54,10 +58,10 @@ def get_access_token_data(
 
     Args:
        token (Annotated[str, Depends(oauth2_scheme)]): JWT token
+       key_pair (Annotated[KeyPair, Depends(get_last_key_pair)]): Key pair object, includes private and public key
 
     Raises:
         HTTPException: 401 - expired or invalid token
-        HTTPException: 422 - if either 'id' or 'role' is None
     Returns:
         AccesTokenData: DTO with user data fields
     """
@@ -66,8 +70,9 @@ def get_access_token_data(
         id = payload.get("sub")
         if id is None:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token structure",
+                headers={"WWW-Authenticate": "Bearer"},
             )
         token_data = AccesTokenData(user_id=id)
         return token_data
@@ -93,10 +98,10 @@ def get_refresh_token_data(
 
     Args:
        token (Annotated[str, Depends(get_refresh_token_from_cookies)]): JWT token
+       key_pair (Annotated[KeyPair, Depends(get_last_key_pair)]): Key pair object, includes private and public key
 
     Raises:
         HTTPException: 401 - expired or invalid token
-        HTTPException: 422 - if either 'id' or 'role' is None
     Returns:
         RefreshTokenData: DTO with user data fields
     """
@@ -106,8 +111,9 @@ def get_refresh_token_data(
         jti = payload.get("jti")
         if user_id is None:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token structure",
+                headers={"WWW-Authenticate": "Bearer"},
             )
         token_data = RefreshTokenData(user_id=user_id, jti=jti)
         return token_data
@@ -122,4 +128,13 @@ def get_refresh_token_data(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
             headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+def get_auth_data(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    try:
+        return UserAuth(email=form_data.username, password=form_data.password)
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors
         )

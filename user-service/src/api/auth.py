@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status, APIRouter, Response
-from fastapi.security import OAuth2PasswordRequestForm
 
 from src.services import RefreshTokenService, UserService
 from src.use_cases import (
@@ -24,6 +23,7 @@ from src.dependencies import (
     get_token_service,
     get_refresh_token_data,
     get_last_key_pair,
+    get_auth_data,
 )
 
 
@@ -55,16 +55,14 @@ async def register(
 @router.post("/login")
 async def login(
     response: Response,
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    auth_data: Annotated[UserAuth, Depends(get_auth_data)],
     user_service: Annotated[UserService, Depends(get_user_service)],
     token_service: Annotated[RefreshTokenService, Depends(get_token_service)],
     key_pair: Annotated[KeyPair, Depends(get_last_key_pair)],
 ) -> TokenResponse:
     auth_uc = AuthUseCase(user_service)
     token_uc = CreateTokenPairUseCase(token_service, user_service)
-    user = await auth_uc.execute(
-        UserAuth(email=form_data.username, password=form_data.password)
-    )
+    user = await auth_uc.execute(auth_data)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
