@@ -1,4 +1,3 @@
-from datetime import datetime
 from pydantic import BaseModel, UUID4
 
 
@@ -14,13 +13,3 @@ class AccesTokenData(BaseModel):
 class RefreshTokenData(BaseModel):
     user_id: UUID4
     jti: UUID4
-
-
-class GeneratedToken(BaseModel):
-    token: str
-    expiration_time: datetime
-
-
-class TokenPair(BaseModel):
-    acces_token: str
-    refresh_token: str

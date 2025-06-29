@@ -20,9 +20,3 @@ class UserRegisterRequset(UserBase):
 class UserResponse(UserBase):
     id: UUID
     registered_at: datetime
-
-
-class UserInDB(UserBase):
-    id: UUID
-    hashed_password: str
-    registered_at: datetime

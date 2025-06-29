@@ -20,13 +20,13 @@ async def get_jwks_pyjwt(token: Annotated[str, Depends(oauth2_scheme)]):
         lifespan=3600,
     )
     signing_key = jwks_client.get_signing_key_from_jwt(token)
-    
+
     pem_key = signing_key.key.public_bytes(
         encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
     )
     public_key = serialization.load_pem_public_key(pem_key)
-    
+
     if not isinstance(public_key, rsa.RSAPublicKey):
         raise TypeError("Полученный ключ не является RSA ключом")
     return public_key
@@ -59,6 +59,7 @@ def get_access_token_data(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+
 def get_refresh_token_from_cookies(request: Request):
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
@@ -66,6 +67,7 @@ def get_refresh_token_from_cookies(request: Request):
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing refresh token"
         )
     return refresh_token
+
 
 def get_refresh_token_data(
     token: Annotated[str, Depends(get_refresh_token_from_cookies)],
@@ -94,6 +96,7 @@ def get_refresh_token_data(
             detail="Invalid token",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
 
 async def get_jwks():
     try:
