@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from sqlalchemy import DateTime, text
@@ -16,12 +16,15 @@ class RemindersOrm(Base):
     title: Mapped[str]
     content: Mapped[str]
     user_id: Mapped[UUID]
+    remind_date: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=text("TIMEZONE('utc', now())"),
     )
     edited_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_onupdate=text("TIMEZONE('utc', now())")
+        DateTime(timezone=True),
+        onupdate=datetime.now(timezone.utc),
+        nullable=True,
     )
 
     def __init__(
@@ -29,7 +32,9 @@ class RemindersOrm(Base):
         title: str,
         content: str,
         user_id: UUID,
+        remind_date: datetime,
     ):
         self.title = title
         self.content = content
         self.user_id = user_id
+        self.remind_date = remind_date

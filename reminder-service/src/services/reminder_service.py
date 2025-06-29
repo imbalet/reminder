@@ -1,0 +1,74 @@
+from datetime import datetime
+from uuid import UUID
+
+from sqlalchemy import select, delete
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+
+from src.schemas import ReminerEdit, ReminderResponse
+from src.models import RemindersOrm
+from src.exceptions import NotFoundError
+
+
+class ReminderService:
+
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+        self.session_factory = session_factory
+
+    async def create_reminder(
+        self, title: str, content: str, user_id: UUID, remind_date: datetime
+    ) -> ReminderResponse:
+        async with self.session_factory() as session:
+            new_reminder = RemindersOrm(
+                title=title,
+                content=content,
+                user_id=user_id,
+                remind_date=remind_date,
+            )
+            session.add(new_reminder)
+            await session.commit()
+            await session.refresh(new_reminder)
+            return ReminderResponse.model_validate(new_reminder, from_attributes=True)
+
+    async def get_reminder(self, reminder_id: UUID) -> ReminderResponse | None:
+        async with self.session_factory() as session:
+            result = await session.get(RemindersOrm, reminder_id)
+            if result is None:
+                return None
+            return ReminderResponse.model_validate(result, from_attributes=True)
+
+    async def get_reminders_by_user_id(
+        self, user_id: UUID
+    ) -> list[ReminderResponse] | None:
+        async with self.session_factory() as session:
+            stmt = select(RemindersOrm).where(RemindersOrm.user_id == user_id)
+            result = await session.execute(stmt)
+            res = result.scalars()
+            if res is None:
+                return None
+            return list(
+                map(
+                    lambda x: ReminderResponse.model_validate(x, from_attributes=True),
+                    res,
+                )
+            )
+
+    async def delete_reminder(self, reminder_id: UUID) -> None:
+        async with self.session_factory() as session:
+            stmt = delete(RemindersOrm).where(RemindersOrm.id == reminder_id)
+            result = await session.execute(stmt)
+            if result.rowcount == 0:
+                raise NotFoundError(f"Reminder with ID {reminder_id} not found")
+            await session.commit()
+
+    async def edit_reminder(
+        self, reminder_id: UUID, data: ReminerEdit
+    ) -> ReminderResponse:
+        async with self.session_factory() as session:
+            reminder = await session.get(RemindersOrm, reminder_id)
+            update_data = data.model_dump(exclude_unset=True)
+            for field, value in update_data.items():
+                setattr(reminder, field, value)
+
+            await session.commit()
+            await session.refresh(reminder)
+            return ReminderResponse.model_validate(reminder, from_attributes=True)
