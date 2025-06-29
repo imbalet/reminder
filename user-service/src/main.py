@@ -1,15 +1,11 @@
 from contextlib import asynccontextmanager
-from typing import Annotated
 
-from fastapi import Depends, FastAPI
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
-
-from src.dependencies import get_security_service
 from src.config import config
 from src.database import create_tables
-from src.api import auth_router, protected_router
+from src.api import auth_router, jwks_router
 from src.services import SecurityService
 
 
@@ -43,12 +39,4 @@ app = FastAPI(
     },
 )
 app.include_router(auth_router)
-app.include_router(protected_router)
-
-
-@app.get("/.well-known/jwks.json", response_class=JSONResponse)
-async def get_jwks(
-    security_servise: Annotated[SecurityService, Depends(get_security_service)],
-) -> dict:
-    """Эндпоинт для отдачи JWKS"""
-    return security_servise.get_jwks()
+app.include_router(jwks_router)
