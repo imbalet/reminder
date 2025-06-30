@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status, APIRouter, Response
+from fastapi import Depends, HTTPException, Request, status, APIRouter, Response
 
 from src.services import RefreshTokenService, UserService
 from src.use_cases import (
@@ -44,9 +44,16 @@ def set_token_to_cookie(response: Response, new_refresh_token: str):
 
 @router.post("/register")
 async def register(
+    request: Request,
     reg_data: UserRegisterRequset,
     user_service: Annotated[UserService, Depends(get_user_service)],
 ) -> UserResponse:
+    if "refresh_token" in request.cookies:
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are already authenticated",
+        )
     register_uc = RegisterUserUseCase(user_service)
     res = await register_uc.execute(reg_data)
     return res
