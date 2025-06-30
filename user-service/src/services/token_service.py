@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
+import asyncio
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -44,6 +45,9 @@ class RefreshTokenService:
         async with self.session_factory() as session:
             res = await session.get(RefreshTokensOrm, jti)
             if res is None:
+                return None
+            if res.expires_at <= datetime.now(timezone.utc):
+                asyncio.create_task(self.revoke_token(res.jti))  # ?
                 return None
             return RefreshTokenData.model_validate(res, from_attributes=True)
 
