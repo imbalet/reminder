@@ -12,6 +12,8 @@ class Config(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     REFRESH_TOKEN_EXPIRE_DAYS: int
+    KEY_PAIR_EXPIRES_DAYS: int
+    ROTATING_BEFORE_EXPIRING_DAYS: int
 
     @property
     def DB_URL(self) -> str:

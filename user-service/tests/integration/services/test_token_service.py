@@ -1,10 +1,13 @@
+import asyncio
 import datetime
 from uuid import uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio.session import async_sessionmaker, AsyncSession
+
+from src.models import RefreshTokensOrm
 from src.services import RefreshTokenService, UserService
-from src.schemas import UserResponse
+from src.schemas import UserResponse, RefreshTokenData
 from src.exceptions import NotFoundError, AlreadyExistsError
 
 
@@ -66,7 +69,9 @@ async def test_token_already_exists_save_token(
 
 
 @pytest.mark.asyncio
-async def test_valid_find_token(token_service: RefreshTokenService, sample_token):
+async def test_valid_find_token(
+    token_service: RefreshTokenService, sample_token: RefreshTokenData
+):
     res = await token_service.find_by_jti(sample_token.jti)
     assert res is not None
     assert res.user_id == sample_token.user_id
@@ -76,6 +81,28 @@ async def test_valid_find_token(token_service: RefreshTokenService, sample_token
 async def test_not_found_find_token(token_service: RefreshTokenService):
     res = await token_service.find_by_jti(uuid4())
     assert res is None
+
+
+@pytest.mark.asyncio
+async def test_expired_find_token(
+    token_service: RefreshTokenService,
+    async_session_factory: async_sessionmaker[AsyncSession],
+    sample_token_data,
+):
+    sample_token_data = list(sample_token_data)
+    sample_token_data[2] = datetime.datetime.now(datetime.UTC) - datetime.timedelta(
+        hours=1
+    )
+    await token_service.save(*sample_token_data)
+    async with async_session_factory() as session:
+        res = await session.get(RefreshTokensOrm, sample_token_data[0])
+        assert res is not None
+    res = await token_service.find_by_jti(sample_token_data[0])
+    assert res is None
+    await asyncio.sleep(0.5)
+    async with async_session_factory() as session:
+        res = await session.get(RefreshTokensOrm, sample_token_data[0])
+        assert res is None
 
 
 @pytest.mark.asyncio

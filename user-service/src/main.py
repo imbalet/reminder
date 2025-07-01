@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+from pathlib import Path
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
@@ -48,7 +49,7 @@ async def startup_event(app: FastAPI):
 
     await create_tables(engine)
     app.state.session_factory = AsyncSessionLocal
-    app.state.security_service = SecurityService.load_keys()
+    app.state.security_service = SecurityService(secret_path=Path(".secrets"))
 
     scheduler = AsyncIOScheduler()
     scheduler.add_job(
