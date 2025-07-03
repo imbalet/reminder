@@ -15,10 +15,12 @@ dependencies = [
     "httpx>=0.28.1",
     "cryptography>=45.0.4",
     "passlib[bcrypt]>=1.7.4",
+    "alembic>=1.16.2",
 ]
 
 [dependency-groups]
 dev = [
+    "black>=25.1.0",
     "dotenv>=0.9.9",
     "pytest>=8.4.1",
     "pytest-asyncio>=1.0.0",
