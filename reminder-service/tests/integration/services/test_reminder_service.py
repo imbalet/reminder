@@ -1,5 +1,6 @@
 import datetime
 from uuid import uuid4
+import zoneinfo
 
 import pytest
 from sqlalchemy.ext.asyncio.session import async_sessionmaker, AsyncSession
@@ -36,6 +37,20 @@ async def test_valid_creating(reminder_service: ReminderService):
         remind_date=datetime.datetime.now(),
     )
     assert await reminder_service.get_reminder(created.id) is not None
+
+
+@pytest.mark.asyncio
+async def test_valid_creating_not_utc(reminder_service: ReminderService):
+    time = datetime.datetime.now(zoneinfo.ZoneInfo("Europe/Moscow"))
+    created = await reminder_service.create_reminder(
+        title="reminder",
+        content="reminder",
+        user_id=uuid4(),
+        remind_date=time,
+    )
+    res = await reminder_service.get_reminder(created.id)
+    assert res is not None
+    assert res.remind_date == time
 
 
 @pytest.mark.asyncio

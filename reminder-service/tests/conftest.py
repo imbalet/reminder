@@ -1,11 +1,14 @@
 import os
 
+import aio_pika
+from aio_pika.pool import Pool
 import dotenv
 import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
+
 from src.models import Base
-from src.services import ReminderService
+from src.services import ReminderService, SendService
 
 
 @pytest.fixture
@@ -46,5 +49,24 @@ async def async_session_factory():
 
 
 @pytest.fixture
+def channel_pool():
+    async def create_connection():
+        return await aio_pika.connect_robust("amqp://user:dev_password@localhost/")
+
+    async def create_channel():
+        async with connection_pool.acquire() as connection:
+            return await connection.channel()
+
+    connection_pool = Pool(create_connection, max_size=10)
+    channel_pool = Pool(create_channel, max_size=100)
+    return channel_pool
+
+
+@pytest.fixture
 def reminder_service(async_session_factory):
     return ReminderService(async_session_factory)
+
+
+@pytest.fixture
+def send_service(async_session_factory, channel_pool):
+    return SendService(async_session_factory, channel_pool)

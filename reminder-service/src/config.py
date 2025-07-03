@@ -7,6 +7,7 @@ class Config(BaseSettings):
     DB_NAME: str
     DB_USER: str
     DB_PASS: str
+    ROUTING_KEY: str
 
     @property
     def DB_URL(self) -> str:
