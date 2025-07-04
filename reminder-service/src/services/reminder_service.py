@@ -42,15 +42,11 @@ class ReminderService:
         async with self.session_factory() as session:
             stmt = select(RemindersOrm).where(RemindersOrm.user_id == user_id)
             result = await session.execute(stmt)
-            res = result.scalars()
-            if res is None:
-                return None
-            return list(
-                map(
-                    lambda x: ReminderResponse.model_validate(x, from_attributes=True),
-                    res,
-                )
-            )
+            res = result.scalars().all()
+            return [
+                ReminderResponse.model_validate(reminder, from_attributes=True)
+                for reminder in res
+            ]
 
     async def delete_reminder(self, reminder_id: UUID) -> None:
         async with self.session_factory() as session:
