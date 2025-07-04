@@ -136,5 +136,5 @@ def get_auth_data(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
         return UserAuth(email=form_data.username, password=form_data.password)
     except ValidationError as e:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
         )
