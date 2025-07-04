@@ -17,9 +17,11 @@ class SendService:
         self,
         session_factory: async_sessionmaker[AsyncSession],
         channel_pool: aio_pika.pool.Pool[aio_pika.channel.Channel],
+        routing_key=config.RMQ_ROUTING_KEY,
     ) -> None:
         self.session_factory = session_factory
         self.channel_pool = channel_pool
+        self.routing_key = routing_key
 
     async def get_upcoming_reminders(self) -> list[ReminderResponse]:
         async with self.session_factory() as session:
@@ -53,6 +55,6 @@ class SendService:
                 )
                 await channel.default_exchange.publish(
                     message,
-                    routing_key=config.ROUTING_KEY,
+                    routing_key=self.routing_key,
                     timeout=5,
                 )

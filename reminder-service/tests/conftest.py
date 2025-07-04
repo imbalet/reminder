@@ -50,8 +50,15 @@ async def async_session_factory():
 
 @pytest.fixture
 def channel_pool():
+    RMQ_USER = os.getenv("TEST_RMQ_USER")
+    RMQ_PASS = os.getenv("TEST_RMQ_PASS")
+    RMQ_HOST = os.getenv("TEST_RMQ_HOST")
+    RMQ_PORT = os.getenv("TEST_RMQ_PORT")
+
     async def create_connection():
-        return await aio_pika.connect_robust("amqp://user:dev_password@localhost/")
+        return await aio_pika.connect_robust(
+            f"amqp://{RMQ_USER}:{RMQ_PASS}@{RMQ_HOST}:{RMQ_PORT}/"
+        )
 
     async def create_channel():
         async with connection_pool.acquire() as connection:
@@ -69,4 +76,5 @@ def reminder_service(async_session_factory):
 
 @pytest.fixture
 def send_service(async_session_factory, channel_pool):
-    return SendService(async_session_factory, channel_pool)
+    RMQ_ROUTING_KEY = os.getenv("TEST_RMQ_ROUTING_KEY")
+    return SendService(async_session_factory, channel_pool, RMQ_ROUTING_KEY)

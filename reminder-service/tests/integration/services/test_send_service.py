@@ -8,8 +8,6 @@ import pytest
 from src.services import ReminderService, SendService
 from src.schemas import ReminderResponse
 
-ROUTING_KEY = os.getenv("ROUTING_KEY")
-
 
 async def create_reminder(
     reminder_service: ReminderService, remind_date: datetime.datetime | None
@@ -31,7 +29,7 @@ async def test_get_upcoming_valid(
     _ = [
         await create_reminder(
             reminder_service,
-            datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds=30),
+            datetime.datetime.now(datetime.UTC),
         )
         for _ in range(10)
     ]
@@ -45,6 +43,7 @@ async def test_get_upcoming_valid(
 async def test_sending_with_rabbitmq(
     reminder_service: ReminderService, send_service: SendService, channel_pool: Pool
 ):
+    ROUTING_KEY = os.getenv("TEST_RMQ_ROUTING_KEY")
     async with channel_pool.acquire() as channel:
         queue = await channel.declare_queue(ROUTING_KEY)
         await queue.purge()
@@ -52,9 +51,7 @@ async def test_sending_with_rabbitmq(
 
             reminders = [
                 await create_reminder(
-                    reminder_service,
-                    datetime.datetime.now(datetime.UTC)
-                    + datetime.timedelta(seconds=30),
+                    reminder_service, datetime.datetime.now(datetime.UTC)
                 )
                 for _ in range(10)
             ]
