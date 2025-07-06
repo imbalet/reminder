@@ -8,7 +8,6 @@ from passlib.context import CryptContext
 from src.config import config
 from src.schemas import GeneratedToken, AccesTokenData, RefreshTokenData
 
-PRIVATE_KEY = config.SECRET_KEY
 ALGORITHM = config.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = config.ACCESS_TOKEN_EXPIRE_MINUTES
 

@@ -2,4 +2,3 @@
 from .user_service import UserService
 from .token_service import RefreshTokenService
 from .security_service import SecurityService
-from .delivery_methods_service import DeliveryMethodsService

@@ -10,7 +10,6 @@ from src.services import (
     RefreshTokenService,
     UserService,
     SecurityService,
-    DeliveryMethodsService,
 )
 from src.schemas import AccesTokenData, RefreshTokenData, KeyPair, UserAuth
 from src.security import oauth2_scheme, decode_jwt
@@ -26,14 +25,6 @@ def get_user_service(
     ],
 ) -> UserService:
     return UserService(session_factory)
-
-
-def get_delivery_methods_service(
-    session_factory: Annotated[
-        async_sessionmaker[AsyncSession], Depends(get_async_session_factory)
-    ],
-) -> DeliveryMethodsService:
-    return DeliveryMethodsService(session_factory)
 
 
 def get_token_service(
