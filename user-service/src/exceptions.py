@@ -4,6 +4,7 @@ from enum import Enum
 class Entity(Enum):
     USER = "user"
     TOKEN = "token"
+    DELIVERY_METHOD = "delivery_method"
 
 
 class AppException(Exception):

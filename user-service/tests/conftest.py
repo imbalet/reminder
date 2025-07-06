@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from src.models import Base
-from src.services import RefreshTokenService, UserService
+from src.services import RefreshTokenService, UserService, DeliveryMethodsService
 
 
 @pytest.fixture
@@ -53,3 +53,8 @@ def user_service(async_session_factory):
 @pytest.fixture
 def token_service(async_session_factory):
     return RefreshTokenService(async_session_factory)
+
+
+@pytest.fixture
+def delivery_methods_service(async_session_factory):
+    return DeliveryMethodsService(async_session_factory)

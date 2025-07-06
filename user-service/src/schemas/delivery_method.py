@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from .base import BaseValidationModel
+
 
 class DeliveryMethodEnum(str, Enum):
     TELEGRAM = "telegram"
@@ -16,3 +18,9 @@ class DeliveryMethod(BaseModel):
 
 class DeliveryMethodResponse(DeliveryMethod):
     id: UUID
+    user_id: UUID
+
+
+class DeliveryMethodEdit(BaseValidationModel):
+    delivery_method: DeliveryMethodEnum | None = None
+    contact_value: str | None = None

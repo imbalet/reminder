@@ -1,3 +1,5 @@
-from .user_service import UserService  # noqa
-from .token_service import RefreshTokenService  # noqa
-from .security_service import SecurityService  # noqa
+# flake8: noqa
+from .user_service import UserService
+from .token_service import RefreshTokenService
+from .security_service import SecurityService
+from .delivery_methods_service import DeliveryMethodsService
