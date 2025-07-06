@@ -1,8 +1,9 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from httpx import AsyncClient
 import pytest
 from pytest_mock import MockerFixture
+
 
 from src.main import app
 from src.dependencies import get_delivery_methods_service
@@ -13,32 +14,24 @@ from src.schemas import (
     DeliveryMethodEdit,
     DeliveryMethod,
     DeliveryMethodEnum,
-    TokenResponse,
-    UserResponse,
 )
 
 
 @pytest.fixture
-def sample_delivery_method(registered_user: UserResponse):
+def sample_delivery_method(user_id: UUID):
     return DeliveryMethodResponse(
         id=uuid4(),
-        user_id=registered_user.id,
+        user_id=user_id,
         delivery_method=DeliveryMethodEnum.TELEGRAM,
         contact_value="telegram",
     )
-
-
-@pytest.fixture
-def auth_header(authenticated_user: tuple[TokenResponse, str]):
-    token, _ = authenticated_user
-    return {"Authorization": f"{token.token_type} {token.access_token}"}
 
 
 @pytest.mark.asyncio
 async def test_valid_create(
     async_client: AsyncClient,
     sample_delivery_method: DeliveryMethodResponse,
-    auth_header: dict[str, str],
+    user_header: dict[str, str],
     mocker: MockerFixture,
 ):
     mock_service = mocker.create_autospec(DeliveryMethodsService)
@@ -52,7 +45,7 @@ async def test_valid_create(
     response = await async_client.post(
         "/api/delivery/",
         json=data.model_dump(),
-        headers=auth_header,
+        headers=user_header,
     )
     res = DeliveryMethodResponse.model_validate(response.json())
     assert response.status_code == 201
@@ -63,7 +56,7 @@ async def test_valid_create(
 @pytest.mark.asyncio
 async def test_already_exists_create(
     async_client: AsyncClient,
-    auth_header: dict[str, str],
+    user_header: dict[str, str],
     mocker: MockerFixture,
 ):
     mock_service = mocker.create_autospec(DeliveryMethodsService)
@@ -77,7 +70,7 @@ async def test_already_exists_create(
     response = await async_client.post(
         "/api/delivery/",
         json=data.model_dump(),
-        headers=auth_header,
+        headers=user_header,
     )
     assert response.status_code == 409
     mock_service.add.assert_awaited_once
@@ -87,7 +80,7 @@ async def test_already_exists_create(
 async def test_valid_get(
     async_client: AsyncClient,
     sample_delivery_method: DeliveryMethodResponse,
-    auth_header: dict[str, str],
+    user_header: dict[str, str],
     mocker: MockerFixture,
 ):
     mock_service = mocker.create_autospec(DeliveryMethodsService)
@@ -96,7 +89,7 @@ async def test_valid_get(
 
     response = await async_client.get(
         f"/api/delivery/{sample_delivery_method.id}",
-        headers=auth_header,
+        headers=user_header,
     )
     res = DeliveryMethodResponse.model_validate(response.json())
     assert response.status_code == 200
@@ -108,7 +101,7 @@ async def test_valid_get(
 async def test_forbidden_not_found_get(
     async_client: AsyncClient,
     sample_delivery_method: DeliveryMethodResponse,
-    auth_header: dict[str, str],
+    user_header: dict[str, str],
     mocker: MockerFixture,
 ):
     mock_service = mocker.create_autospec(DeliveryMethodsService)
@@ -117,7 +110,7 @@ async def test_forbidden_not_found_get(
 
     response = await async_client.get(
         f"/api/delivery/{sample_delivery_method.id}",
-        headers=auth_header,
+        headers=user_header,
     )
     assert response.status_code == 403
     mock_service.get.assert_awaited_once_with(sample_delivery_method.id)
@@ -127,7 +120,7 @@ async def test_forbidden_not_found_get(
 async def test_forbidden_no_permissions_get(
     async_client: AsyncClient,
     sample_delivery_method: DeliveryMethodResponse,
-    auth_header: dict[str, str],
+    user_header: dict[str, str],
     mocker: MockerFixture,
 ):
     sample_delivery_method.user_id = uuid4()
@@ -137,7 +130,7 @@ async def test_forbidden_no_permissions_get(
 
     response = await async_client.get(
         f"/api/delivery/{sample_delivery_method.id}",
-        headers=auth_header,
+        headers=user_header,
     )
     assert response.status_code == 403
     mock_service.get.assert_awaited_once_with(sample_delivery_method.id)
@@ -147,7 +140,7 @@ async def test_forbidden_no_permissions_get(
 async def test_valid_get_all(
     async_client: AsyncClient,
     sample_delivery_method: DeliveryMethodResponse,
-    auth_header: dict[str, str],
+    user_header: dict[str, str],
     mocker: MockerFixture,
 ):
     mock_service = mocker.create_autospec(DeliveryMethodsService)
@@ -156,7 +149,7 @@ async def test_valid_get_all(
 
     response = await async_client.get(
         f"/api/delivery/users/{sample_delivery_method.user_id}",
-        headers=auth_header,
+        headers=user_header,
     )
     res = [DeliveryMethodResponse.model_validate(i) for i in response.json()]
     assert response.status_code == 200
@@ -168,7 +161,7 @@ async def test_valid_get_all(
 async def test_empty_get_all(
     async_client: AsyncClient,
     sample_delivery_method: DeliveryMethodResponse,
-    auth_header: dict[str, str],
+    user_header: dict[str, str],
     mocker: MockerFixture,
 ):
     mock_service = mocker.create_autospec(DeliveryMethodsService)
@@ -177,7 +170,7 @@ async def test_empty_get_all(
 
     response = await async_client.get(
         f"/api/delivery/users/{sample_delivery_method.user_id}",
-        headers=auth_header,
+        headers=user_header,
     )
     res = [DeliveryMethodResponse.model_validate(i) for i in response.json()]
     assert response.status_code == 200
@@ -189,7 +182,7 @@ async def test_empty_get_all(
 async def test_forbidden_get_all(
     async_client: AsyncClient,
     sample_delivery_method: DeliveryMethodResponse,
-    auth_header: dict[str, str],
+    user_header: dict[str, str],
     mocker: MockerFixture,
 ):
     mock_service = mocker.create_autospec(DeliveryMethodsService)
@@ -198,7 +191,7 @@ async def test_forbidden_get_all(
 
     response = await async_client.get(
         f"/api/delivery/users/{uuid4()}",
-        headers=auth_header,
+        headers=user_header,
     )
     assert response.status_code == 403
     mock_service.get_all.assert_not_called
@@ -208,7 +201,7 @@ async def test_forbidden_get_all(
 async def test_valid_edit(
     async_client: AsyncClient,
     sample_delivery_method: DeliveryMethodResponse,
-    auth_header: dict[str, str],
+    user_header: dict[str, str],
     mocker: MockerFixture,
 ):
     edited = sample_delivery_method.model_copy()
@@ -223,7 +216,7 @@ async def test_valid_edit(
     response = await async_client.patch(
         f"/api/delivery/{sample_delivery_method.id}",
         json=edit_request.model_dump(),
-        headers=auth_header,
+        headers=user_header,
     )
     res = DeliveryMethodResponse.model_validate(response.json())
     assert response.status_code == 200
@@ -237,7 +230,7 @@ async def test_valid_edit(
 async def test_forbidden_edit(
     async_client: AsyncClient,
     sample_delivery_method: DeliveryMethodResponse,
-    auth_header: dict[str, str],
+    user_header: dict[str, str],
     mocker: MockerFixture,
 ):
     mock_service = mocker.create_autospec(DeliveryMethodsService)
@@ -249,7 +242,7 @@ async def test_forbidden_edit(
     response = await async_client.patch(
         f"/api/delivery/{sample_delivery_method.id}",
         json=edit_request.model_dump(),
-        headers=auth_header,
+        headers=user_header,
     )
     assert response.status_code == 403
     mock_service.edit.assert_awaited_once_with(
@@ -261,7 +254,7 @@ async def test_forbidden_edit(
 async def test_valid_delete(
     async_client: AsyncClient,
     sample_delivery_method: DeliveryMethodResponse,
-    auth_header: dict[str, str],
+    user_header: dict[str, str],
     mocker: MockerFixture,
 ):
     mock_service = mocker.create_autospec(DeliveryMethodsService)
@@ -270,7 +263,7 @@ async def test_valid_delete(
 
     response = await async_client.delete(
         f"/api/delivery/{sample_delivery_method.id}",
-        headers=auth_header,
+        headers=user_header,
     )
     assert response.status_code == 204
     mock_service.remove.assert_awaited_once_with(
@@ -282,7 +275,7 @@ async def test_valid_delete(
 async def test_forbidden_delete(
     async_client: AsyncClient,
     sample_delivery_method: DeliveryMethodResponse,
-    auth_header: dict[str, str],
+    user_header: dict[str, str],
     mocker: MockerFixture,
 ):
     mock_service = mocker.create_autospec(DeliveryMethodsService)
@@ -291,7 +284,7 @@ async def test_forbidden_delete(
 
     response = await async_client.delete(
         f"/api/delivery/{sample_delivery_method.id}",
-        headers=auth_header,
+        headers=user_header,
     )
     assert response.status_code == 403
     mock_service.remove.assert_awaited_once_with(

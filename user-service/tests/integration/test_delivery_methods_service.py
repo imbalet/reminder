@@ -1,9 +1,8 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
-from src.services import UserService, DeliveryMethodsService
+from src.services import DeliveryMethodsService
 from src.schemas import (
-    UserResponse,
     DeliveryMethodResponse,
     DeliveryMethodEnum,
     DeliveryMethodEdit,
@@ -12,18 +11,11 @@ from src.exceptions import AlreadyExistsError
 
 
 @pytest.fixture
-async def sample_user(user_service: UserService):
-    return await user_service.create_user(
-        name="john", email="john@example.com", hashed_password="hash"
-    )
-
-
-@pytest.fixture
 async def sample_method(
-    sample_user: UserResponse, delivery_methods_service: DeliveryMethodsService
+    user_id: UUID, delivery_methods_service: DeliveryMethodsService
 ):
     return await delivery_methods_service.add(
-        sample_user.id, DeliveryMethodEnum.TELEGRAM, "tg_nickname"
+        user_id, DeliveryMethodEnum.TELEGRAM, "tg_nickname"
     )
 
 
@@ -34,10 +26,10 @@ async def sample_method(
 
 @pytest.mark.asyncio
 async def test_valid_add_get(
-    delivery_methods_service: DeliveryMethodsService, sample_user: UserResponse
+    delivery_methods_service: DeliveryMethodsService, user_id: UUID
 ):
     res = await delivery_methods_service.add(
-        sample_user.id, DeliveryMethodEnum.TELEGRAM, "tg_nickname"
+        user_id, DeliveryMethodEnum.TELEGRAM, "tg_nickname"
     )
     from_db = await delivery_methods_service.get(res.id)
     assert from_db is not None
@@ -48,21 +40,24 @@ async def test_valid_add_get(
 
 @pytest.mark.asyncio
 async def test_method_already_exists_add(
-    delivery_methods_service: DeliveryMethodsService,
+    delivery_methods_service: DeliveryMethodsService, user_id: UUID
 ):
+    await delivery_methods_service.add(
+        user_id, DeliveryMethodEnum.TELEGRAM, "tg_nickname"
+    )
     with pytest.raises(AlreadyExistsError):
         await delivery_methods_service.add(
-            uuid4(), DeliveryMethodEnum.TELEGRAM, "tg_nickname"
+            user_id, DeliveryMethodEnum.TELEGRAM, "tg_nickname"
         )
 
 
 @pytest.mark.asyncio
 async def test_valid_remove(
-    sample_user: UserResponse,
+    user_id: UUID,
     sample_method: DeliveryMethodResponse,
     delivery_methods_service: DeliveryMethodsService,
 ):
-    deleted = await delivery_methods_service.remove(sample_user.id, sample_method.id)
+    deleted = await delivery_methods_service.remove(user_id, sample_method.id)
     res = await delivery_methods_service.get(sample_method.id)
 
     assert deleted is not None
@@ -83,34 +78,32 @@ async def test_forbidden_remove(
 
 @pytest.mark.asyncio
 async def test_method_not_exists_remove(
-    sample_user: UserResponse,
+    user_id: UUID,
     delivery_methods_service: DeliveryMethodsService,
 ):
-    deleted = await delivery_methods_service.remove(sample_user.id, uuid4())
+    deleted = await delivery_methods_service.remove(user_id, uuid4())
 
     assert deleted is None
 
 
 @pytest.mark.asyncio
 async def test_valid_get_all(
-    sample_user: UserResponse,
+    user_id: UUID,
     sample_method: DeliveryMethodResponse,
     delivery_methods_service: DeliveryMethodsService,
 ):
-    await delivery_methods_service.add(
-        sample_user.id, DeliveryMethodEnum.EMAIL, "email"
-    )
-    res = await delivery_methods_service.get_all(sample_user.id)
+    await delivery_methods_service.add(user_id, DeliveryMethodEnum.EMAIL, "email")
+    res = await delivery_methods_service.get_all(user_id)
 
     assert len(res) == 2
 
 
 @pytest.mark.asyncio
 async def test_empty_get_all(
-    sample_user: UserResponse,
+    user_id: UUID,
     delivery_methods_service: DeliveryMethodsService,
 ):
-    res = await delivery_methods_service.get_all(sample_user.id)
+    res = await delivery_methods_service.get_all(user_id)
 
     assert len(res) == 0
 
@@ -128,12 +121,12 @@ async def test_empty_get_all(
 )
 @pytest.mark.asyncio
 async def test_valid_edit(
-    sample_user: UserResponse,
+    user_id: UUID,
     sample_method: DeliveryMethodResponse,
     delivery_methods_service: DeliveryMethodsService,
     data: DeliveryMethodEdit,
 ):
-    res = await delivery_methods_service.edit(sample_method.id, sample_user.id, data)
+    res = await delivery_methods_service.edit(sample_method.id, user_id, data)
 
     assert res is not None
     assert res.contact_value == data.contact_value
@@ -141,13 +134,13 @@ async def test_valid_edit(
 
 @pytest.mark.asyncio
 async def test_not_exists_edit(
-    sample_user: UserResponse,
+    user_id: UUID,
     delivery_methods_service: DeliveryMethodsService,
 ):
     data = DeliveryMethodEdit(
         contact_value="new",
     )
-    res = await delivery_methods_service.edit(uuid4(), sample_user.id, data)
+    res = await delivery_methods_service.edit(uuid4(), user_id, data)
 
     assert res is None
 
