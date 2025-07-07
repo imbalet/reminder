@@ -8,6 +8,18 @@ class Config(BaseSettings):
     DB_USER: str
     DB_PASS: str
 
+    RMQ_EVENTS_QUEUE: str
+    RMQ_USER: str
+    RMQ_PASS: str
+    RMQ_HOST: str
+    RMQ_PORT: str
+
+    @property
+    def RMQ_URL(self) -> str:
+        return (
+            f"amqp://{self.RMQ_USER}:{self.RMQ_PASS}@{self.RMQ_HOST}:{self.RMQ_PORT}/"
+        )
+
     @property
     def DB_URL(self) -> str:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"

@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -8,6 +9,7 @@ from src.database import create_tables
 from src.exceptions import AppException
 from src.exception_handler import exception_handler
 from src.api import delivery_methods_router
+from src.event_handler import consume
 
 
 @asynccontextmanager
@@ -30,7 +32,15 @@ async def startup_event(app: FastAPI):
     await create_tables(engine)
     app.state.session_factory = AsyncSessionLocal
 
+    task = asyncio.create_task(
+        consume(config.RMQ_URL, config.RMQ_EVENTS_QUEUE, AsyncSessionLocal)
+    )
     yield
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
 
 
 app = FastAPI(
