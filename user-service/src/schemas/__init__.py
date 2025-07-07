@@ -6,3 +6,4 @@ from .delivery_method import (
     DeliveryMethodEdit,
 )
 from .base import BaseValidationModel
+from .user import User

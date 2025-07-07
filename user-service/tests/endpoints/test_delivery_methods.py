@@ -1,4 +1,4 @@
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from httpx import AsyncClient
 import pytest
@@ -14,14 +14,15 @@ from src.schemas import (
     DeliveryMethodEdit,
     DeliveryMethod,
     DeliveryMethodEnum,
+    User,
 )
 
 
 @pytest.fixture
-def sample_delivery_method(user_id: UUID):
+def sample_delivery_method(sample_user: User):
     return DeliveryMethodResponse(
         id=uuid4(),
-        user_id=user_id,
+        user_id=sample_user.id,
         delivery_method=DeliveryMethodEnum.TELEGRAM,
         contact_value="telegram",
     )

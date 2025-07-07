@@ -1,22 +1,32 @@
 import os
-from uuid import uuid4, UUID
+from uuid import uuid4
 
 import dotenv
 import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
-from src.services import DeliveryMethodsService
+from src.schemas import User
+from src.services import DeliveryMethodsService, UserService
 from src.models import Base
 
 
 @pytest.fixture
-def user_id():
-    return uuid4()
+def sample_user_data():
+    return User(id=uuid4(), email="example@example.com", name="John")
 
 
 @pytest.fixture
-def user_header(user_id: UUID):
-    return {"app-user-id": str(user_id)}
+async def sample_user(user_service: UserService, sample_user_data: User):
+    return await user_service.add(
+        user_id=sample_user_data.id,
+        name=sample_user_data.name,
+        email=sample_user_data.email,
+    )
+
+
+@pytest.fixture
+def user_header(sample_user: User):
+    return {"app-user-id": str(sample_user.id)}
 
 
 @pytest.fixture
@@ -59,3 +69,8 @@ async def async_session_factory():
 @pytest.fixture
 def delivery_methods_service(async_session_factory):
     return DeliveryMethodsService(async_session_factory)
+
+
+@pytest.fixture
+def user_service(async_session_factory):
+    return UserService(async_session_factory)
