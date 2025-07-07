@@ -63,6 +63,19 @@ async def get_all_methods(
     return res
 
 
+@router.get("/internal/users/{user_id}", response_model=list[DeliveryMethodResponse])
+async def get_all_user_methods(
+    delivery_service: Annotated[
+        DeliveryMethodsService, Depends(get_delivery_methods_service)
+    ],
+    user_id: UUID,
+):
+    # method for internal communication
+    # TODO: Add validation
+    res = await delivery_service.get_all(user_id)
+    return res
+
+
 @router.get("/{method_id}", response_model=DeliveryMethodResponse)
 async def get_method(
     app_user_id: Annotated[UUID, Header()],
