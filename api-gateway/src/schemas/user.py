@@ -9,11 +9,11 @@ class UserAuth(BaseModel):
 
 
 class UserBase(BaseModel):
-    name: str
     email: EmailStr
 
 
 class UserRegisterRequset(UserBase):
+    name: str
     password: str
 
 

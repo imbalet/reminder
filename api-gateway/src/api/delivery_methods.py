@@ -48,6 +48,7 @@ async def delete_by_id(
 
 
 @router.get("/my", response_model=list[DeliveryMethodResponse])
+@error_handler
 async def get_all_methods(
     token_data: Annotated[AccesTokenData, Depends(get_access_token_data)],
 ):
@@ -72,6 +73,7 @@ async def get_method(
 
 
 @router.patch("/{method_id}", response_model=DeliveryMethodResponse)
+@error_handler
 async def edit_method(
     token_data: Annotated[AccesTokenData, Depends(get_access_token_data)],
     method_id: UUID,
