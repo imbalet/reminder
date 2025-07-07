@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings
 class Config(BaseSettings):
     AUTH_URL: str
     REMINDER_URL: str
+    USER_URL: str
     JWKS_ENDPOINT: str
 
     @property
