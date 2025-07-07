@@ -52,6 +52,17 @@ async def delete_method(
         )
 
 
+@router.get("/my", response_model=list[DeliveryMethodResponse])
+async def get_all_methods(
+    app_user_id: Annotated[UUID, Header()],
+    delivery_service: Annotated[
+        DeliveryMethodsService, Depends(get_delivery_methods_service)
+    ],
+):
+    res = await delivery_service.get_all(app_user_id)
+    return res
+
+
 @router.get("/{method_id}", response_model=DeliveryMethodResponse)
 async def get_method(
     app_user_id: Annotated[UUID, Header()],
@@ -66,23 +77,6 @@ async def get_method(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"No access to delivery method with id {method_id}",
         )
-    return res
-
-
-@router.get("/users/{user_id}", response_model=list[DeliveryMethodResponse])
-async def get_all_methods(
-    app_user_id: Annotated[UUID, Header()],
-    delivery_service: Annotated[
-        DeliveryMethodsService, Depends(get_delivery_methods_service)
-    ],
-    user_id: UUID,
-):
-    if user_id != app_user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"No access to delivery methods of user with id {user_id}",
-        )
-    res = await delivery_service.get_all(user_id)
     return res
 
 

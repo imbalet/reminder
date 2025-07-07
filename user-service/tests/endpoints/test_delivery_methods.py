@@ -149,7 +149,7 @@ async def test_valid_get_all(
     app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
 
     response = await async_client.get(
-        f"/api/delivery/users/{sample_delivery_method.user_id}",
+        "/api/delivery/my",
         headers=user_header,
     )
     res = [DeliveryMethodResponse.model_validate(i) for i in response.json()]
@@ -170,32 +170,13 @@ async def test_empty_get_all(
     app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
 
     response = await async_client.get(
-        f"/api/delivery/users/{sample_delivery_method.user_id}",
+        "/api/delivery/my",
         headers=user_header,
     )
     res = [DeliveryMethodResponse.model_validate(i) for i in response.json()]
     assert response.status_code == 200
     assert res == []
     mock_service.get_all.assert_awaited_once_with(sample_delivery_method.user_id)
-
-
-@pytest.mark.asyncio
-async def test_forbidden_get_all(
-    async_client: AsyncClient,
-    sample_delivery_method: DeliveryMethodResponse,
-    user_header: dict[str, str],
-    mocker: MockerFixture,
-):
-    mock_service = mocker.create_autospec(DeliveryMethodsService)
-    mock_service.get_all.return_value = [sample_delivery_method]
-    app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
-
-    response = await async_client.get(
-        f"/api/delivery/users/{uuid4()}",
-        headers=user_header,
-    )
-    assert response.status_code == 403
-    mock_service.get_all.assert_not_called
 
 
 @pytest.mark.asyncio
