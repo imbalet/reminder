@@ -19,9 +19,7 @@ class UserService:
     ) -> UserResponse:
         try:
             async with self.session_factory() as session:
-                new_user = UserOrm(
-                    name=name, email=email, hashed_password=hashed_password
-                )
+                new_user = UserOrm(email=email, hashed_password=hashed_password)
                 session.add(new_user)
                 await session.commit()
                 await session.refresh(new_user)

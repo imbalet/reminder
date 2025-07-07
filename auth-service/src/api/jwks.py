@@ -7,7 +7,7 @@ from src.dependencies import get_security_service
 from src.services import SecurityService
 
 
-router = APIRouter(prefix="/api/test", tags=["test"])
+router = APIRouter(tags=["jwks"])
 
 
 @router.get("/.well-known/jwks.json", response_class=JSONResponse)

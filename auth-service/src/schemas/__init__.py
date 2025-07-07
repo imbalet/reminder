@@ -12,5 +12,6 @@ from .user import (
     UserInDB,
     UserRegisterRequset,
     UserResponse,
+    UserRmqData,
 )
 from .keys import KeyPair

@@ -1,6 +1,6 @@
 import aio_pika
 
-from src.schemas import UserResponse
+from src.schemas import UserRmqData
 from src.config import config
 
 TIME_OFFSET_MINUTES = 1
@@ -16,7 +16,7 @@ class EventService:
         self.channel_pool = channel_pool
         self.routing_key = routing_key
 
-    async def send_registration_event(self, user: UserResponse):
+    async def send_registration_event(self, user: UserRmqData):
         async with self.channel_pool.acquire() as channel:
             message = aio_pika.Message(
                 body=user.model_dump_json(exclude={"registered_at"}).encode(),

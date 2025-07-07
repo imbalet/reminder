@@ -1,5 +1,5 @@
 from src.services import UserService, EventService
-from src.schemas.user import UserRegisterRequset, UserAuth, UserResponse
+from src.schemas.user import UserRegisterRequset, UserAuth, UserResponse, UserRmqData
 from src.security import get_hash, verify_password
 
 
@@ -21,7 +21,9 @@ class RegisterUserUseCase:
         res = await self.user_service.create_user(
             name=data.name, email=data.email, hashed_password=hashed_password
         )
-        await self.event_service.send_registration_event(res)
+        await self.event_service.send_registration_event(
+            UserRmqData(id=res.id, email=res.email, name=data.name)
+        )
         return res
 
 

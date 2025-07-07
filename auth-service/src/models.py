@@ -13,7 +13,6 @@ class UserOrm(Base):
     __tablename__ = "users"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    name: Mapped[str]
     email: Mapped[str] = mapped_column(unique=True)
     hashed_password: Mapped[str]
     registered_at: Mapped[datetime] = mapped_column(
@@ -22,11 +21,9 @@ class UserOrm(Base):
 
     def __init__(
         self,
-        name: str,
         email: str,
         hashed_password: str,
     ):
-        self.name = name
         self.email = email
         self.hashed_password = hashed_password
 

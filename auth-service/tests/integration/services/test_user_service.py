@@ -46,7 +46,6 @@ async def test_valid_get_user_by_id(
 ):
     res = await user_service.get_user(sample_user.id)
     assert res is not None
-    assert res.name == sample_user.name
     assert res.email == sample_user.email
     assert res.id == sample_user.id
 
@@ -63,7 +62,6 @@ async def test_valid_get_user_by_email(
 ):
     res = await user_service.get_user_by_email(sample_user.email)
     assert res is not None
-    assert res.name == sample_user.name
     assert res.email == sample_user.email
     assert res.id == sample_user.id
 

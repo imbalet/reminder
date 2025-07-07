@@ -9,17 +9,22 @@ class UserAuth(BaseModel):
 
 
 class UserBase(BaseModel):
-    name: str
     email: EmailStr
 
 
 class UserRegisterRequset(UserBase):
+    name: str
     password: str
 
 
 class UserResponse(UserBase):
     id: UUID
     registered_at: datetime
+
+
+class UserRmqData(UserBase):
+    id: UUID
+    name: str
 
 
 class UserInDB(UserBase):
