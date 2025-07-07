@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status, APIRouter, Response
 
-from src.services import RefreshTokenService, UserService
+from src.services import RefreshTokenService, UserService, EventService
 from src.use_cases import (
     AuthUseCase,
     CreateTokenPairUseCase,
@@ -24,6 +24,7 @@ from src.dependencies import (
     get_refresh_token_data,
     get_last_key_pair,
     get_auth_data,
+    get_event_service,
 )
 
 
@@ -47,6 +48,7 @@ async def register(
     request: Request,
     reg_data: UserRegisterRequset,
     user_service: Annotated[UserService, Depends(get_user_service)],
+    event_service: Annotated[EventService, Depends(get_event_service)],
 ) -> UserResponse:
     if "refresh_token" in request.cookies:
 
@@ -54,7 +56,7 @@ async def register(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are already authenticated",
         )
-    register_uc = RegisterUserUseCase(user_service)
+    register_uc = RegisterUserUseCase(user_service, event_service)
     res = await register_uc.execute(reg_data)
     return res
 

@@ -1,10 +1,15 @@
 from pathlib import Path
+from unittest.mock import AsyncMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 from src.schemas import TokenResponse, UserAuth, UserResponse, UserRegisterRequset
 from src.main import app
-from src.dependencies import get_async_session_factory, get_security_service
+from src.dependencies import (
+    get_async_session_factory,
+    get_security_service,
+    get_event_service,
+)
 from src.services import SecurityService
 
 
@@ -14,6 +19,9 @@ async def async_client(async_session_factory):
     app.dependency_overrides[get_security_service] = lambda: SecurityService(
         Path(".secrets")
     )
+    app.dependency_overrides[get_event_service] = (
+        lambda: AsyncMock()
+    )  # mock for sending data to rabbitmq
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as client:

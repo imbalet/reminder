@@ -1,11 +1,12 @@
-from src.services.user_service import UserService
+from src.services import UserService, EventService
 from src.schemas.user import UserRegisterRequset, UserAuth, UserResponse
 from src.security import get_hash, verify_password
 
 
 class RegisterUserUseCase:
-    def __init__(self, user_service: UserService) -> None:
+    def __init__(self, user_service: UserService, event_service: EventService) -> None:
         self.user_service = user_service
+        self.event_service = event_service
 
     async def execute(self, data: UserRegisterRequset) -> UserResponse:
         """Register a new user
@@ -20,6 +21,7 @@ class RegisterUserUseCase:
         res = await self.user_service.create_user(
             name=data.name, email=data.email, hashed_password=hashed_password
         )
+        await self.event_service.send_registration_event(res)
         return res
 
 

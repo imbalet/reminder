@@ -1,22 +1,23 @@
 from typing import Annotated
 
+from aio_pika.pool import Pool
 import jwt
 from fastapi import HTTPException, Depends, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from pydantic import ValidationError
 
-from src.services import (
-    RefreshTokenService,
-    UserService,
-    SecurityService,
-)
+from src.services import RefreshTokenService, UserService, SecurityService, EventService
 from src.schemas import AccesTokenData, RefreshTokenData, KeyPair, UserAuth
 from src.security import oauth2_scheme, decode_jwt
 
 
 def get_async_session_factory(req: Request):
     return req.app.state.session_factory  # type: ignore
+
+
+def get_channel_pool(req: Request):
+    return req.app.state.channel_pool  # type: ignore
 
 
 def get_user_service(
@@ -37,6 +38,12 @@ def get_token_service(
 
 def get_security_service(req: Request) -> SecurityService:
     return req.app.state.security_service
+
+
+def get_event_service(
+    channel_pool: Annotated[Pool, Depends(get_channel_pool)],
+) -> EventService:
+    return EventService(channel_pool)
 
 
 def get_last_key_pair(

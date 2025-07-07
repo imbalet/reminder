@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
+import aio_pika
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 from sqlalchemy import delete
@@ -16,6 +17,19 @@ from src.services import SecurityService
 from src.models import RefreshTokensOrm
 
 scheduler = AsyncIOScheduler()
+
+
+def get_channel_pool():
+    async def create_connection():
+        return await aio_pika.connect_robust(config.RMQ_URL)
+
+    async def create_channel():
+        async with connection_pool.acquire() as connection:
+            return await connection.channel()
+
+    connection_pool = aio_pika.pool.Pool(create_connection, max_size=10)
+    channel_pool = aio_pika.pool.Pool(create_channel, max_size=100)
+    return channel_pool
 
 
 async def delete_expired_tokens(session_factory: async_sessionmaker[AsyncSession]):
@@ -52,6 +66,7 @@ async def startup_event(app: FastAPI):
     await create_tables(engine)
     app.state.session_factory = AsyncSessionLocal
     app.state.security_service = SecurityService(secret_path=Path(".secrets"))
+    app.state.channel_pool = get_channel_pool()
 
     scheduler = AsyncIOScheduler()
     scheduler.add_job(
