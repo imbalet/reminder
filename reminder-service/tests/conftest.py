@@ -77,4 +77,4 @@ def reminder_service(async_session_factory):
 @pytest.fixture
 def send_service(async_session_factory, channel_pool):
     RMQ_ROUTING_KEY = os.getenv("TEST_RMQ_ROUTING_KEY")
-    return SendService(async_session_factory, channel_pool, RMQ_ROUTING_KEY)
+    return SendService(async_session_factory, channel_pool, RMQ_ROUTING_KEY)  # type: ignore

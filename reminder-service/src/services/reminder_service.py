@@ -4,8 +4,8 @@ from uuid import UUID
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from src.schemas import ReminerEdit, ReminderResponse
-from src.models import RemindersOrm
+from src.schemas import ReminerEdit, ReminderResponse, DeliveryMethod
+from src.models import RemindersOrm, DeliveryMethodOrm
 from src.exceptions import NotFoundError
 
 
@@ -15,7 +15,12 @@ class ReminderService:
         self.session_factory = session_factory
 
     async def create_reminder(
-        self, title: str, content: str, user_id: UUID, remind_date: datetime
+        self,
+        title: str,
+        content: str,
+        user_id: UUID,
+        remind_date: datetime,
+        delivery_methods: list[DeliveryMethod],
     ) -> ReminderResponse:
         async with self.session_factory() as session:
             new_reminder = RemindersOrm(
@@ -23,6 +28,13 @@ class ReminderService:
                 content=content,
                 user_id=user_id,
                 remind_date=remind_date,
+                delivery_methods=[
+                    DeliveryMethodOrm(
+                        delivery_method=method.delivery_method,
+                        contact_value=method.contact_value,
+                    )
+                    for method in delivery_methods
+                ],
             )
             session.add(new_reminder)
             await session.commit()

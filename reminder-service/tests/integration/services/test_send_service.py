@@ -10,7 +10,7 @@ from src.schemas import ReminderResponse
 
 
 async def create_reminder(
-    reminder_service: ReminderService, remind_date: datetime.datetime | None
+    reminder_service: ReminderService, remind_date: datetime.datetime | None, methods
 ):
     res = await reminder_service.create_reminder(
         title="reminder",
@@ -18,18 +18,18 @@ async def create_reminder(
         user_id=uuid4(),
         remind_date=remind_date
         or datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=2),
+        delivery_methods=methods,
     )
     return ReminderResponse.model_validate(res, from_attributes=True)
 
 
 @pytest.mark.asyncio
 async def test_get_upcoming_valid(
-    reminder_service: ReminderService, send_service: SendService
+    reminder_service: ReminderService, send_service: SendService, sample_methods
 ):
     _ = [
         await create_reminder(
-            reminder_service,
-            datetime.datetime.now(datetime.UTC),
+            reminder_service, datetime.datetime.now(datetime.UTC), sample_methods
         )
         for _ in range(10)
     ]
@@ -41,7 +41,10 @@ async def test_get_upcoming_valid(
 
 @pytest.mark.asyncio
 async def test_sending_with_rabbitmq(
-    reminder_service: ReminderService, send_service: SendService, channel_pool: Pool
+    reminder_service: ReminderService,
+    send_service: SendService,
+    channel_pool: Pool,
+    sample_methods,
 ):
     ROUTING_KEY = os.getenv("TEST_RMQ_ROUTING_KEY")
     async with channel_pool.acquire() as channel:
@@ -51,7 +54,9 @@ async def test_sending_with_rabbitmq(
 
             reminders = [
                 await create_reminder(
-                    reminder_service, datetime.datetime.now(datetime.UTC)
+                    reminder_service,
+                    datetime.datetime.now(datetime.UTC),
+                    sample_methods,
                 )
                 for _ in range(10)
             ]

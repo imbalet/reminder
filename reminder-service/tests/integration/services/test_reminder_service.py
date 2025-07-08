@@ -3,22 +3,22 @@ from uuid import uuid4
 import zoneinfo
 
 import pytest
-from sqlalchemy.ext.asyncio.session import async_sessionmaker, AsyncSession
 from src.services import ReminderService
-from src.schemas import ReminderResponse, ReminerEdit
+from src.schemas import (
+    ReminderResponse,
+    ReminerEdit,
+)
 from src.exceptions import NotFoundError
 
 
 @pytest.fixture
-async def sample_reminder(
-    async_session_factory: async_sessionmaker[AsyncSession],
-    reminder_service: ReminderService,
-):
+async def sample_reminder(reminder_service: ReminderService, sample_methods):
     res = await reminder_service.create_reminder(
         title="reminder",
         content="reminder",
         user_id=uuid4(),
         remind_date=datetime.datetime.now(),
+        delivery_methods=sample_methods,
     )
     return ReminderResponse.model_validate(res, from_attributes=True)
 
@@ -29,24 +29,28 @@ async def sample_reminder(
 
 
 @pytest.mark.asyncio
-async def test_valid_creating(reminder_service: ReminderService):
+async def test_valid_creating(reminder_service: ReminderService, sample_methods):
     created = await reminder_service.create_reminder(
         title="reminder",
         content="reminder",
         user_id=uuid4(),
         remind_date=datetime.datetime.now(),
+        delivery_methods=sample_methods,
     )
     assert await reminder_service.get_reminder(created.id) is not None
 
 
 @pytest.mark.asyncio
-async def test_valid_creating_not_utc(reminder_service: ReminderService):
+async def test_valid_creating_not_utc(
+    reminder_service: ReminderService, sample_methods
+):
     time = datetime.datetime.now(zoneinfo.ZoneInfo("Europe/Moscow"))
     created = await reminder_service.create_reminder(
         title="reminder",
         content="reminder",
         user_id=uuid4(),
         remind_date=time,
+        delivery_methods=sample_methods,
     )
     res = await reminder_service.get_reminder(created.id)
     assert res is not None
@@ -79,7 +83,7 @@ async def test_valid_get_by_user_id(
 
 @pytest.mark.asyncio
 async def test_valid_get_by_user_id_multiply(
-    reminder_service: ReminderService, sample_reminder: ReminderResponse
+    reminder_service: ReminderService, sample_reminder: ReminderResponse, sample_methods
 ):
     for _ in range(3):
         await reminder_service.create_reminder(
@@ -87,6 +91,7 @@ async def test_valid_get_by_user_id_multiply(
             content="reminder",
             user_id=sample_reminder.user_id,
             remind_date=datetime.datetime.now(),
+            delivery_methods=sample_methods,
         )
     res = await reminder_service.get_reminders_by_user_id(sample_reminder.user_id)
     assert res is not None
