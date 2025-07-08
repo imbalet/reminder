@@ -1,7 +1,19 @@
+from enum import Enum
+
 from pydantic_settings import BaseSettings
 
 
+class LogLevels(str, Enum):
+    DEBUG = "DEBUG"
+    INFO = "INFO"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+    CRITICAL = "CRITICAL"
+
+
 class Config(BaseSettings):
+    LOG_LEVEL: LogLevels
+
     DB_HOST: str
     DB_PORT: int
     DB_NAME: str

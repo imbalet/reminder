@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+import logging
 from pathlib import Path
 
 import aio_pika
@@ -16,7 +17,29 @@ from src.api import auth_router, jwks_router
 from src.services import SecurityService
 from src.models import RefreshTokensOrm
 
-scheduler = AsyncIOScheduler()
+logger = logging.getLogger(__name__)
+logger.setLevel(config.LOG_LEVEL.value)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(config.LOG_LEVEL.value)
+file_handler = logging.FileHandler("app.log")
+file_handler.setLevel(config.LOG_LEVEL.value)
+
+
+formatter = logging.Formatter(
+    fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+console_handler.setFormatter(formatter)
+file_handler.setFormatter(formatter)
+
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+
+
+logging.getLogger("uvicorn").handlers = logger.handlers
+logging.getLogger("uvicorn.access").handlers = logger.handlers
+logging.getLogger("fastapi").handlers = logger.handlers
 
 
 def get_channel_pool():
@@ -40,9 +63,9 @@ async def delete_expired_tokens(session_factory: async_sessionmaker[AsyncSession
             )
             result = await session.execute(stmt)
             await session.commit()
-            print(f"Удалено {result.rowcount} токенов")
+            logger.info(f"Deleted {result.rowcount} expired tokens")
         except Exception as e:
-            print(f"Ошибка удаления токенов: {e}")
+            logger.error("Error deleting tokens", exc_info=e)
             await session.rollback()
 
 
@@ -50,7 +73,7 @@ async def delete_expired_tokens(session_factory: async_sessionmaker[AsyncSession
 async def startup_event(app: FastAPI):
     engine = create_async_engine(
         config.DB_URL,
-        echo=True,
+        echo=False,
         pool_size=10,
         max_overflow=20,
         future=True,
@@ -67,6 +90,7 @@ async def startup_event(app: FastAPI):
     app.state.session_factory = AsyncSessionLocal
     app.state.security_service = SecurityService(secret_path=Path(".secrets"))
     app.state.channel_pool = get_channel_pool()
+    logger.info("DB started")
 
     scheduler = AsyncIOScheduler()
     scheduler.add_job(
@@ -81,6 +105,7 @@ async def startup_event(app: FastAPI):
     yield
 
     scheduler.shutdown()
+    logger.info("App stopped")
 
 
 app = FastAPI(

@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
+import logging
 
 import aio_pika
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -11,6 +12,30 @@ from src.config import config
 from src.database import create_tables
 from src.services import SendService
 
+logger = logging.getLogger(__name__)
+logger.setLevel(config.LOG_LEVEL.value)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(config.LOG_LEVEL.value)
+file_handler = logging.FileHandler("app.log")
+file_handler.setLevel(config.LOG_LEVEL.value)
+
+
+formatter = logging.Formatter(
+    fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+console_handler.setFormatter(formatter)
+file_handler.setFormatter(formatter)
+
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+
+
+logging.getLogger("uvicorn").handlers = logger.handlers
+logging.getLogger("uvicorn.access").handlers = logger.handlers
+logging.getLogger("fastapi").handlers = logger.handlers
+
 
 async def send_reminders(
     session_factory: async_sessionmaker[AsyncSession],
@@ -19,6 +44,7 @@ async def send_reminders(
     service = SendService(session_factory, channel_pool)
     tasks = await service.get_upcoming_reminders()
     await service.send_reminders(tasks)
+    logger.info(f"Sent {len(tasks)} reminders")
 
 
 def get_channel_pool():
@@ -38,7 +64,7 @@ def get_channel_pool():
 async def startup_event(app: FastAPI):
     engine = create_async_engine(
         config.DB_URL,
-        echo=True,
+        echo=False,
         pool_size=10,
         max_overflow=20,
         future=True,
@@ -54,6 +80,8 @@ async def startup_event(app: FastAPI):
     app.state.session_factory = AsyncSessionLocal
     app.state.channel_pool = get_channel_pool()
 
+    logger.info("DB started")
+
     scheduler = AsyncIOScheduler()
     scheduler.add_job(
         send_reminders,
@@ -67,6 +95,7 @@ async def startup_event(app: FastAPI):
     yield
 
     scheduler.shutdown()
+    logger.info("App stopped")
 
 
 app = FastAPI(
