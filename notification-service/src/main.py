@@ -1,11 +1,31 @@
 import asyncio
+
 import aio_pika
+
 from src.config import config
+from src.services import SenderInterface, TelegramSender
+from src.schemas import Message, Reminder, DeliveryMethodEnum
+
+senders: dict[DeliveryMethodEnum, SenderInterface] = {
+    DeliveryMethodEnum.TELEGRAM: TelegramSender(config.TG_BOT_TOKEN),
+}
 
 
-async def process_message(message: aio_pika.abc.AbstractIncomingMessage):
-    async with message.process():
-        print(message.body.decode())
+async def process_rmq_message(rmq_message: aio_pika.abc.AbstractIncomingMessage):
+    decoded_message = rmq_message.body.decode()
+    reminder = Reminder.model_validate_json(decoded_message)
+    message = Message(title=reminder.title, content=reminder.content)
+
+    async with rmq_message.process():
+        for request in reminder.delivery_methods:
+            sender = senders.get(request.delivery_method, None)
+            if sender:
+                res = await sender.send(  # noqa
+                    contact_value=request.contact_value, message=message
+                )
+            else:
+                # TODO: implement handling error
+                pass
 
 
 async def main():
@@ -18,7 +38,7 @@ async def main():
         durable=True,
     )
 
-    await queue.consume(process_message)
+    await queue.consume(process_rmq_message)
     await asyncio.Future()
 
 

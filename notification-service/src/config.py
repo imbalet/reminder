@@ -2,6 +2,8 @@ from pydantic_settings import BaseSettings
 
 
 class Config(BaseSettings):
+    TG_BOT_TOKEN: str
+
     RMQ_ROUTING_KEY: str
     RMQ_USER: str
     RMQ_PASS: str

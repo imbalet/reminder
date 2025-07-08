@@ -5,13 +5,14 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
-class DeliveryMethod(str, Enum):
+class DeliveryMethodEnum(str, Enum):
     TELEGRAM = "telegram"
+    EMAIL = "email"
 
 
-class DeliveryRequest(BaseModel):
-    method: DeliveryMethod
-    recipient: str  # chat-id, email, etc
+class DeliveryMethod(BaseModel):
+    delivery_method: DeliveryMethodEnum
+    contact_value: str
 
 
 class Reminder(BaseModel):
@@ -20,7 +21,7 @@ class Reminder(BaseModel):
     title: str
     content: str
     remind_date: datetime
-    delivery_requests: list[DeliveryRequest]
+    delivery_methods: list[DeliveryMethod]
 
 
 class Message(BaseModel):
