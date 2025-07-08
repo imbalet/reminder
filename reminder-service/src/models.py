@@ -1,5 +1,5 @@
 from enum import Enum
-from datetime import datetime, timezone
+from datetime import datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import DateTime, text, ForeignKey, UniqueConstraint
@@ -34,7 +34,6 @@ class RemindersOrm(Base):
     )
     edited_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        onupdate=datetime.now(timezone.utc),
         nullable=True,
     )
     delivery_methods: Mapped[list["DeliveryMethodOrm"]] = relationship(

@@ -131,6 +131,7 @@ async def test_valid_edit(
     )
     edited = await reminder_service.edit_reminder(sample_reminder.id, data=new_data)
     res = await reminder_service.get_reminder(sample_reminder.id)
+    assert sample_reminder.edited_at is None
     assert res == edited
     assert res is not None
     assert res.title == new_data.title

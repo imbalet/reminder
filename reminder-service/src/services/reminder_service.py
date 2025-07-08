@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
 from sqlalchemy import select, delete
@@ -70,12 +70,15 @@ class ReminderService:
 
     async def edit_reminder(
         self, reminder_id: UUID, data: ReminerEdit
-    ) -> ReminderResponse:
+    ) -> ReminderResponse | None:
         async with self.session_factory() as session:
             reminder = await session.get(RemindersOrm, reminder_id)
+            if not reminder:
+                return None
             update_data = data.model_dump(exclude_unset=True)
             for field, value in update_data.items():
                 setattr(reminder, field, value)
+            reminder.edited_at = datetime.now(timezone.utc)
 
             await session.commit()
             await session.refresh(reminder)
