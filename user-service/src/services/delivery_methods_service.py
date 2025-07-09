@@ -54,9 +54,16 @@ class DeliveryMethodsService:
                 return None
             return DeliveryMethodResponse.model_validate(result, from_attributes=True)
 
-    async def get_all(self, user_id: UUID) -> list[DeliveryMethodResponse]:
+    async def get_all(
+        self, user_id: UUID, only_confirmed: bool = False
+    ) -> list[DeliveryMethodResponse]:
         async with self.session_factory() as session:
-            stmt = select(DeliveryMethodsOrm).filter_by(user_id=user_id)
+            if only_confirmed:
+                stmt = select(DeliveryMethodsOrm).filter_by(
+                    user_id=user_id, is_confirmed=True
+                )
+            else:
+                stmt = select(DeliveryMethodsOrm).filter_by(user_id=user_id)
             res = await session.execute(stmt)
             result = res.scalars().all()
             return [

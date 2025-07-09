@@ -37,6 +37,7 @@ class DeliveryMethodsOrm(Base):
     )
     delivery_method: Mapped[DeliveryMethod]
     contact_value: Mapped[str]
+    is_confirmed: Mapped[bool] = mapped_column(server_default="FALSE")
 
     user: Mapped["UserOrm"] = relationship(back_populates="delivery_methods")
 

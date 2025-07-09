@@ -72,7 +72,7 @@ async def get_all_user_methods(
 ):
     # method for internal communication
     # TODO: Add validation
-    res = await delivery_service.get_all(user_id)
+    res = await delivery_service.get_all(user_id, is_confirmed=True)
     return res
 
 
