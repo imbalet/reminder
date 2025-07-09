@@ -20,7 +20,8 @@ class Config(BaseSettings):
     DB_USER: str
     DB_PASS: str
 
-    RMQ_EVENTS_QUEUE: str
+    RMQ_METHOD_CONFIRM_QUEUE: str
+    RMQ_USER_ADD_QUEUE: str
     RMQ_USER: str
     RMQ_PASS: str
     RMQ_HOST: str

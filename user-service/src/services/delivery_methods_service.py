@@ -71,6 +71,16 @@ class DeliveryMethodsService:
                 for method in result
             ]
 
+    async def set_confirm(self, method_id) -> DeliveryMethodResponse | None:
+        async with self.session_factory() as session:
+            method = await session.get(DeliveryMethodsOrm, method_id)
+            if not method:
+                return None
+            method.is_confirmed = True
+            await session.commit()
+            await session.refresh(method)
+            return DeliveryMethodResponse.model_validate(method, from_attributes=True)
+
     async def edit(
         self, method_id: UUID, user_id: UUID, data: DeliveryMethodEdit
     ) -> DeliveryMethodResponse | None:

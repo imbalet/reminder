@@ -4,6 +4,7 @@ from .delivery_method import (
     DeliveryMethodEnum,
     DeliveryMethodResponse,
     DeliveryMethodEdit,
+    DeliveryMethodConfirm,
 )
 from .base import BaseValidationModel
 from .user import User, UserResponse
