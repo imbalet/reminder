@@ -71,7 +71,7 @@ async def get_my(
     service: Annotated[ReminderService, Depends(get_reminders_service)],
     app_user_id: UUID = Header(),
 ):
-    res = await service.get_reminders_by_user_id(app_user_id)
+    res = await service.get_reminders_by_user_id(user_id=app_user_id)
     return res
 
 
@@ -81,11 +81,12 @@ async def get_by_id(
     reminder_id: UUID,
     app_user_id: UUID = Header(),
 ):
-    res = await service.get_reminder(reminder_id)
-    if not res:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    if res.user_id != app_user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    res = await service.get_reminder(reminder_id=reminder_id)
+    if not res or res.user_id != app_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"No access to reminder with id {reminder_id}",
+        )
     return res
 
 
@@ -95,10 +96,12 @@ async def delete_by_id(
     reminder_id: UUID,
     app_user_id: UUID = Header(),
 ):
-    reminder = await service.get_reminder(reminder_id)
-    if reminder is None or reminder.user_id != app_user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-    await service.delete_reminder(reminder_id)
+    res = await service.delete_reminder(reminder_id=reminder_id, user_id=app_user_id)
+    if not res:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"No access to reminder with id {reminder_id}",
+        )
 
 
 @router.patch("/{reminder_id}", response_model=ReminderResponse)
@@ -108,8 +111,12 @@ async def edit_by_id(
     reminder_id: UUID,
     app_user_id: UUID = Header(),
 ):
-    reminder = await service.get_reminder(reminder_id)
-    if reminder is None or reminder.user_id != app_user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-    res = await service.edit_reminder(data=data, reminder_id=reminder_id)
+    res = await service.edit_reminder(
+        data=data, reminder_id=reminder_id, user_id=app_user_id
+    )
+    if not res:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"No access to reminder with id {reminder_id}",
+        )
     return res

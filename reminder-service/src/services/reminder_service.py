@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 from src.schemas import ReminerEdit, ReminderResponse, DeliveryMethod
 from src.models import RemindersOrm, DeliveryMethodOrm
-from src.exceptions import NotFoundError
 
 
 class ReminderService:
@@ -60,20 +59,28 @@ class ReminderService:
                 for reminder in res
             ]
 
-    async def delete_reminder(self, reminder_id: UUID) -> None:
+    async def delete_reminder(
+        self, reminder_id: UUID, user_id: UUID
+    ) -> ReminderResponse | None:
         async with self.session_factory() as session:
-            stmt = delete(RemindersOrm).where(RemindersOrm.id == reminder_id)
-            result = await session.execute(stmt)
-            if result.rowcount == 0:
-                raise NotFoundError(f"Reminder with ID {reminder_id} not found")
+            stmt = (
+                delete(RemindersOrm)
+                .filter_by(id=reminder_id, user_id=user_id)
+                .returning(RemindersOrm)
+            )
+            res = await session.execute(stmt)
+            result = res.scalar()
+            if not result:
+                return None
             await session.commit()
+            return ReminderResponse.model_validate(result, from_attributes=True)
 
     async def edit_reminder(
-        self, reminder_id: UUID, data: ReminerEdit
+        self, reminder_id: UUID, data: ReminerEdit, user_id: UUID
     ) -> ReminderResponse | None:
         async with self.session_factory() as session:
             reminder = await session.get(RemindersOrm, reminder_id)
-            if not reminder:
+            if not reminder or reminder.user_id != user_id:
                 return None
             update_data = data.model_dump(exclude_unset=True)
             for field, value in update_data.items():

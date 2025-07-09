@@ -8,7 +8,6 @@ from src.schemas import (
     ReminderResponse,
     ReminerEdit,
 )
-from src.exceptions import NotFoundError
 
 
 @pytest.fixture
@@ -108,14 +107,17 @@ async def test_user_not_exists_get_by_user_id(reminder_service: ReminderService)
 async def test_valid_delete(
     reminder_service: ReminderService, sample_reminder: ReminderResponse
 ):
-    await reminder_service.delete_reminder(sample_reminder.id)
+    res = await reminder_service.delete_reminder(
+        sample_reminder.id, sample_reminder.user_id
+    )
+    assert res is not None
     assert await reminder_service.get_reminder(sample_reminder.id) is None
 
 
 @pytest.mark.asyncio
 async def test_not_exist_delete(reminder_service: ReminderService):
-    with pytest.raises(NotFoundError):
-        await reminder_service.delete_reminder(uuid4())
+    res = await reminder_service.delete_reminder(uuid4(), uuid4())
+    assert res is None
 
 
 @pytest.mark.asyncio
@@ -129,7 +131,9 @@ async def test_valid_edit(
             datetime.timezone(datetime.timedelta(hours=3))
         ),
     )
-    edited = await reminder_service.edit_reminder(sample_reminder.id, data=new_data)
+    edited = await reminder_service.edit_reminder(
+        sample_reminder.id, data=new_data, user_id=sample_reminder.user_id
+    )
     res = await reminder_service.get_reminder(sample_reminder.id)
     assert sample_reminder.edited_at is None
     assert res == edited
