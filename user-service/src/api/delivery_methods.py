@@ -3,15 +3,14 @@ from uuid import UUID
 
 from fastapi import HTTPException, status, APIRouter, Depends, Header
 
-from src.services import DeliveryMethodsService
+from src.services import DeliveryMethodsService, ConfirmCodesService
 from src.schemas import (
     DeliveryMethod,
     DeliveryMethodResponse,
     DeliveryMethodEdit,
+    DeliveryMethodEnum,
 )
-from src.dependencies import (
-    get_delivery_methods_service,
-)
+from src.dependencies import get_delivery_methods_service, get_confirm_code_service
 
 
 router = APIRouter(prefix="/api/delivery", tags=["delivery"])
@@ -25,14 +24,27 @@ async def create_method(
     delivery_service: Annotated[
         DeliveryMethodsService, Depends(get_delivery_methods_service)
     ],
+    confirm_service: Annotated[ConfirmCodesService, Depends(get_confirm_code_service)],
     delivery_method: DeliveryMethod,
 ):
-    # TODO: add validation telegram chat id
-    res = await delivery_service.add(
-        app_user_id,
-        delivery_method.delivery_method,
-        delivery_method.contact_value,
-    )
+    if delivery_method.delivery_method == DeliveryMethodEnum.TELEGRAM:
+        chat_id = await confirm_service.confirm(delivery_method.contact_value)
+        if not chat_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid or expired Telegram confirmation code",
+            )
+        res = await delivery_service.add(
+            app_user_id, delivery_method.delivery_method, chat_id, is_confirmed=True
+        )
+
+    else:
+        res = await delivery_service.add(
+            app_user_id,
+            delivery_method.delivery_method,
+            delivery_method.contact_value,
+        )
+
     return res
 
 
@@ -72,7 +84,7 @@ async def get_all_user_methods(
 ):
     # method for internal communication
     # TODO: Add validation
-    res = await delivery_service.get_all(user_id, is_confirmed=True)
+    res = await delivery_service.get_all(user_id, only_confirmed=True)
     return res
 
 

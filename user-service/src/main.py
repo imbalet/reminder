@@ -4,6 +4,7 @@ import logging
 
 import aio_pika
 from fastapi import FastAPI
+from redis import asyncio as aioredis
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from src.config import config
@@ -70,8 +71,18 @@ async def startup_event(app: FastAPI):
     )
 
     await create_tables(engine)
+
+    redis = aioredis.Redis(
+        host=config.REDIS_HOST,
+        port=config.REDIS_PORT,
+        password=config.REDIS_PASSWORD,
+        db=0,
+        max_connections=20,
+    )
+
     app.state.session_factory = AsyncSessionLocal
     app.state.channel_pool = get_channel_pool()
+    app.state.redis = redis
 
     logger.info("DB started")
 

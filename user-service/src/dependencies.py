@@ -1,15 +1,18 @@
 from typing import Annotated
 
 from fastapi import Depends, Request
+from redis import asyncio as aioredis
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from src.services import (
-    DeliveryMethodsService,
-)
+from src.services import DeliveryMethodsService, ConfirmCodesService
 
 
 def get_async_session_factory(req: Request):
     return req.app.state.session_factory  # type: ignore
+
+
+def get_redis(req: Request):
+    return req.app.state.redis  # type: ignore
 
 
 def get_delivery_methods_service(
@@ -18,3 +21,7 @@ def get_delivery_methods_service(
     ],
 ) -> DeliveryMethodsService:
     return DeliveryMethodsService(session_factory)
+
+
+def get_confirm_code_service(redis: Annotated[aioredis.Redis, Depends(get_redis)]):
+    return ConfirmCodesService(redis)

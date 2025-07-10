@@ -52,7 +52,9 @@ class DeliveryMethodsOrm(Base):
         user_id: UUID,
         delivery_method: DeliveryMethod,
         contact_value: str,
+        is_confirmed: bool,
     ):
         self.user_id = user_id
         self.delivery_method = delivery_method
         self.contact_value = contact_value
+        self.is_confirmed = is_confirmed

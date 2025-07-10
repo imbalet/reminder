@@ -15,12 +15,19 @@ class DeliveryMethodsService:
         self.session_factory = session_factory
 
     async def add(
-        self, user_id: UUID, method: DeliveryMethodEnum, contact_value: str
+        self,
+        user_id: UUID,
+        method: DeliveryMethodEnum,
+        contact_value: str,
+        is_confirmed: bool = False,
     ) -> DeliveryMethodResponse:
         try:
             async with self.session_factory() as session:
                 new_method = DeliveryMethodsOrm(
-                    user_id=user_id, delivery_method=method, contact_value=contact_value
+                    user_id=user_id,
+                    delivery_method=method,
+                    contact_value=contact_value,
+                    is_confirmed=is_confirmed,
                 )
                 session.add(new_method)
                 await session.commit()
