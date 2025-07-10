@@ -48,33 +48,6 @@ async def create_method(
     return res
 
 
-@router.delete("/{method_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_method(
-    app_user_id: Annotated[UUID, Header()],
-    delivery_service: Annotated[
-        DeliveryMethodsService, Depends(get_delivery_methods_service)
-    ],
-    method_id: UUID,
-):
-    res = await delivery_service.remove(app_user_id, method_id)
-    if not res:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"No access to delivery method with id {method_id}",
-        )
-
-
-@router.get("/my", response_model=list[DeliveryMethodResponse])
-async def get_all_methods(
-    app_user_id: Annotated[UUID, Header()],
-    delivery_service: Annotated[
-        DeliveryMethodsService, Depends(get_delivery_methods_service)
-    ],
-):
-    res = await delivery_service.get_all(app_user_id)
-    return res
-
-
 @router.get("/internal/users/{user_id}", response_model=list[DeliveryMethodResponse])
 async def get_all_user_methods(
     delivery_service: Annotated[
@@ -85,6 +58,17 @@ async def get_all_user_methods(
     # method for internal communication
     # TODO: Add validation
     res = await delivery_service.get_all(user_id, only_confirmed=True)
+    return res
+
+
+@router.get("/my", response_model=list[DeliveryMethodResponse])
+async def get_all_methods(
+    app_user_id: Annotated[UUID, Header()],
+    delivery_service: Annotated[
+        DeliveryMethodsService, Depends(get_delivery_methods_service)
+    ],
+):
+    res = await delivery_service.get_all(app_user_id)
     return res
 
 
@@ -121,3 +105,19 @@ async def edit_method(
             detail=f"No access to delivery method with id {method_id}",
         )
     return res
+
+
+@router.delete("/{method_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_method(
+    app_user_id: Annotated[UUID, Header()],
+    delivery_service: Annotated[
+        DeliveryMethodsService, Depends(get_delivery_methods_service)
+    ],
+    method_id: UUID,
+):
+    res = await delivery_service.remove(app_user_id, method_id)
+    if not res:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"No access to delivery method with id {method_id}",
+        )

@@ -12,7 +12,7 @@ from src.database import create_tables
 from src.exceptions import AppException
 from src.exception_handler import exception_handler
 from src.api import delivery_methods_router
-from src.event_handler import add_user_callback, confirm_method_callback
+from src.event_handler import add_user_callback
 from src.services import EventService
 
 logger = logging.getLogger(__name__)
@@ -87,15 +87,6 @@ async def startup_event(app: FastAPI):
     logger.info("DB started")
 
     add_user_service = EventService(app.state.channel_pool, config.RMQ_USER_ADD_QUEUE)
-    confirm_method_service = EventService(
-        app.state.channel_pool, config.RMQ_METHOD_CONFIRM_QUEUE
-    )
-
-    confirm_methods_task = asyncio.create_task(
-        confirm_method_service.consume(
-            async_callback=confirm_method_callback, session_factory=AsyncSessionLocal
-        )
-    )
 
     add_users_task = asyncio.create_task(
         add_user_service.consume(
@@ -106,7 +97,6 @@ async def startup_event(app: FastAPI):
     logger.info("Consume tasks started")
     yield
     add_users_task.cancel()
-    confirm_methods_task.cancel()
     try:
         await add_users_task
     except asyncio.CancelledError:

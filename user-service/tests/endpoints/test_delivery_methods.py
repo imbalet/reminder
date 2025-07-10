@@ -6,9 +6,9 @@ from pytest_mock import MockerFixture
 
 
 from src.main import app
-from src.dependencies import get_delivery_methods_service
+from src.dependencies import get_delivery_methods_service, get_confirm_code_service
 from src.exceptions import AlreadyExistsError, Entity
-from src.services import DeliveryMethodsService
+from src.services import DeliveryMethodsService, ConfirmCodesService
 from src.schemas import (
     DeliveryMethodResponse,
     DeliveryMethodEdit,
@@ -35,9 +35,15 @@ async def test_valid_create(
     user_header: dict[str, str],
     mocker: MockerFixture,
 ):
-    mock_service = mocker.create_autospec(DeliveryMethodsService)
-    mock_service.add.return_value = sample_delivery_method
-    app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
+    mock_delivery_service = mocker.create_autospec(DeliveryMethodsService)
+    mock_delivery_service.add.return_value = sample_delivery_method
+    app.dependency_overrides[get_delivery_methods_service] = (
+        lambda: mock_delivery_service
+    )
+
+    mock_confirm_service = mocker.create_autospec(ConfirmCodesService)
+    mock_confirm_service.confirm.return_value = 1
+    app.dependency_overrides[get_confirm_code_service] = lambda: mock_confirm_service
 
     data = DeliveryMethod(
         delivery_method=DeliveryMethodEnum.TELEGRAM, contact_value="telegram"
@@ -51,7 +57,7 @@ async def test_valid_create(
     res = DeliveryMethodResponse.model_validate(response.json())
     assert response.status_code == 201
     assert res.contact_value == data.contact_value
-    mock_service.add.assert_awaited_once
+    mock_delivery_service.add.assert_awaited_once
 
 
 @pytest.mark.asyncio
@@ -63,6 +69,9 @@ async def test_already_exists_create(
     mock_service = mocker.create_autospec(DeliveryMethodsService)
     mock_service.add.side_effect = AlreadyExistsError(Entity.DELIVERY_METHOD, "")
     app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
+
+    mock_confirm_service = mocker.create_autospec(ConfirmCodesService)
+    app.dependency_overrides[get_confirm_code_service] = lambda: mock_confirm_service
 
     data = DeliveryMethod(
         delivery_method=DeliveryMethodEnum.TELEGRAM, contact_value="telegram"

@@ -24,9 +24,3 @@ class DeliveryMethodResponse(DeliveryMethod):
 class DeliveryMethodEdit(BaseValidationModel):
     delivery_method: DeliveryMethodEnum | None = None
     contact_value: str | None = None
-
-
-class DeliveryMethodConfirm(BaseModel):
-    id: UUID
-    user_id: UUID
-    is_confirmed: bool
