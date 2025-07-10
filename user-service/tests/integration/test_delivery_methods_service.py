@@ -58,7 +58,7 @@ async def test_valid_remove(
     sample_method: DeliveryMethodResponse,
     delivery_methods_service: DeliveryMethodsService,
 ):
-    deleted = await delivery_methods_service.remove(sample_user.id, sample_method.id)
+    deleted = await delivery_methods_service.delete(sample_user.id, sample_method.id)
     res = await delivery_methods_service.get(sample_method.id)
 
     assert deleted is not None
@@ -70,7 +70,7 @@ async def test_forbidden_remove(
     sample_method: DeliveryMethodResponse,
     delivery_methods_service: DeliveryMethodsService,
 ):
-    deleted = await delivery_methods_service.remove(uuid4(), sample_method.id)
+    deleted = await delivery_methods_service.delete(uuid4(), sample_method.id)
     res = await delivery_methods_service.get(sample_method.id)
 
     assert deleted is None
@@ -82,7 +82,7 @@ async def test_method_not_exists_remove(
     sample_user: User,
     delivery_methods_service: DeliveryMethodsService,
 ):
-    deleted = await delivery_methods_service.remove(sample_user.id, uuid4())
+    deleted = await delivery_methods_service.delete(sample_user.id, uuid4())
 
     assert deleted is None
 
@@ -129,7 +129,7 @@ async def test_valid_edit(
     delivery_methods_service: DeliveryMethodsService,
     data: DeliveryMethodEdit,
 ):
-    res = await delivery_methods_service.edit(sample_method.id, sample_user.id, data)
+    res = await delivery_methods_service.edit(sample_user.id, sample_method.id, data)
 
     assert res is not None
     assert res.contact_value == data.contact_value
@@ -143,7 +143,7 @@ async def test_not_exists_edit(
     data = DeliveryMethodEdit(
         contact_value="new",
     )
-    res = await delivery_methods_service.edit(uuid4(), sample_user.id, data)
+    res = await delivery_methods_service.edit(sample_user.id, uuid4(), data)
 
     assert res is None
 
@@ -156,6 +156,6 @@ async def test_forbidden_edit(
     data = DeliveryMethodEdit(
         contact_value="new",
     )
-    res = await delivery_methods_service.edit(sample_method.id, uuid4(), data)
+    res = await delivery_methods_service.edit(uuid4(), sample_method.id, data)
 
     assert res is None

@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.schemas import UserResponse
 from src.models import UserOrm
-from src.exceptions import AlreadyExistsError, Entity
+from src.exceptions import AlreadyExistsError
 
 
 class UserService:
@@ -22,7 +22,7 @@ class UserService:
                 await session.refresh(new_user)
                 return UserResponse.model_validate(new_user, from_attributes=True)
         except IntegrityError as e:
-            raise AlreadyExistsError(Entity.USER, "User already exists") from e
+            raise AlreadyExistsError("User already exists") from e
 
     async def get(self, user_id: UUID) -> UserResponse | None:
         async with self.session_factory() as session:

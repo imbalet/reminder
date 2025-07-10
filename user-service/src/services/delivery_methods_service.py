@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.schemas import DeliveryMethodEnum, DeliveryMethodResponse, DeliveryMethodEdit
 from src.models import DeliveryMethodsOrm
-from src.exceptions import AlreadyExistsError, Entity
+from src.exceptions import AlreadyExistsError
 
 
 class DeliveryMethodsService:
@@ -36,15 +36,15 @@ class DeliveryMethodsService:
                     new_method, from_attributes=True
                 )
         except IntegrityError as e:
-            raise AlreadyExistsError(
-                Entity.DELIVERY_METHOD, "Delivery method already exists"
-            ) from e
+            raise AlreadyExistsError("Delivery method already exists") from e
 
-    async def remove(self, user_id: UUID, id: UUID) -> DeliveryMethodResponse | None:
+    async def delete(
+        self, user_id: UUID, method_id: UUID
+    ) -> DeliveryMethodResponse | None:
         async with self.session_factory() as session:
             query = (
                 delete(DeliveryMethodsOrm)
-                .filter_by(id=id, user_id=user_id)
+                .filter_by(id=method_id, user_id=user_id)
                 .returning(DeliveryMethodsOrm)
             )
             res = await session.execute(query)
@@ -78,7 +78,7 @@ class DeliveryMethodsService:
                 for method in result
             ]
 
-    async def set_confirm(self, method_id) -> DeliveryMethodResponse | None:
+    async def set_confirm(self, method_id: UUID) -> DeliveryMethodResponse | None:
         async with self.session_factory() as session:
             method = await session.get(DeliveryMethodsOrm, method_id)
             if not method:
@@ -89,7 +89,7 @@ class DeliveryMethodsService:
             return DeliveryMethodResponse.model_validate(method, from_attributes=True)
 
     async def edit(
-        self, method_id: UUID, user_id: UUID, data: DeliveryMethodEdit
+        self, user_id: UUID, method_id: UUID, data: DeliveryMethodEdit
     ) -> DeliveryMethodResponse | None:
         async with self.session_factory() as session:
             method = await session.get(DeliveryMethodsOrm, method_id)

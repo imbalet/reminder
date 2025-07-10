@@ -3,7 +3,7 @@ from .delivery_method import (
     DeliveryMethod,
     DeliveryMethodEnum,
     DeliveryMethodResponse,
-    DeliveryMethodEdit,
+    DeliveryMethodAdd,
 )
 from .base import BaseValidationModel
 from .user import User, UserResponse

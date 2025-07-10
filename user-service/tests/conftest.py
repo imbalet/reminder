@@ -1,13 +1,13 @@
-import os
 from uuid import uuid4
 
-import dotenv
 import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from src.schemas import User
 from src.services import DeliveryMethodsService, UserService
 from src.models import Base
+
+from tests.config import config
 
 
 @pytest.fixture
@@ -31,18 +31,8 @@ def user_header(sample_user: User):
 
 @pytest.fixture
 async def async_session_factory():
-    dotenv.load_dotenv("tests/.env.test")
-
-    DB_USER = os.getenv("TEST_DB_USER")
-    DB_PASS = os.getenv("TEST_DB_PASS")
-    DB_NAME = os.getenv("TEST_DB_NAME")
-    DB_HOST = os.getenv("TEST_DB_HOST")
-    DB_PORT = os.getenv("TEST_DB_PORT")
-
-    DB_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-
     engine = create_async_engine(
-        DB_URL,
+        config.DB_URL,
         echo=True,
         pool_size=10,
         max_overflow=20,
