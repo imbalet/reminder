@@ -4,8 +4,6 @@ from uuid import UUID
 from pydantic import BaseModel, model_validator
 from pydantic_core import PydanticCustomError
 
-from .base import BaseValidationModel
-
 
 class DeliveryMethodEnum(str, Enum):
     TELEGRAM = "telegram"
@@ -55,8 +53,3 @@ class DeliveryMethodAdd(DeliveryMethod):
 class DeliveryMethodResponse(DeliveryMethod):
     id: UUID
     user_id: UUID
-
-
-class DeliveryMethodEdit(BaseValidationModel):
-    delivery_method: DeliveryMethodEnum | None = None
-    contact_value: str | None = None

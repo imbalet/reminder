@@ -7,13 +7,11 @@ from src.services import DeliveryMethodsService, ConfirmCodesService
 from src.schemas import (
     DeliveryMethodAdd,
     DeliveryMethodResponse,
-    DeliveryMethodEdit,
 )
 from src.dependencies import get_delivery_methods_service, get_confirm_code_service
 from src.use_cases import (
     AddDeliveryUseCase,
     GetMethodUseCase,
-    EditMethodUseCase,
     DeleteMethodUseCase,
 )
 
@@ -72,20 +70,6 @@ async def get_method(
 ):
     uc = GetMethodUseCase(delivery_service=delivery_service)
     res = await uc.execute(user_id=app_user_id, method_id=method_id)
-    return res
-
-
-@router.patch("/{method_id}", response_model=DeliveryMethodResponse)
-async def edit_method(
-    app_user_id: Annotated[UUID, Header()],
-    delivery_service: Annotated[
-        DeliveryMethodsService, Depends(get_delivery_methods_service)
-    ],
-    method_id: UUID,
-    data: DeliveryMethodEdit,
-):
-    uc = EditMethodUseCase(delivery_service=delivery_service)
-    res = await uc.execute(user_id=app_user_id, method_id=method_id, data=data)
     return res
 
 

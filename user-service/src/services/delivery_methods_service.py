@@ -4,7 +4,7 @@ from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from src.schemas import DeliveryMethodEnum, DeliveryMethodResponse, DeliveryMethodEdit
+from src.schemas import DeliveryMethodEnum, DeliveryMethodResponse
 from src.models import DeliveryMethodsOrm
 from src.exceptions import AlreadyExistsError
 
@@ -84,22 +84,6 @@ class DeliveryMethodsService:
             if not method:
                 return None
             method.is_confirmed = True
-            await session.commit()
-            await session.refresh(method)
-            return DeliveryMethodResponse.model_validate(method, from_attributes=True)
-
-    async def edit(
-        self, user_id: UUID, method_id: UUID, data: DeliveryMethodEdit
-    ) -> DeliveryMethodResponse | None:
-        async with self.session_factory() as session:
-            method = await session.get(DeliveryMethodsOrm, method_id)
-            if not method or method.user_id != user_id:
-                return None
-
-            update_data = data.model_dump(exclude_unset=True)
-            for field, value in update_data.items():
-                setattr(method, field, value)
-
             await session.commit()
             await session.refresh(method)
             return DeliveryMethodResponse.model_validate(method, from_attributes=True)
