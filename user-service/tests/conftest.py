@@ -3,11 +3,19 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
-from src.schemas import User
-from src.services import DeliveryMethodsService, UserService
+from src.services import (
+    UserService,
+    DeliveryMethodsService,
+    ConfirmCodesService,
+)
 from src.models import Base
-
 from tests.config import config
+from src.schemas import (
+    DeliveryMethodResponse,
+    DeliveryMethodEnum,
+    User,
+    DeliveryMethodAdd,
+)
 
 
 @pytest.fixture
@@ -64,3 +72,38 @@ def delivery_methods_service(async_session_factory):
 @pytest.fixture
 def user_service(async_session_factory):
     return UserService(async_session_factory)
+
+
+@pytest.fixture
+def sample_delivery_method_tg_response(sample_user):
+    return DeliveryMethodResponse(
+        id=uuid4(),
+        user_id=sample_user.id,
+        delivery_method=DeliveryMethodEnum.TELEGRAM,
+        confirm_code="telegram",
+    )
+
+
+@pytest.fixture
+def sample_delivery_method_tg_add():
+    return DeliveryMethodAdd(
+        delivery_method=DeliveryMethodEnum.TELEGRAM,
+        confirm_code="telegram",
+    )
+
+
+@pytest.fixture
+def mock_delivery_service(mocker, sample_delivery_method_tg_response):
+    mock = mocker.create_autospec(DeliveryMethodsService)
+    mock.add.return_value = sample_delivery_method_tg_response
+    mock.get.return_value = sample_delivery_method_tg_response
+    mock.get_all.return_value = [sample_delivery_method_tg_response]
+    mock.delete.return_value = sample_delivery_method_tg_response
+    return mock
+
+
+@pytest.fixture
+def mock_confirm_service(mocker):
+    mock = mocker.create_autospec(ConfirmCodesService)
+    mock.confirm.return_value = 1
+    return mock

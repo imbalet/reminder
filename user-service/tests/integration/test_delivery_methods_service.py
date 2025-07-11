@@ -5,7 +5,6 @@ from src.services import DeliveryMethodsService
 from src.schemas import (
     DeliveryMethodResponse,
     DeliveryMethodEnum,
-    DeliveryMethodEdit,
     User,
 )
 from src.exceptions import AlreadyExistsError
@@ -16,7 +15,7 @@ async def sample_method(
     sample_user: User, delivery_methods_service: DeliveryMethodsService
 ):
     return await delivery_methods_service.add(
-        sample_user.id, DeliveryMethodEnum.TELEGRAM, "tg_nickname"
+        sample_user.id, DeliveryMethodEnum.TELEGRAM, "chat_id"
     )
 
 
@@ -90,7 +89,6 @@ async def test_method_not_exists_remove(
 @pytest.mark.asyncio
 async def test_valid_get_all(
     sample_user: User,
-    sample_method: DeliveryMethodResponse,
     delivery_methods_service: DeliveryMethodsService,
 ):
     await delivery_methods_service.add(
@@ -109,53 +107,3 @@ async def test_empty_get_all(
     res = await delivery_methods_service.get_all(sample_user.id)
 
     assert len(res) == 0
-
-
-@pytest.mark.parametrize(
-    "data",
-    [
-        DeliveryMethodEdit(
-            delivery_method=DeliveryMethodEnum.EMAIL, contact_value="email"
-        ),
-        DeliveryMethodEdit(
-            contact_value="new",
-        ),
-    ],
-)
-@pytest.mark.asyncio
-async def test_valid_edit(
-    sample_user: User,
-    sample_method: DeliveryMethodResponse,
-    delivery_methods_service: DeliveryMethodsService,
-    data: DeliveryMethodEdit,
-):
-    res = await delivery_methods_service.edit(sample_user.id, sample_method.id, data)
-
-    assert res is not None
-    assert res.contact_value == data.contact_value
-
-
-@pytest.mark.asyncio
-async def test_not_exists_edit(
-    sample_user: User,
-    delivery_methods_service: DeliveryMethodsService,
-):
-    data = DeliveryMethodEdit(
-        contact_value="new",
-    )
-    res = await delivery_methods_service.edit(sample_user.id, uuid4(), data)
-
-    assert res is None
-
-
-@pytest.mark.asyncio
-async def test_forbidden_edit(
-    sample_method: DeliveryMethodResponse,
-    delivery_methods_service: DeliveryMethodsService,
-):
-    data = DeliveryMethodEdit(
-        contact_value="new",
-    )
-    res = await delivery_methods_service.edit(uuid4(), sample_method.id, data)
-
-    assert res is None

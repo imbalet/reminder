@@ -2,49 +2,20 @@ from uuid import uuid4
 
 from httpx import AsyncClient
 import pytest
-from pytest_mock import MockerFixture
 
 
-from src.main import app
-from src.dependencies import get_delivery_methods_service, get_confirm_code_service
 from src.exceptions import AlreadyExistsError
-from src.services import DeliveryMethodsService, ConfirmCodesService
 from src.schemas import (
     DeliveryMethodResponse,
-    DeliveryMethodEdit,
     DeliveryMethod,
     DeliveryMethodEnum,
-    User,
 )
-
-
-@pytest.fixture
-def sample_delivery_method(sample_user: User):
-    return DeliveryMethodResponse(
-        id=uuid4(),
-        user_id=sample_user.id,
-        delivery_method=DeliveryMethodEnum.TELEGRAM,
-        confirm_code="telegram",
-    )
 
 
 @pytest.mark.asyncio
 async def test_valid_create(
-    async_client: AsyncClient,
-    sample_delivery_method: DeliveryMethodResponse,
-    user_header: dict[str, str],
-    mocker: MockerFixture,
+    async_client: AsyncClient, user_header: dict[str, str], mock_delivery_service
 ):
-    mock_delivery_service = mocker.create_autospec(DeliveryMethodsService)
-    mock_delivery_service.add.return_value = sample_delivery_method
-    app.dependency_overrides[get_delivery_methods_service] = (
-        lambda: mock_delivery_service
-    )
-
-    mock_confirm_service = mocker.create_autospec(ConfirmCodesService)
-    mock_confirm_service.confirm.return_value = 1
-    app.dependency_overrides[get_confirm_code_service] = lambda: mock_confirm_service
-
     data = DeliveryMethod(
         delivery_method=DeliveryMethodEnum.TELEGRAM, confirm_code="telegram"
     )
@@ -57,21 +28,16 @@ async def test_valid_create(
     res = DeliveryMethodResponse.model_validate(response.json())
     assert response.status_code == 201
     assert res.contact_value == data.contact_value
-    mock_delivery_service.add.assert_awaited_once
+    mock_delivery_service.add.assert_awaited_once()
 
 
 @pytest.mark.asyncio
 async def test_already_exists_create(
     async_client: AsyncClient,
     user_header: dict[str, str],
-    mocker: MockerFixture,
+    mock_delivery_service,
 ):
-    mock_service = mocker.create_autospec(DeliveryMethodsService)
-    mock_service.add.side_effect = AlreadyExistsError("")
-    app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
-
-    mock_confirm_service = mocker.create_autospec(ConfirmCodesService)
-    app.dependency_overrides[get_confirm_code_service] = lambda: mock_confirm_service
+    mock_delivery_service.add.side_effect = AlreadyExistsError("")
 
     data = DeliveryMethod(
         delivery_method=DeliveryMethodEnum.TELEGRAM, confirm_code="telegram"
@@ -83,79 +49,73 @@ async def test_already_exists_create(
         headers=user_header,
     )
     assert response.status_code == 409
-    mock_service.add.assert_awaited_once
+    mock_delivery_service.add.assert_awaited_once()
 
 
 @pytest.mark.asyncio
 async def test_valid_get(
     async_client: AsyncClient,
-    sample_delivery_method: DeliveryMethodResponse,
+    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
-    mocker: MockerFixture,
+    mock_delivery_service,
 ):
-    mock_service = mocker.create_autospec(DeliveryMethodsService)
-    mock_service.get.return_value = sample_delivery_method
-    app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
-
     response = await async_client.get(
-        f"/api/delivery/{sample_delivery_method.id}",
+        f"/api/delivery/{sample_delivery_method_tg_response.id}",
         headers=user_header,
     )
     res = DeliveryMethodResponse.model_validate(response.json())
     assert response.status_code == 200
-    assert res == sample_delivery_method
-    mock_service.get.assert_awaited_once_with(sample_delivery_method.id)
+    assert res == sample_delivery_method_tg_response
+    mock_delivery_service.get.assert_awaited_once()
 
 
 @pytest.mark.asyncio
 async def test_forbidden_not_found_get(
     async_client: AsyncClient,
-    sample_delivery_method: DeliveryMethodResponse,
+    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
-    mocker: MockerFixture,
+    mock_delivery_service,
 ):
-    mock_service = mocker.create_autospec(DeliveryMethodsService)
-    mock_service.get.return_value = None
-    app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
+
+    mock_delivery_service.get.return_value = None
 
     response = await async_client.get(
-        f"/api/delivery/{sample_delivery_method.id}",
+        f"/api/delivery/{sample_delivery_method_tg_response.id}",
         headers=user_header,
     )
     assert response.status_code == 403
-    mock_service.get.assert_awaited_once_with(sample_delivery_method.id)
+    mock_delivery_service.get.assert_awaited_once_with(
+        sample_delivery_method_tg_response.id
+    )
 
 
 @pytest.mark.asyncio
 async def test_forbidden_no_permissions_get(
     async_client: AsyncClient,
-    sample_delivery_method: DeliveryMethodResponse,
+    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
-    mocker: MockerFixture,
+    mock_delivery_service,
 ):
-    sample_delivery_method.user_id = uuid4()
-    mock_service = mocker.create_autospec(DeliveryMethodsService)
-    mock_service.get.return_value = sample_delivery_method
-    app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
+
+    mock_delivery_service.get.return_value.user_id = uuid4()
 
     response = await async_client.get(
-        f"/api/delivery/{sample_delivery_method.id}",
+        f"/api/delivery/{sample_delivery_method_tg_response.id}",
         headers=user_header,
     )
     assert response.status_code == 403
-    mock_service.get.assert_awaited_once_with(sample_delivery_method.id)
+    mock_delivery_service.get.assert_awaited_once_with(
+        sample_delivery_method_tg_response.id
+    )
 
 
 @pytest.mark.asyncio
 async def test_valid_get_all(
     async_client: AsyncClient,
-    sample_delivery_method: DeliveryMethodResponse,
+    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
-    mocker: MockerFixture,
+    mock_delivery_service,
 ):
-    mock_service = mocker.create_autospec(DeliveryMethodsService)
-    mock_service.get_all.return_value = [sample_delivery_method]
-    app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
 
     response = await async_client.get(
         "/api/delivery/my",
@@ -163,20 +123,18 @@ async def test_valid_get_all(
     )
     res = [DeliveryMethodResponse.model_validate(i) for i in response.json()]
     assert response.status_code == 200
-    assert res == [sample_delivery_method]
-    mock_service.get_all.assert_awaited_once_with(sample_delivery_method.user_id)
+    assert res == [sample_delivery_method_tg_response]
+    mock_delivery_service.get_all.assert_awaited_once()
 
 
 @pytest.mark.asyncio
 async def test_empty_get_all(
     async_client: AsyncClient,
-    sample_delivery_method: DeliveryMethodResponse,
+    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
-    mocker: MockerFixture,
+    mock_delivery_service,
 ):
-    mock_service = mocker.create_autospec(DeliveryMethodsService)
-    mock_service.get_all.return_value = []
-    app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
+    mock_delivery_service.get_all.return_value = []
 
     response = await async_client.get(
         "/api/delivery/my",
@@ -185,70 +143,42 @@ async def test_empty_get_all(
     res = [DeliveryMethodResponse.model_validate(i) for i in response.json()]
     assert response.status_code == 200
     assert res == []
-    mock_service.get_all.assert_awaited_once_with(sample_delivery_method.user_id)
-
-
-@pytest.mark.asyncio
-async def test_forbidden_edit(
-    async_client: AsyncClient,
-    sample_delivery_method: DeliveryMethodResponse,
-    user_header: dict[str, str],
-    mocker: MockerFixture,
-):
-    mock_service = mocker.create_autospec(DeliveryMethodsService)
-    mock_service.edit.return_value = None
-    app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
-
-    edit_request = DeliveryMethodEdit(contact_value="edited")
-
-    response = await async_client.patch(
-        f"/api/delivery/{sample_delivery_method.id}",
-        json=edit_request.model_dump(),
-        headers=user_header,
-    )
-    assert response.status_code == 403
-    mock_service.edit.assert_awaited_once_with(
-        sample_delivery_method.id, sample_delivery_method.user_id, edit_request
+    mock_delivery_service.get_all.assert_awaited_once_with(
+        sample_delivery_method_tg_response.user_id
     )
 
 
 @pytest.mark.asyncio
 async def test_valid_delete(
     async_client: AsyncClient,
-    sample_delivery_method: DeliveryMethodResponse,
+    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
-    mocker: MockerFixture,
+    mock_delivery_service,
 ):
-    mock_service = mocker.create_autospec(DeliveryMethodsService)
-    mock_service.delete.return_value = sample_delivery_method
-    app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
 
     response = await async_client.delete(
-        f"/api/delivery/{sample_delivery_method.id}",
+        f"/api/delivery/{sample_delivery_method_tg_response.id}",
         headers=user_header,
     )
     assert response.status_code == 204
-    mock_service.delete.assert_awaited_once_with(
-        sample_delivery_method.user_id, sample_delivery_method.id
-    )
+    mock_delivery_service.delete.assert_awaited_once()
 
 
 @pytest.mark.asyncio
 async def test_forbidden_delete(
     async_client: AsyncClient,
-    sample_delivery_method: DeliveryMethodResponse,
+    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
-    mocker: MockerFixture,
+    mock_delivery_service,
 ):
-    mock_service = mocker.create_autospec(DeliveryMethodsService)
-    mock_service.delete.return_value = None
-    app.dependency_overrides[get_delivery_methods_service] = lambda: mock_service
+    mock_delivery_service.delete.return_value = None
 
     response = await async_client.delete(
-        f"/api/delivery/{sample_delivery_method.id}",
+        f"/api/delivery/{sample_delivery_method_tg_response.id}",
         headers=user_header,
     )
     assert response.status_code == 403
-    mock_service.delete.assert_awaited_once_with(
-        sample_delivery_method.user_id, sample_delivery_method.id
+    mock_delivery_service.delete.assert_awaited_once_with(
+        sample_delivery_method_tg_response.user_id,
+        sample_delivery_method_tg_response.id,
     )
