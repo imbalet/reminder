@@ -51,7 +51,6 @@ async def register(
     event_service: Annotated[EventService, Depends(get_event_service)],
 ) -> UserResponse:
     if "refresh_token" in request.cookies:
-
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are already authenticated",

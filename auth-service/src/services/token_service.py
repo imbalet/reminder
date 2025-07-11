@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.schemas import RefreshTokenData
 from src.models import RefreshTokensOrm
-from src.exceptions import NotFoundError, AlreadyExistsError, Entity
+from src.exceptions import NotFoundError, AlreadyExistsError
 
 
 class RefreshTokenService:
@@ -34,12 +34,8 @@ class RefreshTokenService:
         except IntegrityError as e:
             orig_message = str(e.orig).lower()
             if "duplicate" in orig_message:
-                raise AlreadyExistsError(
-                    Entity.TOKEN, message=f"Token with jti {jti} already exists"
-                )
-            raise NotFoundError(
-                entity=Entity.USER, message=f"User with id {user_id} not exists"
-            ) from e
+                raise AlreadyExistsError(message=f"Token with jti {jti} already exists")
+            raise NotFoundError(message=f"User with id {user_id} not exists") from e
 
     async def find_by_jti(self, jti: UUID) -> RefreshTokenData | None:
         async with self.session_factory() as session:
@@ -53,12 +49,12 @@ class RefreshTokenService:
 
     async def revoke_token(self, jti: UUID) -> None:
         async with self.session_factory() as session:
-            query = delete(RefreshTokensOrm).filter_by(jti=jti)
-            await session.execute(query)
+            stmt = delete(RefreshTokensOrm).filter_by(jti=jti)
+            await session.execute(stmt)
             await session.commit()
 
     async def revoke_for_user(self, user_id: UUID) -> None:
         async with self.session_factory() as session:
-            query = delete(RefreshTokensOrm).filter_by(user_id=user_id)
-            await session.execute(query)
+            stmt = delete(RefreshTokensOrm).filter_by(user_id=user_id)
+            await session.execute(stmt)
             await session.commit()

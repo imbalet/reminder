@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.schemas import UserResponse, UserInDB
 from src.models import UserOrm
-from src.exceptions import AlreadyExistsError, Entity
+from src.exceptions import AlreadyExistsError
 
 
 class UserService:
@@ -14,9 +14,7 @@ class UserService:
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self.session_factory = session_factory
 
-    async def create_user(
-        self, name: str, email: str, hashed_password: str
-    ) -> UserResponse:
+    async def create_user(self, email: str, hashed_password: str) -> UserResponse:
         try:
             async with self.session_factory() as session:
                 new_user = UserOrm(email=email, hashed_password=hashed_password)
@@ -25,7 +23,7 @@ class UserService:
                 await session.refresh(new_user)
                 return UserResponse.model_validate(new_user, from_attributes=True)
         except IntegrityError as e:
-            raise AlreadyExistsError(Entity.USER, "User already exists") from e
+            raise AlreadyExistsError("User already exists") from e
 
     async def get_user(self, user_id: UUID) -> UserInDB | None:
         async with self.session_factory() as session:
@@ -36,7 +34,7 @@ class UserService:
 
     async def get_user_by_email(self, email: str) -> UserInDB | None:
         async with self.session_factory() as session:
-            stmt = select(UserOrm).where(UserOrm.email == email)
+            stmt = select(UserOrm).filter_by(email=email)
             result = await session.execute(stmt)
             res = result.scalar()
             if res is None:

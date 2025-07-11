@@ -3,13 +3,12 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
 
-class UserAuth(BaseModel):
-    email: EmailStr
-    password: str
-
-
 class UserBase(BaseModel):
     email: EmailStr
+
+
+class UserAuth(UserBase):
+    password: str
 
 
 class UserRegisterRequset(UserBase):

@@ -19,7 +19,7 @@ class RegisterUserUseCase:
         """
         hashed_password = get_hash(data.password)
         res = await self.user_service.create_user(
-            name=data.name, email=data.email, hashed_password=hashed_password
+            email=data.email, hashed_password=hashed_password
         )
         await self.event_service.send_registration_event(
             UserRmqData(id=res.id, email=res.email, name=data.name)

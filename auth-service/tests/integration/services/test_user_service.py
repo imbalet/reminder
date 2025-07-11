@@ -10,9 +10,7 @@ from src.exceptions import AlreadyExistsError
 @pytest.fixture
 async def sample_user(async_session_factory: async_sessionmaker[AsyncSession]):
     service = UserService(async_session_factory)
-    res = await service.create_user(
-        name="john", email="john@example.com", hashed_password="hash"
-    )
+    res = await service.create_user(email="john@example.com", hashed_password="hash")
     return UserResponse.model_validate(res, from_attributes=True)
 
 
@@ -24,20 +22,16 @@ async def sample_user(async_session_factory: async_sessionmaker[AsyncSession]):
 @pytest.mark.asyncio
 async def test_valid_creating_user(user_service: UserService):
     created = await user_service.create_user(
-        name="john", email="john@example.com", hashed_password="hash"
+        email="john@example.com", hashed_password="hash"
     )
     assert await user_service.get_user(created.id) is not None
 
 
 @pytest.mark.asyncio
 async def test_email_already_in_use_creating_user(user_service: UserService):
-    await user_service.create_user(
-        name="john", email="john@example.com", hashed_password="hash"
-    )
+    await user_service.create_user(email="john@example.com", hashed_password="hash")
     with pytest.raises(AlreadyExistsError):
-        await user_service.create_user(
-            name="john", email="john@example.com", hashed_password="hash"
-        )
+        await user_service.create_user(email="john@example.com", hashed_password="hash")
 
 
 @pytest.mark.asyncio

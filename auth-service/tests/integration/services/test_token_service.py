@@ -14,9 +14,7 @@ from src.exceptions import NotFoundError, AlreadyExistsError
 @pytest.fixture
 async def sample_user(async_session_factory: async_sessionmaker[AsyncSession]):
     service = UserService(async_session_factory)
-    res = await service.create_user(
-        name="john", email="john@example.com", hashed_password="hash"
-    )
+    res = await service.create_user(email="john@example.com", hashed_password="hash")
     return UserResponse.model_validate(res, from_attributes=True)
 
 

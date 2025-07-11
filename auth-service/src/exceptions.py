@@ -1,14 +1,5 @@
-from enum import Enum
-
-
-class Entity(Enum):
-    USER = "user"
-    TOKEN = "token"
-
-
 class AppException(Exception):
-    def __init__(self, entity: Entity, message: str) -> None:
-        self.entity = entity
+    def __init__(self, message: str) -> None:
         super().__init__(message)
 
 
