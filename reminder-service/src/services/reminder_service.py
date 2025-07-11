@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from src.schemas import ReminerEdit, ReminderResponse, DeliveryMethod
+from src.schemas import ReminderEdit, ReminderResponse, DeliveryMethod
 from src.models import RemindersOrm, DeliveryMethodOrm
 
 
@@ -47,9 +47,7 @@ class ReminderService:
                 return None
             return ReminderResponse.model_validate(result, from_attributes=True)
 
-    async def get_reminders_by_user_id(
-        self, user_id: UUID
-    ) -> list[ReminderResponse] | None:
+    async def get_reminders_by_user_id(self, user_id: UUID) -> list[ReminderResponse]:
         async with self.session_factory() as session:
             stmt = select(RemindersOrm).where(RemindersOrm.user_id == user_id)
             result = await session.execute(stmt)
@@ -76,7 +74,7 @@ class ReminderService:
             return ReminderResponse.model_validate(result, from_attributes=True)
 
     async def edit_reminder(
-        self, reminder_id: UUID, data: ReminerEdit, user_id: UUID
+        self, reminder_id: UUID, data: ReminderEdit, user_id: UUID
     ) -> ReminderResponse | None:
         async with self.session_factory() as session:
             reminder = await session.get(RemindersOrm, reminder_id)

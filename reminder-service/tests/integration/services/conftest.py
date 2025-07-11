@@ -8,7 +8,7 @@ from src.schemas import (
 
 
 @pytest.fixture
-async def sample_methods() -> list[DeliveryMethod]:
+async def sample_methods_data() -> list[DeliveryMethod]:
     return [
         DeliveryMethod(
             delivery_method=DeliveryMethodEnum.TELEGRAM,

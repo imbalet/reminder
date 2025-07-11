@@ -1,5 +1,4 @@
 import datetime
-import os
 from uuid import uuid4
 
 from aio_pika.pool import Pool
@@ -7,6 +6,7 @@ import pytest
 
 from src.services import ReminderService, SendService
 from src.schemas import ReminderResponse
+from tests.config import config
 
 
 async def create_reminder(
@@ -25,11 +25,11 @@ async def create_reminder(
 
 @pytest.mark.asyncio
 async def test_get_upcoming_valid(
-    reminder_service: ReminderService, send_service: SendService, sample_methods
+    reminder_service: ReminderService, send_service: SendService, sample_methods_data
 ):
     _ = [
         await create_reminder(
-            reminder_service, datetime.datetime.now(datetime.UTC), sample_methods
+            reminder_service, datetime.datetime.now(datetime.UTC), sample_methods_data
         )
         for _ in range(10)
     ]
@@ -43,20 +43,18 @@ async def test_get_upcoming_valid(
 async def test_sending_with_rabbitmq(
     reminder_service: ReminderService,
     send_service: SendService,
-    channel_pool: Pool,
-    sample_methods,
+    rmq_channel_pool: Pool,
+    sample_methods_data,
 ):
-    ROUTING_KEY = os.getenv("TEST_RMQ_ROUTING_KEY")
-    async with channel_pool.acquire() as channel:
-        queue = await channel.declare_queue(ROUTING_KEY)
+    async with rmq_channel_pool.acquire() as channel:
+        queue = await channel.declare_queue(config.TEST_RMQ_ROUTING_KEY)
         await queue.purge()
         try:
-
             reminders = [
                 await create_reminder(
                     reminder_service,
                     datetime.datetime.now(datetime.UTC),
-                    sample_methods,
+                    sample_methods_data,
                 )
                 for _ in range(10)
             ]

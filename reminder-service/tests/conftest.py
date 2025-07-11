@@ -1,30 +1,18 @@
-import os
-
 import aio_pika
 from aio_pika.pool import Pool
-import dotenv
 import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 
 from src.models import Base
 from src.services import ReminderService, SendService
+from tests.config import config
 
 
 @pytest.fixture
 async def async_session_factory():
-    dotenv.load_dotenv("tests/.env.test")
-
-    DB_USER = os.getenv("TEST_DB_USER")
-    DB_PASS = os.getenv("TEST_DB_PASS")
-    DB_NAME = os.getenv("TEST_DB_NAME")
-    DB_HOST = os.getenv("TEST_DB_HOST")
-    DB_PORT = os.getenv("TEST_DB_PORT")
-
-    DB_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-
     engine = create_async_engine(
-        DB_URL,
+        config.DB_URL,
         echo=True,
         pool_size=10,
         max_overflow=20,
@@ -49,16 +37,9 @@ async def async_session_factory():
 
 
 @pytest.fixture
-def channel_pool():
-    RMQ_USER = os.getenv("TEST_RMQ_USER")
-    RMQ_PASS = os.getenv("TEST_RMQ_PASS")
-    RMQ_HOST = os.getenv("TEST_RMQ_HOST")
-    RMQ_PORT = os.getenv("TEST_RMQ_PORT")
-
+def rmq_channel_pool():
     async def create_connection():
-        return await aio_pika.connect_robust(
-            f"amqp://{RMQ_USER}:{RMQ_PASS}@{RMQ_HOST}:{RMQ_PORT}/"
-        )
+        return await aio_pika.connect_robust(config.RMQ_URL)
 
     async def create_channel():
         async with connection_pool.acquire() as connection:
@@ -75,6 +56,7 @@ def reminder_service(async_session_factory):
 
 
 @pytest.fixture
-def send_service(async_session_factory, channel_pool):
-    RMQ_ROUTING_KEY = os.getenv("TEST_RMQ_ROUTING_KEY")
-    return SendService(async_session_factory, channel_pool, RMQ_ROUTING_KEY)  # type: ignore
+def send_service(async_session_factory, rmq_channel_pool):
+    return SendService(
+        async_session_factory, rmq_channel_pool, config.TEST_RMQ_ROUTING_KEY
+    )

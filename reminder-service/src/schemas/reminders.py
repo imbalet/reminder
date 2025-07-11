@@ -23,7 +23,7 @@ class ReminderResponse(ReminderCreate):
     delivery_methods: list[DeliveryMethod]
 
 
-class ReminerEdit(BaseValidationModel):
+class ReminderEdit(BaseValidationModel):
     title: str | None = Field(default=None, min_length=3, max_length=100)
     content: str | None = Field(default=None, min_length=3, max_length=2048)
     remind_date: datetime | None = Field(default=None)

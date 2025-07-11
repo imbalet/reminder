@@ -6,18 +6,18 @@ import pytest
 from src.services import ReminderService
 from src.schemas import (
     ReminderResponse,
-    ReminerEdit,
+    ReminderEdit,
 )
 
 
 @pytest.fixture
-async def sample_reminder(reminder_service: ReminderService, sample_methods):
+async def sample_reminder(reminder_service: ReminderService, sample_methods_data):
     res = await reminder_service.create_reminder(
         title="reminder",
         content="reminder",
         user_id=uuid4(),
         remind_date=datetime.datetime.now(),
-        delivery_methods=sample_methods,
+        delivery_methods=sample_methods_data,
     )
     return ReminderResponse.model_validate(res, from_attributes=True)
 
@@ -28,20 +28,20 @@ async def sample_reminder(reminder_service: ReminderService, sample_methods):
 
 
 @pytest.mark.asyncio
-async def test_valid_creating(reminder_service: ReminderService, sample_methods):
+async def test_valid_creating(reminder_service: ReminderService, sample_methods_data):
     created = await reminder_service.create_reminder(
         title="reminder",
         content="reminder",
         user_id=uuid4(),
         remind_date=datetime.datetime.now(),
-        delivery_methods=sample_methods,
+        delivery_methods=sample_methods_data,
     )
     assert await reminder_service.get_reminder(created.id) is not None
 
 
 @pytest.mark.asyncio
 async def test_valid_creating_not_utc(
-    reminder_service: ReminderService, sample_methods
+    reminder_service: ReminderService, sample_methods_data
 ):
     time = datetime.datetime.now(zoneinfo.ZoneInfo("Europe/Moscow"))
     created = await reminder_service.create_reminder(
@@ -49,7 +49,7 @@ async def test_valid_creating_not_utc(
         content="reminder",
         user_id=uuid4(),
         remind_date=time,
-        delivery_methods=sample_methods,
+        delivery_methods=sample_methods_data,
     )
     res = await reminder_service.get_reminder(created.id)
     assert res is not None
@@ -82,7 +82,9 @@ async def test_valid_get_by_user_id(
 
 @pytest.mark.asyncio
 async def test_valid_get_by_user_id_multiply(
-    reminder_service: ReminderService, sample_reminder: ReminderResponse, sample_methods
+    reminder_service: ReminderService,
+    sample_reminder: ReminderResponse,
+    sample_methods_data,
 ):
     for _ in range(3):
         await reminder_service.create_reminder(
@@ -90,7 +92,7 @@ async def test_valid_get_by_user_id_multiply(
             content="reminder",
             user_id=sample_reminder.user_id,
             remind_date=datetime.datetime.now(),
-            delivery_methods=sample_methods,
+            delivery_methods=sample_methods_data,
         )
     res = await reminder_service.get_reminders_by_user_id(sample_reminder.user_id)
     assert res is not None
@@ -124,7 +126,7 @@ async def test_not_exist_delete(reminder_service: ReminderService):
 async def test_valid_edit(
     reminder_service: ReminderService, sample_reminder: ReminderResponse
 ):
-    new_data = ReminerEdit(
+    new_data = ReminderEdit(
         title="new_title",
         content="new content",
         remind_date=datetime.datetime.now(

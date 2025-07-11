@@ -8,8 +8,6 @@ from src.schemas import ReminderResponse
 from src.models import RemindersOrm, Status
 from src.config import config
 
-TIME_OFFSET_MINUTES = 1
-
 
 class SendService:
 

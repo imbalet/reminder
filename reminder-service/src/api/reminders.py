@@ -1,46 +1,21 @@
-import functools
-
-from typing import Annotated, Callable, Any
+from typing import Annotated
 from uuid import UUID
 
 import httpx
 from fastapi import APIRouter, Depends, Header, status, HTTPException
 
+from src.config import config
+from src.dependencies import get_reminders_service
 from src.services.reminder_service import ReminderService
 from src.schemas import (
     ReminderCreate,
     ReminderResponse,
-    ReminerEdit,
+    ReminderEdit,
     DeliveryMethod,
 )
-from src.dependencies import get_reminders_service
-from src.config import config
+from .utils import error_handler
 
 router = APIRouter(prefix="/api/reminders", tags=["reminds"])
-
-
-def error_handler(func: Callable) -> Callable:
-    @functools.wraps(func)
-    async def wrapper(*args: Any, **kwargs: Any) -> Any:
-        try:
-            return await func(*args, **kwargs)
-        except httpx.HTTPStatusError as e:
-            try:
-                error_data = e.response.json()
-                original_detail = error_data.get("detail", error_data)
-                detail_value = original_detail
-            except Exception:
-                detail_value = e.response.text
-            raise HTTPException(
-                status_code=e.response.status_code,
-                detail=detail_value,
-            )
-        except httpx.RequestError as e:
-            raise HTTPException(
-                status_code=503, detail=f"Service unavailable: {str(e)}"
-            )
-
-    return wrapper
 
 
 @router.post("/", response_model=ReminderResponse, status_code=status.HTTP_201_CREATED)
@@ -107,7 +82,7 @@ async def delete_by_id(
 @router.patch("/{reminder_id}", response_model=ReminderResponse)
 async def edit_by_id(
     service: Annotated[ReminderService, Depends(get_reminders_service)],
-    data: ReminerEdit,
+    data: ReminderEdit,
     reminder_id: UUID,
     app_user_id: UUID = Header(),
 ):
