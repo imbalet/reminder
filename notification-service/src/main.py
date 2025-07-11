@@ -1,10 +1,15 @@
 import asyncio
+import logging
 
 import aio_pika
 
 from src.config import config
 from src.services import SenderInterface, TelegramSender
 from src.schemas import Message, Reminder, DeliveryMethodEnum
+from src.logger import setup_logger
+
+setup_logger()
+logger = logging.getLogger(__name__)
 
 senders: dict[DeliveryMethodEnum, SenderInterface] = {
     DeliveryMethodEnum.TELEGRAM: TelegramSender(config.TG_BOT_TOKEN),
@@ -23,8 +28,24 @@ async def process_rmq_message(rmq_message: aio_pika.abc.AbstractIncomingMessage)
                 res = await sender.send(  # noqa
                     contact_value=request.contact_value, message=message
                 )
+                logger.info(
+                    "Sent reminder",
+                    extra={
+                        "method_type": request.delivery_method.value,
+                        "operation": "send_reminder",
+                        "result": "success",
+                    },
+                )
             else:
                 # TODO: implement handling error
+                logger.info(
+                    "Unknown delivery method",
+                    extra={
+                        "method_type": request.delivery_method.value,
+                        "operation": "send_reminder",
+                        "result": "error",
+                    },
+                )
                 pass
 
 
