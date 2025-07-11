@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
@@ -13,6 +14,7 @@ from src.services import ConfirmCodesService
 from redis_pool import redis
 
 
+logger = logging.getLogger(__name__)
 dp = Dispatcher()
 
 
@@ -22,13 +24,36 @@ async def link_handler(message: Message) -> None:
         service = ConfirmCodesService(redis)
         code = await service.create_code(str(message.chat.id))
         if not code:
+            logger.error(
+                "Error creating confirm code",
+                extra={
+                    "method_type": "telegram",
+                    "operation": "create_confirm_code",
+                    "result": "error",
+                },
+            )
             await message.answer("Error creating code, try again later")
         else:
+            logger.info(
+                "Created confirm code",
+                extra={
+                    "method_type": "telegram",
+                    "operation": "create_confirm_code",
+                    "result": "success",
+                },
+            )
             await message.answer(
                 f"Your confirm code:\n<code>{code}</code>", parse_mode="HTML"
             )
     except Exception:
-        # logging here
+        logger.error(
+            "Unexpected error on creating confirm code",
+            extra={
+                "method_type": "telegram",
+                "operation": "create_confirm_code",
+                "result": "error",
+            },
+        )
         await message.answer("Unexpected error")
 
 
