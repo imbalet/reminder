@@ -9,7 +9,8 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 
 from src.config import config
 from src.database import create_tables
-from src.services import SendService
+from src.services import EventService, ReminderService
+from src.use_cases import SendRemindersUseCase
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +19,12 @@ async def send_reminders(
     session_factory: async_sessionmaker[AsyncSession],
     channel_pool: aio_pika.pool.Pool[aio_pika.channel.Channel],
 ):
-    service = SendService(session_factory, channel_pool)
-    tasks = await service.get_upcoming_reminders()
-    await service.send_reminders(tasks)
-    logger.info(f"Sent {len(tasks)} reminders")
+    event_service = EventService(channel_pool)
+    reminder_service = ReminderService(session_factory)
+    send_uc = SendRemindersUseCase(
+        event_service=event_service, reminder_service=reminder_service
+    )
+    await send_uc.execute()
 
 
 def get_channel_pool():

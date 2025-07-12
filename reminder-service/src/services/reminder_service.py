@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 from src.schemas import ReminderEdit, ReminderResponse, DeliveryMethod
-from src.models import RemindersOrm, DeliveryMethodOrm
+from src.models import RemindersOrm, DeliveryMethodOrm, Status
 
 
 class ReminderService:
@@ -88,3 +88,22 @@ class ReminderService:
             await session.commit()
             await session.refresh(reminder)
             return ReminderResponse.model_validate(reminder, from_attributes=True)
+
+    async def get_upcoming_reminders(self) -> list[ReminderResponse]:
+        async with self.session_factory() as session:
+            stmt = (
+                update(RemindersOrm)
+                .filter(
+                    RemindersOrm.status == Status.PENDING,
+                    RemindersOrm.remind_date <= datetime.now(timezone.utc),
+                )
+                .values(status=Status.SENT)
+                .returning(RemindersOrm)
+            )
+            result = await session.execute(stmt)
+            res = result.scalars().all()
+            await session.commit()
+            return [
+                ReminderResponse.model_validate(rem, from_attributes=True)
+                for rem in res
+            ]
