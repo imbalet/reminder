@@ -10,7 +10,6 @@ from src.schemas import DeliveryMethodEnum
 
 class Status(Enum):
     PENDING = "pending"
-    PROCESSING = "processing"
     SENT = "sent"
     FAILED = "failed"
 

@@ -31,7 +31,7 @@ class SendService:
                         RemindersOrm.remind_date <= datetime.now(timezone.utc),
                     )
                 )
-                .values(status=Status.PROCESSING)
+                .values(status=Status.SENT)
                 .returning(RemindersOrm)
             )
             result = await session.execute(stmt)
