@@ -1,6 +1,7 @@
+import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import UniqueConstraint, ForeignKey
+from sqlalchemy import UniqueConstraint, ForeignKey, DateTime, text
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 
 from src.schemas import DeliveryMethodEnum as DeliveryMethod
@@ -58,3 +59,29 @@ class DeliveryMethodsOrm(Base):
         self.delivery_method = delivery_method
         self.contact_value = contact_value
         self.is_confirmed = is_confirmed
+
+
+class NotificationOrm(Base):
+    __tablename__ = "notification"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey(UserOrm.id, ondelete="CASCADE"), index=True
+    )
+    title: Mapped[str]
+    content: Mapped[str]
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("TIMEZONE('utc', now())"),
+    )
+    is_read: Mapped[bool] = mapped_column(server_default=text("FALSE"))
+
+    def __init__(
+        self,
+        user_id: UUID,
+        title: str,
+        content: str,
+    ):
+        self.user_id = user_id
+        self.title = title
+        self.content = content
