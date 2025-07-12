@@ -16,6 +16,8 @@ class Config(BaseSettings):
 
     TG_BOT_TOKEN: str
 
+    RMQ_DLQ_NAME: str
+    RMQ_DLX_NAME: str
     RMQ_ROUTING_KEY: str
     RMQ_USER: str
     RMQ_PASS: str

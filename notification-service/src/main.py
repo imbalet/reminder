@@ -5,7 +5,7 @@ import aio_pika
 
 from src.config import config
 from src.services import SenderInterface, TelegramSender
-from src.schemas import Message, Reminder, DeliveryMethodEnum
+from src.schemas import Message, Reminder, DeliveryMethodEnum, ResultStatusEnum
 from src.logger import setup_logger
 
 setup_logger()
@@ -17,36 +17,80 @@ senders: dict[DeliveryMethodEnum, SenderInterface] = {
 
 
 async def process_rmq_message(rmq_message: aio_pika.abc.AbstractIncomingMessage):
-    decoded_message = rmq_message.body.decode()
-    reminder = Reminder.model_validate_json(decoded_message)
-    message = Message(title=reminder.title, content=reminder.content)
+    processing_success = True
 
-    async with rmq_message.process():
+    try:
+        decoded_message = rmq_message.body.decode()
+        reminder = Reminder.model_validate_json(decoded_message)
+        message = Message(title=reminder.title, content=reminder.content)
+
         for request in reminder.delivery_methods:
             sender = senders.get(request.delivery_method, None)
-            if sender:
-                res = await sender.send(  # noqa
-                    contact_value=request.contact_value, message=message
-                )
-                logger.info(
-                    "Sent reminder",
-                    extra={
-                        "method_type": request.delivery_method.value,
-                        "operation": "send_reminder",
-                        "result": "success",
-                    },
-                )
-            else:
-                # TODO: implement handling error
-                logger.info(
+            method_type = request.delivery_method.value
+
+            if not sender:
+                logger.error(
                     "Unknown delivery method",
                     extra={
-                        "method_type": request.delivery_method.value,
+                        "method_type": method_type,
                         "operation": "send_reminder",
                         "result": "error",
                     },
                 )
-                pass
+                processing_success = False
+                continue
+
+            try:
+                res = await sender.send(
+                    contact_value=request.contact_value, message=message
+                )
+                if res.status == ResultStatusEnum.ERROR:
+                    logger.warning(
+                        "Failed to send reminder",
+                        extra={
+                            "method_type": method_type,
+                            "operation": "send_reminder",
+                            "data": res.data,
+                            "result": "error",
+                        },
+                    )
+                    processing_success = False
+                else:
+                    logger.info(
+                        "Sent reminder",
+                        extra={
+                            "method_type": method_type,
+                            "operation": "send_reminder",
+                            "result": "success",
+                        },
+                    )
+            except Exception as e:
+                logger.exception(
+                    "Unexpected error during sending",
+                    extra={
+                        "method_type": method_type,
+                        "operation": "send_reminder",
+                        "result": "error",
+                        "error": str(e),
+                    },
+                )
+                processing_success = False
+
+    except Exception as e:
+        logger.exception(
+            "Message processing failed",
+            extra={
+                "operation": "process_message",
+                "result": "error",
+                "error": str(e),
+            },
+        )
+        processing_success = False
+
+    if processing_success:
+        await rmq_message.ack()
+    else:
+        await rmq_message.nack(requeue=False)
 
 
 async def main():
@@ -54,12 +98,18 @@ async def main():
     channel = await connection.channel()
     await channel.set_qos(prefetch_count=1)
 
-    queue = await channel.declare_queue(
+    await channel.declare_exchange(config.RMQ_DLX_NAME, durable=True)
+    await channel.declare_queue(config.RMQ_DLQ_NAME, durable=True)
+    reminder_queue = await channel.declare_queue(
         config.RMQ_ROUTING_KEY,
         durable=True,
+        arguments={
+            "x-dead-letter-exchange": config.RMQ_DLX_NAME,
+            "x-dead-letter-routing-key": config.RMQ_DLQ_NAME,
+        },
     )
 
-    await queue.consume(process_rmq_message)
+    await reminder_queue.consume(process_rmq_message)
     await asyncio.Future()
 
 

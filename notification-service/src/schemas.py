@@ -27,3 +27,13 @@ class Reminder(BaseModel):
 class Message(BaseModel):
     title: str
     content: str
+
+
+class ResultStatusEnum(str, Enum):
+    ERROR = "error"
+    SUCCESS = "success"
+
+
+class Result(BaseModel):
+    status: ResultStatusEnum
+    data: dict
