@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 import logging
@@ -9,8 +10,10 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 
 from src.config import config
 from src.database import create_tables
-from src.services import EventService, ReminderService
+from src.schemas import ReminderResponse
+from src.services import SendService, ReminderService, EventService
 from src.use_cases import SendRemindersUseCase
+from src.models import Status
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +22,22 @@ async def send_reminders(
     session_factory: async_sessionmaker[AsyncSession],
     channel_pool: aio_pika.pool.Pool[aio_pika.channel.Channel],
 ):
-    event_service = EventService(channel_pool)
+    send_service = SendService(channel_pool)
     reminder_service = ReminderService(session_factory)
     send_uc = SendRemindersUseCase(
-        event_service=event_service, reminder_service=reminder_service
+        event_service=send_service, reminder_service=reminder_service
     )
     await send_uc.execute()
+
+
+async def handle_error_reminders(
+    data: str, session_factory: async_sessionmaker[AsyncSession]
+):
+    reminder = ReminderResponse.model_validate_json(data)
+    service = ReminderService(session_factory)
+    res = await service.set_status(reminder.id, Status.FAILED)
+    if res is None:
+        logger.error("")
 
 
 def get_channel_pool():
@@ -72,7 +85,21 @@ async def startup_event(app: FastAPI):
     )
     scheduler.start()
 
+    event_service = EventService(app.state.channel_pool, config.RMQ_DLQ_NAME)
+    handle_error_reminders_task = asyncio.create_task(
+        event_service.consume(
+            queue_name=config.RMQ_DLQ_NAME,
+            async_callback=handle_error_reminders,
+            session_factory=AsyncSessionLocal,
+        )
+    )
+
     yield
+    handle_error_reminders_task.cancel()
+    try:
+        await handle_error_reminders_task
+    except asyncio.CancelledError:
+        pass
 
     scheduler.shutdown()
     logger.info("App stopped")

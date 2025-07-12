@@ -107,3 +107,20 @@ class ReminderService:
                 ReminderResponse.model_validate(rem, from_attributes=True)
                 for rem in res
             ]
+
+    async def set_status(
+        self, reminder_id: UUID, status: Status
+    ) -> ReminderResponse | None:
+        async with self.session_factory() as session:
+            stmt = (
+                update(RemindersOrm)
+                .filter_by(id=reminder_id)
+                .values(status=status)
+                .returning(RemindersOrm)
+            )
+            result = await session.execute(stmt)
+            res = result.scalar()
+            await session.commit()
+            if res is None:
+                return None
+            return ReminderResponse.model_validate(res, from_attributes=True)

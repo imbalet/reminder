@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 
 
 from src.models import Base
-from src.services import ReminderService, EventService
+from src.services import ReminderService, SendService
 from tests.config import config
 
 
@@ -57,4 +57,4 @@ def reminder_service(async_session_factory):
 
 @pytest.fixture
 def send_service(rmq_channel_pool):
-    return EventService(rmq_channel_pool, config.TEST_RMQ_ROUTING_KEY)
+    return SendService(rmq_channel_pool, config.TEST_RMQ_ROUTING_KEY)

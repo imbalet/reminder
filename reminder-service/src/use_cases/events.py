@@ -1,5 +1,5 @@
 import logging
-from src.services import EventService, ReminderService
+from src.services import SendService, ReminderService
 
 __all__ = ["SendRemindersUseCase"]
 
@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class SendRemindersUseCase:
     def __init__(
-        self, event_service: EventService, reminder_service: ReminderService
+        self, event_service: SendService, reminder_service: ReminderService
     ) -> None:
         self.event_service = event_service
         self.reminder_service = reminder_service
