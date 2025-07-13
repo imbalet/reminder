@@ -24,6 +24,7 @@ class Config(BaseSettings):
     REDIS_PORT: int
     REDIS_PASSWORD: str
 
+    RMQ_DLQ_NAME: str
     RMQ_USER_ADD_QUEUE: str
     RMQ_USER: str
     RMQ_PASS: str

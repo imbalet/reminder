@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 
 from src.config import config
 from src.database import create_tables
-from src.event_handler import add_user_callback
+from src.event_handler import add_user_callback, failed_reminders_callback
 from src.services import EventService
 
 
@@ -63,10 +63,17 @@ async def startup_event(app: FastAPI):
     logger.info("DB started")
 
     add_user_service = EventService(app.state.channel_pool, config.RMQ_USER_ADD_QUEUE)
+    failed_reminders = EventService(app.state.channel_pool, config.RMQ_DLQ_NAME)
 
     add_users_task = asyncio.create_task(
         add_user_service.consume(
             async_callback=add_user_callback, session_factory=AsyncSessionLocal
+        )
+    )
+
+    failed_reminders_task = asyncio.create_task(
+        failed_reminders.consume(
+            async_callback=failed_reminders_callback, session_factory=AsyncSessionLocal
         )
     )
 
@@ -75,6 +82,12 @@ async def startup_event(app: FastAPI):
     add_users_task.cancel()
     try:
         await add_users_task
+    except asyncio.CancelledError:
+        pass
+
+    failed_reminders_task.cancel()
+    try:
+        await failed_reminders_task
     except asyncio.CancelledError:
         pass
     logger.info("App stopped")
