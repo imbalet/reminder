@@ -4,7 +4,11 @@ from fastapi import Depends, Request
 from redis import asyncio as aioredis
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from src.services import DeliveryMethodsService, ConfirmCodesService
+from src.services import (
+    DeliveryMethodsService,
+    ConfirmCodesService,
+    NotificationService,
+)
 
 
 def get_async_session_factory(req: Request):
@@ -25,3 +29,11 @@ def get_delivery_methods_service(
 
 def get_confirm_code_service(redis: Annotated[aioredis.Redis, Depends(get_redis)]):
     return ConfirmCodesService(redis)
+
+
+def get_notification_service(
+    session_factory: Annotated[
+        async_sessionmaker[AsyncSession], Depends(get_async_session_factory)
+    ],
+) -> NotificationService:
+    return NotificationService(session_factory)
