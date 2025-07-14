@@ -17,3 +17,4 @@ from .delivery_methods import (
     DeliveryMethodEnum,
     DeliveryMethodResponse,
 )
+from .notification import NotificationResponse

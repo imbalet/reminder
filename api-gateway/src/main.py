@@ -1,6 +1,11 @@
 from fastapi import FastAPI
 
-from src.api import auth_router, reminder_router, delivery_methods_router
+from src.api import (
+    auth_router,
+    reminder_router,
+    delivery_methods_router,
+    notification_router,
+)
 from src.logger import setup_logger
 
 setup_logger()
@@ -14,3 +19,4 @@ app = FastAPI(
 app.include_router(auth_router)
 app.include_router(reminder_router)
 app.include_router(delivery_methods_router)
+app.include_router(notification_router)
