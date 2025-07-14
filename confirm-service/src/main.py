@@ -11,10 +11,9 @@ logger = logging.getLogger(__name__)
 async def main():
     logger.info("Launching app ...")
     service = TelegramService()
-    service.start_bot()
+    task = service.start_bot()
     logger.info("Telegram bot started")
-
-    await asyncio.Future()
+    await task
 
 
 if __name__ == "__main__":

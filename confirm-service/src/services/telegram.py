@@ -68,4 +68,4 @@ class TelegramService:
             default=DefaultBotProperties(parse_mode=ParseMode.HTML),
             session=AiohttpSession(api=api_server),
         )
-        asyncio.create_task(dp.start_polling(bot))
+        return asyncio.create_task(dp.start_polling(bot))
