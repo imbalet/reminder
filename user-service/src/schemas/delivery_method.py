@@ -1,7 +1,7 @@
 from enum import Enum
 from uuid import UUID
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, Field
 from pydantic_core import PydanticCustomError
 
 
@@ -12,8 +12,8 @@ class DeliveryMethodEnum(str, Enum):
 
 class DeliveryMethod(BaseModel):
     delivery_method: DeliveryMethodEnum
-    contact_value: str | None = None
-    confirm_code: str | None = None
+    contact_value: str | None = Field(default=None)
+    confirm_code: str | None = Field(default=None)
 
 
 class DeliveryMethodAdd(DeliveryMethod):
