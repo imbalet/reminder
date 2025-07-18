@@ -1,10 +1,10 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Header, status
 
 from src.services import NotificationService
-from src.schemas import NotificationResponse
+from src.schemas import NotificationResponse, ErrorResponse
 from src.dependencies import get_notification_service
 from src.use_cases import GetNotificationUseCase, ReadNotificationUseCase
 
@@ -23,7 +23,16 @@ async def get_all_notifications(
     return res
 
 
-@router.get("/{notification_id}", response_model=NotificationResponse)
+@router.get(
+    "/{notification_id}",
+    response_model=NotificationResponse,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "model": ErrorResponse,
+            "description": "No access to notification",
+        },
+    },
+)
 async def get_notification(
     app_user_id: Annotated[UUID, Header()],
     notification_service: Annotated[
@@ -36,7 +45,16 @@ async def get_notification(
     return res
 
 
-@router.patch("/{notification_id}", response_model=NotificationResponse)
+@router.patch(
+    "/{notification_id}",
+    response_model=NotificationResponse,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "model": ErrorResponse,
+            "description": "No access to notification",
+        },
+    },
+)
 async def read_notification(
     app_user_id: Annotated[UUID, Header()],
     notification_service: Annotated[

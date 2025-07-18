@@ -4,10 +4,7 @@ from uuid import UUID
 from fastapi import status, APIRouter, Depends, Header
 
 from src.services import DeliveryMethodsService, ConfirmCodesService
-from src.schemas import (
-    DeliveryMethodAdd,
-    DeliveryMethodResponse,
-)
+from src.schemas import DeliveryMethodAdd, DeliveryMethodResponse, ErrorResponse
 from src.dependencies import get_delivery_methods_service, get_confirm_code_service
 from src.use_cases import (
     AddDeliveryUseCase,
@@ -19,7 +16,23 @@ router = APIRouter(prefix="/api/delivery", tags=["delivery"])
 
 
 @router.post(
-    "/", response_model=DeliveryMethodResponse, status_code=status.HTTP_201_CREATED
+    "/",
+    response_model=DeliveryMethodResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_201_CREATED: {
+            "description": "Delivery method created",
+            "model": DeliveryMethodResponse,
+        },
+        status.HTTP_400_BAD_REQUEST: {
+            "model": ErrorResponse,
+            "description": "Invalid or expired Telegram confirmation code",
+        },
+        status.HTTP_409_CONFLICT: {
+            "model": ErrorResponse,
+            "description": "Delivery method already exists",
+        },
+    },
 )
 async def create_method(
     app_user_id: Annotated[UUID, Header()],
@@ -60,7 +73,20 @@ async def get_all_methods(
     return res
 
 
-@router.get("/{method_id}", response_model=DeliveryMethodResponse)
+@router.get(
+    "/{method_id}",
+    response_model=DeliveryMethodResponse,
+    responses={
+        status.HTTP_200_OK: {
+            "description": "Delivery method created",
+            "model": DeliveryMethodResponse,
+        },
+        status.HTTP_403_FORBIDDEN: {
+            "model": ErrorResponse,
+            "description": "No access to delivery method",
+        },
+    },
+)
 async def get_method(
     app_user_id: Annotated[UUID, Header()],
     delivery_service: Annotated[
@@ -73,7 +99,16 @@ async def get_method(
     return res
 
 
-@router.delete("/{method_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{method_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "model": ErrorResponse,
+            "description": "No access to delivery method",
+        },
+    },
+)
 async def delete_method(
     app_user_id: Annotated[UUID, Header()],
     delivery_service: Annotated[
