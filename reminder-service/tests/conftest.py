@@ -4,8 +4,8 @@ import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 
-from src.models import Base
-from src.services import ReminderService, SendService
+from reminder_service.models import Base
+from reminder_service.services import ReminderService, SendService
 from tests.config import config
 
 

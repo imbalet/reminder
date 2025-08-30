@@ -4,14 +4,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, status
 
-from src.dependencies import get_reminders_service
-from src.services.reminder_service import ReminderService
-from src.schemas import (
+from reminder_service.dependencies import get_reminders_service
+from reminder_service.services.reminder_service import ReminderService
+from reminder_service.schemas import (
     ReminderCreate,
     ReminderResponse,
     ReminderEdit,
 )
-from src.use_cases import (
+from reminder_service.use_cases import (
     AddReminderUseCase,
     GetReminderUseCase,
     EditReminderUseCase,

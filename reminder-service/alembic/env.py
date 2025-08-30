@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from src.config import config as app_config
-from src.models import Base
+from reminder_service.config import config as app_config
+from reminder_service.models import Base
 
 config = context.config
 config.set_main_option("sqlalchemy.url", app_config.DB_URL)

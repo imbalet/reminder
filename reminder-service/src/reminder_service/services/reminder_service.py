@@ -4,8 +4,8 @@ from uuid import UUID
 from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from src.schemas import ReminderEdit, ReminderResponse, DeliveryMethod
-from src.models import RemindersOrm, DeliveryMethodOrm, Status
+from reminder_service.schemas import ReminderEdit, ReminderResponse, DeliveryMethod
+from reminder_service.models import RemindersOrm, DeliveryMethodOrm, Status
 
 
 class ReminderService:

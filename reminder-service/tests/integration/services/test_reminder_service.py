@@ -3,8 +3,8 @@ from uuid import uuid4
 import zoneinfo
 
 import pytest
-from src.services import ReminderService
-from src.schemas import (
+from reminder_service.services import ReminderService
+from reminder_service.schemas import (
     ReminderResponse,
     ReminderEdit,
 )
@@ -16,7 +16,7 @@ async def sample_reminder(reminder_service: ReminderService, sample_methods_data
         title="reminder",
         content="reminder",
         user_id=uuid4(),
-        remind_date=datetime.datetime.now(),
+        remind_date=datetime.datetime.now() + datetime.timedelta(days=1),
         delivery_methods=sample_methods_data,
     )
     return ReminderResponse.model_validate(res, from_attributes=True)
@@ -33,7 +33,7 @@ async def test_valid_creating(reminder_service: ReminderService, sample_methods_
         title="reminder",
         content="reminder",
         user_id=uuid4(),
-        remind_date=datetime.datetime.now(),
+        remind_date=datetime.datetime.now() + datetime.timedelta(days=1),
         delivery_methods=sample_methods_data,
     )
     assert await reminder_service.get_reminder(created.id) is not None
@@ -43,7 +43,7 @@ async def test_valid_creating(reminder_service: ReminderService, sample_methods_
 async def test_valid_creating_not_utc(
     reminder_service: ReminderService, sample_methods_data
 ):
-    time = datetime.datetime.now(zoneinfo.ZoneInfo("Europe/Moscow"))
+    time = datetime.datetime.now(zoneinfo.ZoneInfo("Europe/Moscow")) + datetime.timedelta(days=1)
     created = await reminder_service.create_reminder(
         title="reminder",
         content="reminder",
@@ -91,7 +91,7 @@ async def test_valid_get_by_user_id_multiply(
             title="reminder",
             content="reminder",
             user_id=sample_reminder.user_id,
-            remind_date=datetime.datetime.now(),
+            remind_date=datetime.datetime.now() + datetime.timedelta(days=1),
             delivery_methods=sample_methods_data,
         )
     res = await reminder_service.get_reminders_by_user_id(sample_reminder.user_id)
@@ -131,7 +131,7 @@ async def test_valid_edit(
         content="new content",
         remind_date=datetime.datetime.now(
             datetime.timezone(datetime.timedelta(hours=3))
-        ),
+        ) + datetime.timedelta(days=1),
     )
     edited = await reminder_service.edit_reminder(
         sample_reminder.id, data=new_data, user_id=sample_reminder.user_id

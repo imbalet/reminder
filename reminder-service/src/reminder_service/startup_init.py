@@ -8,12 +8,12 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
-from src.config import config
-from src.database import create_tables
-from src.schemas import ReminderResponse
-from src.services import SendService, ReminderService, EventService
-from src.use_cases import SendRemindersUseCase
-from src.models import Status
+from reminder_service.config import config
+from reminder_service.database import create_tables
+from reminder_service.schemas import ReminderResponse
+from reminder_service.services import SendService, ReminderService, EventService
+from reminder_service.use_cases import SendRemindersUseCase
+from reminder_service.models import Status
 
 logger = logging.getLogger(__name__)
 

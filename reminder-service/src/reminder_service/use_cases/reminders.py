@@ -3,15 +3,15 @@ from uuid import UUID
 
 import httpx
 
-from src.config import config
-from src.services.reminder_service import ReminderService
-from src.schemas import (
+from reminder_service.config import config
+from reminder_service.services.reminder_service import ReminderService
+from reminder_service.schemas import (
     ReminderCreate,
     ReminderResponse,
     ReminderEdit,
     DeliveryMethod,
 )
-from src.use_cases import ForbiddenException
+from reminder_service.use_cases import ForbiddenException
 
 
 __all__ = [

@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import DateTime, text, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 
-from src.schemas import DeliveryMethodEnum
+from reminder_service.schemas import DeliveryMethodEnum
 
 
 class Status(Enum):

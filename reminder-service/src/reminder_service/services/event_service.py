@@ -2,8 +2,8 @@ import logging
 from typing import Awaitable, Callable
 import aio_pika
 
-from src.schemas import ReminderResponse
-from src.config import config
+from reminder_service.schemas import ReminderResponse
+from reminder_service.config import config
 
 logger = logging.getLogger(__name__)
 

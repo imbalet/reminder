@@ -4,8 +4,8 @@ from uuid import uuid4
 from aio_pika.pool import Pool
 import pytest
 
-from src.services import ReminderService, SendService
-from src.schemas import ReminderResponse
+from reminder_service.services import ReminderService, SendService
+from reminder_service.schemas import ReminderResponse
 from tests.config import config
 
 
@@ -37,7 +37,7 @@ async def test_sending_with_rabbitmq(
             reminders = [
                 await create_reminder(
                     reminder_service,
-                    datetime.datetime.now(datetime.UTC),
+                    datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1),
                     sample_methods_data,
                 )
                 for _ in range(10)

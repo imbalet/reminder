@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 import pytest
-from src.schemas import (
+from reminder_service.schemas import (
     DeliveryMethod,
     DeliveryMethodEnum,
 )

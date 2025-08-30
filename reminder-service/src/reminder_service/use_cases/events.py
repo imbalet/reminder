@@ -1,5 +1,5 @@
 import logging
-from src.services import SendService, ReminderService
+from reminder_service.services import SendService, ReminderService
 
 __all__ = ["SendRemindersUseCase"]
 

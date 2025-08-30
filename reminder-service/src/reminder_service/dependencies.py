@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from src.services import ReminderService
+from reminder_service.services import ReminderService
 
 
 def get_async_session_factory(req: Request):
