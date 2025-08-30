@@ -6,9 +6,9 @@ from fastapi import HTTPException, Depends, status, Request
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
-from src.schemas import AccesTokenData, RefreshTokenData
-from src.security import oauth2_scheme, decode_jwt
-from src.config import config
+from api_gateway.schemas import AccesTokenData, RefreshTokenData
+from api_gateway.security import oauth2_scheme, decode_jwt
+from api_gateway.config import config
 
 
 async def get_jwks_pyjwt(token: Annotated[str, Depends(oauth2_scheme)]):

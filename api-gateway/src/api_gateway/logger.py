@@ -1,6 +1,6 @@
 import logging
 
-from src.config import config
+from api_gateway.config import config
 
 
 def setup_logger():

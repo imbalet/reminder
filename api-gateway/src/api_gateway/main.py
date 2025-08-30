@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 
-from src.api import (
+from api_gateway.api import (
     auth_router,
     reminder_router,
     delivery_methods_router,
     notification_router,
 )
-from src.logger import setup_logger
+from api_gateway.logger import setup_logger
 
 setup_logger()
 

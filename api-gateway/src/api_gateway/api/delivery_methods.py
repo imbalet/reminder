@@ -4,14 +4,14 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status
 import httpx
 
-from src.config import config
-from src.schemas import (
+from api_gateway.config import config
+from api_gateway.schemas import (
     DeliveryMethodResponse,
     DeliveryMethod,
     DeliveryMethodEdit,
     AccesTokenData,
 )
-from src.dependencies import get_access_token_data
+from api_gateway.dependencies import get_access_token_data
 from .utils import error_handler
 
 router = APIRouter(prefix="/api/delivery", tags=["delivery"])

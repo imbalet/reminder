@@ -4,13 +4,13 @@ from fastapi import Depends, APIRouter, Response
 from fastapi.security import OAuth2PasswordRequestForm
 import httpx
 
-from src.schemas import (
+from api_gateway.schemas import (
     TokenResponse,
     UserRegisterRequset,
     UserResponse,
 )
-from src.config import config
-from src.dependencies import get_refresh_token_from_cookies
+from api_gateway.config import config
+from api_gateway.dependencies import get_refresh_token_from_cookies
 from .utils import error_handler
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
