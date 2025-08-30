@@ -1,7 +1,7 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
-from src.main import app
-from src.dependencies import (
+from user_service.main import app
+from user_service.dependencies import (
     get_async_session_factory,
     get_delivery_methods_service,
     get_confirm_code_service,

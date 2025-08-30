@@ -3,10 +3,10 @@ from uuid import UUID
 
 from fastapi import status, APIRouter, Depends, Header
 
-from src.services import DeliveryMethodsService, ConfirmCodesService
-from src.schemas import DeliveryMethodAdd, DeliveryMethodResponse, ErrorResponse
-from src.dependencies import get_delivery_methods_service, get_confirm_code_service
-from src.use_cases import (
+from user_service.services import DeliveryMethodsService, ConfirmCodesService
+from user_service.schemas import DeliveryMethodAdd, DeliveryMethodResponse, ErrorResponse
+from user_service.dependencies import get_delivery_methods_service, get_confirm_code_service
+from user_service.use_cases import (
     AddDeliveryUseCase,
     GetMethodUseCase,
     DeleteMethodUseCase,

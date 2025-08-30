@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import UniqueConstraint, ForeignKey, DateTime, text
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 
-from src.schemas import DeliveryMethodEnum as DeliveryMethod
+from user_service.schemas import DeliveryMethodEnum as DeliveryMethod
 
 
 class Base(DeclarativeBase):

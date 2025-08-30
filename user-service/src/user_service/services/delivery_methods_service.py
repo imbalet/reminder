@@ -4,9 +4,9 @@ from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from src.schemas import DeliveryMethodEnum, DeliveryMethodResponse
-from src.models import DeliveryMethodsOrm
-from src.exceptions import AlreadyExistsError
+from user_service.schemas import DeliveryMethodEnum, DeliveryMethodResponse
+from user_service.models import DeliveryMethodsOrm
+from user_service.exceptions import AlreadyExistsError
 
 
 class DeliveryMethodsService:

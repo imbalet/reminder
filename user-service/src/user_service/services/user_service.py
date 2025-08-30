@@ -3,9 +3,9 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from src.schemas import UserResponse
-from src.models import UserOrm
-from src.exceptions import AlreadyExistsError
+from user_service.schemas import UserResponse
+from user_service.models import UserOrm
+from user_service.exceptions import AlreadyExistsError
 
 
 class UserService:

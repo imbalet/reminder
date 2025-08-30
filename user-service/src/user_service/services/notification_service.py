@@ -3,8 +3,8 @@ from uuid import UUID
 from sqlalchemy import delete, update, select
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from src.models import NotificationOrm
-from src.schemas import NotificationResponse
+from user_service.models import NotificationOrm
+from user_service.schemas import NotificationResponse
 
 
 class NotificationService:

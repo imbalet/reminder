@@ -7,10 +7,10 @@ from fastapi import FastAPI
 from redis import asyncio as aioredis
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
-from src.config import config
-from src.database import create_tables
-from src.event_handler import add_user_callback, failed_reminders_callback
-from src.services import EventService
+from user_service.config import config
+from user_service.database import create_tables
+from user_service.event_handler import add_user_callback, failed_reminders_callback
+from user_service.services import EventService
 
 
 logger = logging.getLogger(__name__)

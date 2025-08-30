@@ -4,7 +4,7 @@ from fastapi import Depends, Request
 from redis import asyncio as aioredis
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from src.services import (
+from user_service.services import (
     DeliveryMethodsService,
     ConfirmCodesService,
     NotificationService,

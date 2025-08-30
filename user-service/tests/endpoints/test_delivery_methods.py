@@ -4,8 +4,8 @@ from httpx import AsyncClient
 import pytest
 
 
-from src.exceptions import AlreadyExistsError
-from src.schemas import (
+from user_service.exceptions import AlreadyExistsError
+from user_service.schemas import (
     DeliveryMethodResponse,
     DeliveryMethod,
     DeliveryMethodEnum,

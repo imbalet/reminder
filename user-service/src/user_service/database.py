@@ -1,4 +1,4 @@
-from src.models import Base
+from user_service.models import Base
 
 
 async def create_tables(engine):

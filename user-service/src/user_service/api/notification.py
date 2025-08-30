@@ -3,10 +3,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, status
 
-from src.services import NotificationService
-from src.schemas import NotificationResponse, ErrorResponse
-from src.dependencies import get_notification_service
-from src.use_cases import GetNotificationUseCase, ReadNotificationUseCase
+from user_service.services import NotificationService
+from user_service.schemas import NotificationResponse, ErrorResponse
+from user_service.dependencies import get_notification_service
+from user_service.use_cases import GetNotificationUseCase, ReadNotificationUseCase
 
 
 router = APIRouter(prefix="/api/notification", tags=["notifications"])

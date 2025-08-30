@@ -1,7 +1,7 @@
 import logging
 
-from src.schemas import User, Reminder
-from src.services import UserService, NotificationService
+from user_service.schemas import User, Reminder
+from user_service.services import UserService, NotificationService
 
 logger = logging.getLogger(__name__)
 

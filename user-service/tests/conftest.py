@@ -3,14 +3,14 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
-from src.services import (
+from user_service.services import (
     UserService,
     DeliveryMethodsService,
     ConfirmCodesService,
 )
-from src.models import Base
+from user_service.models import Base
 from tests.config import config
-from src.schemas import (
+from user_service.schemas import (
     DeliveryMethodResponse,
     DeliveryMethodEnum,
     User,

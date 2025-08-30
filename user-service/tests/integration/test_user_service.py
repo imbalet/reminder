@@ -1,6 +1,6 @@
 import pytest
-from src.services import UserService
-from src.schemas import User
+from user_service.services import UserService
+from user_service.schemas import User
 
 
 @pytest.mark.asyncio

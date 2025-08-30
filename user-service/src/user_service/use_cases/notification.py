@@ -1,9 +1,9 @@
 import logging
 from uuid import UUID
 
-from src.services import NotificationService
-from src.schemas import NotificationResponse
-from src.use_cases import ForbiddenException, BadRequestException
+from user_service.services import NotificationService
+from user_service.schemas import NotificationResponse
+from user_service.use_cases import ForbiddenException, BadRequestException
 
 __all__ = ["GetNotificationUseCase", "ReadNotificationUseCase"]
 

@@ -1,14 +1,14 @@
 from fastapi import FastAPI
 
-from src.exceptions import AppException
-from src.exception_handler import (
+from user_service.exceptions import AppException
+from user_service.exception_handler import (
     infrastructure_exception_handler,
     use_case_exception_handler,
 )
-from src.api import delivery_methods_router, notification_router
-from src.use_cases import UseCaseException
-from src.startup_init import startup_event
-from src.logger import setup_logger
+from user_service.api import delivery_methods_router, notification_router
+from user_service.use_cases import UseCaseException
+from user_service.startup_init import startup_event
+from user_service.logger import setup_logger
 
 setup_logger()
 

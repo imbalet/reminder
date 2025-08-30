@@ -1,6 +1,6 @@
 import pytest
 
-from src.use_cases import (
+from user_service.use_cases import (
     AddDeliveryUseCase,
     BadRequestException,
 )

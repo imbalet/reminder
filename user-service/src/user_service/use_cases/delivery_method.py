@@ -1,13 +1,13 @@
 import logging
 from uuid import UUID
 
-from src.services import DeliveryMethodsService, ConfirmCodesService
-from src.schemas import (
+from user_service.services import DeliveryMethodsService, ConfirmCodesService
+from user_service.schemas import (
     DeliveryMethodAdd,
     DeliveryMethodResponse,
     DeliveryMethodEnum,
 )
-from src.use_cases import BadRequestException, ForbiddenException
+from user_service.use_cases import BadRequestException, ForbiddenException
 
 __all__ = [
     "AddDeliveryUseCase",
