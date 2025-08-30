@@ -1,8 +1,8 @@
 import asyncio
 import logging
 
-from src.services import TelegramService
-from src.logger import setup_logger
+from confirm_service.services import TelegramService
+from confirm_service.logger import setup_logger
 
 setup_logger()
 logger = logging.getLogger(__name__)

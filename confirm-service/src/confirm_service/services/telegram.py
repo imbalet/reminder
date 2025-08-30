@@ -9,8 +9,8 @@ from aiogram.client.telegram import TelegramAPIServer
 from aiogram.filters.command import Command
 from aiogram.types import Message
 
-from src.config import config
-from src.services import ConfirmCodesService
+from confirm_service.config import config
+from confirm_service.services import ConfirmCodesService
 from redis_pool import redis
 
 

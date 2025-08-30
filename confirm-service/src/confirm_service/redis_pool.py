@@ -1,6 +1,6 @@
 from redis import asyncio as aioredis
 
-from src.config import config
+from confirm_service.config import config
 
 redis = aioredis.Redis(
     host=config.REDIS_HOST,
