@@ -3,10 +3,10 @@ import logging
 
 import aio_pika
 
-from src.config import config
-from src.services import SenderInterface, TelegramSender
-from src.schemas import Message, Reminder, DeliveryMethodEnum, ResultStatusEnum
-from src.logger import setup_logger
+from notification_service.config import config
+from notification_service.services import SenderInterface, TelegramSender
+from notification_service.schemas import Message, Reminder, DeliveryMethodEnum, ResultStatusEnum
+from notification_service.logger import setup_logger
 
 setup_logger()
 logger = logging.getLogger(__name__)
