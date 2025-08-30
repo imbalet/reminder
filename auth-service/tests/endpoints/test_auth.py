@@ -1,7 +1,12 @@
 from httpx import AsyncClient
 import pytest
 
-from src.schemas import UserRegisterRequset, UserAuth, UserResponse, TokenResponse
+from auth_service.schemas import (
+    UserRegisterRequset,
+    UserAuth,
+    UserResponse,
+    TokenResponse,
+)
 
 
 @pytest.mark.asyncio

@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 
-from src.exceptions import AppException
-from src.exception_handler import exception_handler
-from src.api import auth_router, jwks_router
-from src.logger import setup_logger
-from src.startup_init import startup_event
+from auth_service.exceptions import AppException
+from auth_service.exception_handler import exception_handler
+from auth_service.api import auth_router, jwks_router
+from auth_service.logger import setup_logger
+from auth_service.startup_init import startup_event
 
 setup_logger()
 

@@ -1,7 +1,7 @@
 import aio_pika
 
-from src.schemas import UserRmqData
-from src.config import config
+from auth_service.schemas import UserRmqData
+from auth_service.config import config
 
 TIME_OFFSET_MINUTES = 1
 

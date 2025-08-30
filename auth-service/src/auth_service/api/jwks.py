@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import Depends, APIRouter
 from fastapi.responses import JSONResponse
 
-from src.dependencies import get_security_service
-from src.services import SecurityService
+from auth_service.dependencies import get_security_service
+from auth_service.services import SecurityService
 
 
 router = APIRouter(tags=["jwks"])

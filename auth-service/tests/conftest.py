@@ -4,8 +4,8 @@ import dotenv
 import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
-from src.models import Base
-from src.services import RefreshTokenService, UserService
+from auth_service.models import Base
+from auth_service.services import RefreshTokenService, UserService
 
 
 @pytest.fixture

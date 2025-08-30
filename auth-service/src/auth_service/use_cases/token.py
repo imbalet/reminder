@@ -1,8 +1,8 @@
 from uuid import UUID, uuid4
 
-from src.services import UserService, RefreshTokenService
-from src.schemas import TokenPair, RefreshTokenData, AccesTokenData, KeyPair
-from src.security import (
+from auth_service.services import UserService, RefreshTokenService
+from auth_service.schemas import TokenPair, RefreshTokenData, AccesTokenData, KeyPair
+from auth_service.security import (
     create_refresh_token,
     create_access_token,
     get_hash,

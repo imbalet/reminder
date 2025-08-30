@@ -2,14 +2,14 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status, APIRouter, Response
 
-from src.services import RefreshTokenService, UserService, EventService
-from src.use_cases import (
+from auth_service.services import RefreshTokenService, UserService, EventService
+from auth_service.use_cases import (
     AuthUseCase,
     CreateTokenPairUseCase,
     RegisterUserUseCase,
     RefreshTokenPairUseCase,
 )
-from src.schemas import (
+from auth_service.schemas import (
     TokenResponse,
     UserRegisterRequset,
     UserResponse,
@@ -17,8 +17,8 @@ from src.schemas import (
     RefreshTokenData,
     KeyPair,
 )
-from src.config import config
-from src.dependencies import (
+from auth_service.config import config
+from auth_service.dependencies import (
     get_user_service,
     get_token_service,
     get_refresh_token_data,

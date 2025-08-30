@@ -2,7 +2,7 @@ import logging
 
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
-from src.exceptions import AlreadyExistsError, NotFoundError
+from auth_service.exceptions import AlreadyExistsError, NotFoundError
 
 logger = logging.getLogger(__name__)
 

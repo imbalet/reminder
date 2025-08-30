@@ -1,6 +1,6 @@
 import logging
 
-from src.config import config
+from auth_service.config import config
 
 
 def setup_logger():

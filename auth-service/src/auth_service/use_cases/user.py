@@ -1,6 +1,11 @@
-from src.services import UserService, EventService
-from src.schemas.user import UserRegisterRequset, UserAuth, UserResponse, UserRmqData
-from src.security import get_hash, verify_password
+from auth_service.services import UserService, EventService
+from auth_service.schemas.user import (
+    UserRegisterRequset,
+    UserAuth,
+    UserResponse,
+    UserRmqData,
+)
+from auth_service.security import get_hash, verify_password
 
 
 class RegisterUserUseCase:

@@ -2,9 +2,9 @@ from uuid import uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio.session import async_sessionmaker, AsyncSession
-from src.services import UserService
-from src.schemas import UserResponse
-from src.exceptions import AlreadyExistsError
+from auth_service.services import UserService
+from auth_service.schemas import UserResponse
+from auth_service.exceptions import AlreadyExistsError
 
 
 @pytest.fixture

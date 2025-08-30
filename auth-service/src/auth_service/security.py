@@ -5,8 +5,8 @@ from fastapi.security import OAuth2PasswordBearer
 import jwt
 from passlib.context import CryptContext
 
-from src.config import config
-from src.schemas import GeneratedToken, AccesTokenData, RefreshTokenData
+from auth_service.config import config
+from auth_service.schemas import GeneratedToken, AccesTokenData, RefreshTokenData
 
 ALGORITHM = config.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = config.ACCESS_TOKEN_EXPIRE_MINUTES

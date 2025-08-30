@@ -9,10 +9,10 @@ from fastapi import FastAPI
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
-from src.config import config
-from src.database import create_tables
-from src.services import SecurityService
-from src.models import RefreshTokensOrm
+from auth_service.config import config
+from auth_service.database import create_tables
+from auth_service.services import SecurityService
+from auth_service.models import RefreshTokensOrm
 
 logger = logging.getLogger(__name__)
 

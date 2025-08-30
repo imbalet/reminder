@@ -6,9 +6,9 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from src.schemas import RefreshTokenData
-from src.models import RefreshTokensOrm
-from src.exceptions import NotFoundError, AlreadyExistsError
+from auth_service.schemas import RefreshTokenData
+from auth_service.models import RefreshTokensOrm
+from auth_service.exceptions import NotFoundError, AlreadyExistsError
 
 
 class RefreshTokenService:

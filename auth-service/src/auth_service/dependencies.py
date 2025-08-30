@@ -7,9 +7,14 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from pydantic import ValidationError
 
-from src.services import RefreshTokenService, UserService, SecurityService, EventService
-from src.schemas import AccesTokenData, RefreshTokenData, KeyPair, UserAuth
-from src.security import oauth2_scheme, decode_jwt
+from auth_service.services import (
+    RefreshTokenService,
+    UserService,
+    SecurityService,
+    EventService,
+)
+from auth_service.schemas import AccesTokenData, RefreshTokenData, KeyPair, UserAuth
+from auth_service.security import oauth2_scheme, decode_jwt
 
 
 def get_async_session_factory(req: Request):

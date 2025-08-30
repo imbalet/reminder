@@ -5,10 +5,10 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.ext.asyncio.session import async_sessionmaker, AsyncSession
 
-from src.models import RefreshTokensOrm
-from src.services import RefreshTokenService, UserService
-from src.schemas import UserResponse, RefreshTokenData
-from src.exceptions import NotFoundError, AlreadyExistsError
+from auth_service.models import RefreshTokensOrm
+from auth_service.services import RefreshTokenService, UserService
+from auth_service.schemas import UserResponse, RefreshTokenData
+from auth_service.exceptions import NotFoundError, AlreadyExistsError
 
 
 @pytest.fixture

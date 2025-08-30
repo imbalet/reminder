@@ -9,13 +9,13 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from unittest.mock import MagicMock, patch
 
-from src.services.security_service import (
+from auth_service.services.security_service import (
     SecurityService,
     DataStorage,
     ROTATING_BEFORE_EXPIRING_DAYS,
 )
-from src.services.security_service import int_to_base64url
-from src.schemas import KeyPair
+from auth_service.services.security_service import int_to_base64url
+from auth_service.schemas import KeyPair
 
 
 @pytest.mark.parametrize(
@@ -239,7 +239,7 @@ def test_empty_filder_key_loading(tmp_path: Path, mocker: MockerFixture):
 def test_save_keys(tmp_path: Path, mocker: MockerFixture):
     key_pair = create_key_pair()
     mocker.patch.object(SecurityService, "rotate_keys")
-    with patch("src.services.security_service.isinstance", return_value=True):
+    with patch("auth_service.services.security_service.isinstance", return_value=True):
         service = SecurityService(tmp_path)
 
     storager = DataStorage(key_pair.kid, [key_pair])

@@ -10,8 +10,8 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 
-from src.schemas import KeyPair
-from src.config import config
+from auth_service.schemas import KeyPair
+from auth_service.config import config
 
 
 KEY_PAIR_EXPIRES_DAYS = config.KEY_PAIR_EXPIRES_DAYS

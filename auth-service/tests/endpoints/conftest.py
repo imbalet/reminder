@@ -3,14 +3,19 @@ from unittest.mock import AsyncMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-from src.schemas import TokenResponse, UserAuth, UserResponse, UserRegisterRequset
-from src.main import app
-from src.dependencies import (
+from auth_service.schemas import (
+    TokenResponse,
+    UserAuth,
+    UserResponse,
+    UserRegisterRequset,
+)
+from auth_service.main import app
+from auth_service.dependencies import (
     get_async_session_factory,
     get_security_service,
     get_event_service,
 )
-from src.services import SecurityService
+from auth_service.services import SecurityService
 
 
 @pytest.fixture
