@@ -1,16 +1,17 @@
 from typing import Annotated
 
-from fastapi import Depends, APIRouter, Response
-from fastapi.security import OAuth2PasswordRequestForm
 import httpx
+from fastapi import APIRouter, Depends, Response
+from fastapi.security import OAuth2PasswordRequestForm
 
+from api_gateway.config import config
+from api_gateway.dependencies import get_refresh_token_from_cookies
 from api_gateway.schemas import (
     TokenResponse,
     UserRegisterRequset,
     UserResponse,
 )
-from api_gateway.config import config
-from api_gateway.dependencies import get_refresh_token_from_cookies
+
 from .utils import error_handler
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -25,6 +26,11 @@ async def register(
         response = await client.post("/api/auth/register", json=reg_data.model_dump())
         response.raise_for_status()
         return response.json()
+
+
+@router.options("/login")
+async def login_options():
+    return Response(status_code=200)
 
 
 @router.post("/login")
