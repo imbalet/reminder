@@ -1,4 +1,3 @@
-from enum import Enum
 from datetime import datetime
 from uuid import UUID, uuid4
 
@@ -6,12 +5,7 @@ from sqlalchemy import DateTime, text, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 
 from reminder_service.schemas import DeliveryMethodEnum
-
-
-class Status(Enum):
-    PENDING = "pending"
-    SENT = "sent"
-    FAILED = "failed"
+from reminder_service.schemas.reminders import Status
 
 
 class Base(DeclarativeBase):

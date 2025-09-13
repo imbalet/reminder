@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from enum import Enum
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -7,12 +8,20 @@ from .base import BaseValidationModel
 from .delivery_methods import DeliveryMethod
 
 
-class ReminderCreate(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True)
+class Status(Enum):
+    PENDING = "pending"
+    SENT = "sent"
+    FAILED = "failed"
 
+
+class ReminderBase(BaseModel):
     title: str = Field(min_length=3, max_length=100)
     content: str = Field(min_length=3, max_length=2048)
     remind_date: datetime
+
+
+class ReminderCreate(ReminderBase):
+    model_config = ConfigDict(str_strip_whitespace=True)
 
     @field_validator("remind_date")
     def validate_remind_date(cls, v: datetime) -> datetime:
@@ -25,10 +34,11 @@ class ReminderCreate(BaseModel):
         return v
 
 
-class ReminderResponse(ReminderCreate):
+class ReminderResponse(ReminderBase):
     id: UUID
     user_id: UUID
     created_at: datetime
+    status: Status
     edited_at: datetime | None
     delivery_methods: list[DeliveryMethod]
 
