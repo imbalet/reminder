@@ -1,9 +1,17 @@
 from datetime import datetime
+from enum import Enum
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from .base import BaseValidationModel
+from .delivery_methods import DeliveryMethod
+
+
+class Status(Enum):
+    PENDING = "pending"
+    SENT = "sent"
+    FAILED = "failed"
 
 
 class ReminderCreate(BaseModel):
@@ -18,7 +26,9 @@ class ReminderResponse(ReminderCreate):
     id: UUID
     user_id: UUID
     created_at: datetime
+    status: Status
     edited_at: datetime | None
+    delivery_methods: list[DeliveryMethod]
 
 
 class ReminerEdit(BaseValidationModel):
