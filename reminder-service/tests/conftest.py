@@ -1,11 +1,8 @@
-import aio_pika
-from aio_pika.pool import Pool
 import pytest
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from reminder_service.models import Base
-from reminder_service.services import ReminderService, SendService
+from reminder_service.services import ReminderService
 from tests.config import config
 
 
@@ -37,24 +34,5 @@ async def async_session_factory():
 
 
 @pytest.fixture
-def rmq_channel_pool():
-    async def create_connection():
-        return await aio_pika.connect_robust(config.RMQ_URL)
-
-    async def create_channel():
-        async with connection_pool.acquire() as connection:
-            return await connection.channel()
-
-    connection_pool = Pool(create_connection, max_size=10)
-    channel_pool = Pool(create_channel, max_size=100)
-    return channel_pool
-
-
-@pytest.fixture
 def reminder_service(async_session_factory):
     return ReminderService(async_session_factory)
-
-
-@pytest.fixture
-def send_service(rmq_channel_pool):
-    return SendService(rmq_channel_pool, config.TEST_RMQ_ROUTING_KEY)

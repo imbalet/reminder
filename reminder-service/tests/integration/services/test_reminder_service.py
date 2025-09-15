@@ -1,13 +1,14 @@
 import datetime
-from uuid import uuid4
 import zoneinfo
+from uuid import uuid4
 
 import pytest
-from reminder_service.services import ReminderService
+
 from reminder_service.schemas import (
-    ReminderResponse,
     ReminderEdit,
+    ReminderResponse,
 )
+from reminder_service.services import ReminderService
 
 
 @pytest.fixture
@@ -43,7 +44,9 @@ async def test_valid_creating(reminder_service: ReminderService, sample_methods_
 async def test_valid_creating_not_utc(
     reminder_service: ReminderService, sample_methods_data
 ):
-    time = datetime.datetime.now(zoneinfo.ZoneInfo("Europe/Moscow")) + datetime.timedelta(days=1)
+    time = datetime.datetime.now(
+        zoneinfo.ZoneInfo("Europe/Moscow")
+    ) + datetime.timedelta(days=1)
     created = await reminder_service.create_reminder(
         title="reminder",
         content="reminder",
@@ -131,7 +134,8 @@ async def test_valid_edit(
         content="new content",
         remind_date=datetime.datetime.now(
             datetime.timezone(datetime.timedelta(hours=3))
-        ) + datetime.timedelta(days=1),
+        )
+        + datetime.timedelta(days=1),
     )
     edited = await reminder_service.edit_reminder(
         sample_reminder.id, data=new_data, user_id=sample_reminder.user_id

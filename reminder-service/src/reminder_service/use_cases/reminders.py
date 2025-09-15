@@ -124,7 +124,7 @@ class DeleteReminderUseCase:
         )
         if not res:
             logger.info(
-                "No acces to reminder",
+                "No access to reminder",
                 extra={
                     "user_id": str(user_id),
                     "operation": "delete_reminder",
@@ -155,7 +155,7 @@ class EditReminderUseCase:
         Args:
             user_id (UUID): User ID (reminder owner)
             reminder_id (UUID): Reminder ID
-            data (ReminerEdit): DTO containing updated reminder data
+            data (ReminderEdit): DTO containing updated reminder data
 
         Raises:
             ForbiddenException: The reminder doesn't exist or the user doesn't own the reminder
@@ -168,7 +168,7 @@ class EditReminderUseCase:
         )
         if not res:
             logger.info(
-                "No acces to reminder",
+                "No access to reminder",
                 extra={
                     "user_id": str(user_id),
                     "operation": "edit_reminder",

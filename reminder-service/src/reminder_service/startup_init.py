@@ -1,29 +1,29 @@
 import asyncio
-from datetime import datetime, timezone
-from contextlib import asynccontextmanager
 import logging
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
+from functools import partial
 
 import aio_pika
+from aio_pika import ExchangeType
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from rmq_service import ConsumeService, ExchangeConfig, ProduceService, QueueConfig
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from reminder_service.config import config
 from reminder_service.database import create_tables
-from reminder_service.schemas import ReminderResponse
-from reminder_service.services import SendService, ReminderService, EventService
-from reminder_service.use_cases import SendRemindersUseCase
 from reminder_service.models import Status
+from reminder_service.schemas import ReminderResponse
+from reminder_service.services import ReminderService
+from reminder_service.use_cases import SendRemindersUseCase
 
 logger = logging.getLogger(__name__)
 
 
 async def send_reminders(
-    session_factory: async_sessionmaker[AsyncSession],
-    channel_pool: aio_pika.pool.Pool[aio_pika.channel.Channel],
+    send_service: ProduceService, reminder_service: ReminderService
 ):
-    send_service = SendService(channel_pool)
-    reminder_service = ReminderService(session_factory)
     send_uc = SendRemindersUseCase(
         event_service=send_service, reminder_service=reminder_service
     )
@@ -31,7 +31,7 @@ async def send_reminders(
 
 
 async def handle_error_reminders(
-    data: str, session_factory: async_sessionmaker[AsyncSession]
+    session_factory: async_sessionmaker[AsyncSession], data: str
 ):
     reminder = ReminderResponse.model_validate_json(data)
     service = ReminderService(session_factory)
@@ -75,22 +75,33 @@ async def startup_event(app: FastAPI):
 
     logger.info("DB started")
 
+    send_service = ProduceService(
+        app.state.channel_pool, routing_key=config.RMQ_REMINDERS_QUEUE
+    )
+    await send_service.setup()
+    reminder_service = ReminderService(app.state.session_factory)
+
     scheduler = AsyncIOScheduler()
     scheduler.add_job(
         send_reminders,
         "interval",
         minutes=1,
-        args=[app.state.session_factory, app.state.channel_pool],
+        args=[send_service, reminder_service],
         next_run_time=datetime.now(timezone.utc),
     )
     scheduler.start()
 
-    event_service = EventService(app.state.channel_pool, config.RMQ_DLQ_NAME)
+    consume_service = ConsumeService(
+        app.state.channel_pool,
+        queue_config=QueueConfig(name=config.RMQ_DLQ_FAILED_REMINDERS_NAME),
+        exchange_config=ExchangeConfig(
+            name=config.RMQ_DLX_FAILED_REMINDERS_NAME, type=ExchangeType.FANOUT
+        ),
+    )
+    await consume_service.setup()
     handle_error_reminders_task = asyncio.create_task(
-        event_service.consume(
-            queue_name=config.RMQ_DLQ_NAME,
-            async_callback=handle_error_reminders,
-            session_factory=AsyncSessionLocal,
+        consume_service.consume(
+            partial(handle_error_reminders, app.state.session_factory),
         )
     )
 
