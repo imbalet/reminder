@@ -1,9 +1,10 @@
 # flake8: noqa
 from .delivery_method import (
-    DeliveryMethod,
     DeliveryMethodEnum,
     DeliveryMethodResponse,
     DeliveryMethodAdd,
+    EmailDelivery,
+    TelegramDelivery,
 )
 from .base import BaseValidationModel
 from .user import User, UserResponse

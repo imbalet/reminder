@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import uuid4
 
 import pytest
@@ -14,7 +15,8 @@ from user_service.schemas import (
     DeliveryMethodResponse,
     DeliveryMethodEnum,
     User,
-    DeliveryMethodAdd,
+    TelegramDelivery,
+    EmailDelivery,
 )
 
 
@@ -80,15 +82,24 @@ def sample_delivery_method_tg_response(sample_user):
         id=uuid4(),
         user_id=sample_user.id,
         delivery_method=DeliveryMethodEnum.TELEGRAM,
-        confirm_code="telegram",
+        contact_value="contact",
+        created_at=datetime(year=2025, month=5, day=10, hour=12, minute=42),
     )
 
 
 @pytest.fixture
 def sample_delivery_method_tg_add():
-    return DeliveryMethodAdd(
+    return TelegramDelivery(
         delivery_method=DeliveryMethodEnum.TELEGRAM,
         confirm_code="telegram",
+    )
+
+
+@pytest.fixture
+def sample_delivery_method_email_add():
+    return EmailDelivery(
+        delivery_method=DeliveryMethodEnum.EMAIL,
+        contact_value="example@example.com",
     )
 
 

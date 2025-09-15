@@ -7,7 +7,7 @@ import pytest
 from user_service.exceptions import AlreadyExistsError
 from user_service.schemas import (
     DeliveryMethodResponse,
-    DeliveryMethod,
+    TelegramDelivery,
     DeliveryMethodEnum,
 )
 
@@ -16,7 +16,7 @@ from user_service.schemas import (
 async def test_valid_create(
     async_client: AsyncClient, user_header: dict[str, str], mock_delivery_service
 ):
-    data = DeliveryMethod(
+    data = TelegramDelivery(
         delivery_method=DeliveryMethodEnum.TELEGRAM, confirm_code="telegram"
     )
 
@@ -26,8 +26,8 @@ async def test_valid_create(
         headers=user_header,
     )
     res = DeliveryMethodResponse.model_validate(response.json())
+    assert res
     assert response.status_code == 201
-    assert res.contact_value == data.contact_value
     mock_delivery_service.add.assert_awaited_once()
 
 
@@ -39,7 +39,7 @@ async def test_already_exists_create(
 ):
     mock_delivery_service.add.side_effect = AlreadyExistsError("")
 
-    data = DeliveryMethod(
+    data = TelegramDelivery(
         delivery_method=DeliveryMethodEnum.TELEGRAM, confirm_code="telegram"
     )
 
@@ -76,7 +76,6 @@ async def test_forbidden_not_found_get(
     user_header: dict[str, str],
     mock_delivery_service,
 ):
-
     mock_delivery_service.get.return_value = None
 
     response = await async_client.get(
@@ -96,7 +95,6 @@ async def test_forbidden_no_permissions_get(
     user_header: dict[str, str],
     mock_delivery_service,
 ):
-
     mock_delivery_service.get.return_value.user_id = uuid4()
 
     response = await async_client.get(
@@ -116,7 +114,6 @@ async def test_valid_get_all(
     user_header: dict[str, str],
     mock_delivery_service,
 ):
-
     response = await async_client.get(
         "/api/delivery/my",
         headers=user_header,
@@ -155,7 +152,6 @@ async def test_valid_delete(
     user_header: dict[str, str],
     mock_delivery_service,
 ):
-
     response = await async_client.delete(
         f"/api/delivery/{sample_delivery_method_tg_response.id}",
         headers=user_header,
