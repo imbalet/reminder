@@ -1,17 +1,16 @@
 import asyncio
 from contextlib import asynccontextmanager
-import logging
+from functools import partial
 
 import aio_pika
 from fastapi import FastAPI
 from redis import asyncio as aioredis
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from rmq_service import ConsumeService, ExchangeConfig, QueueConfig
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from user_service.config import config
 from user_service.database import create_tables
 from user_service.event_handler import add_user_callback, failed_reminders_callback
-from user_service.services import EventService
-
 
 logger = logging.getLogger(__name__)
 
@@ -62,18 +61,28 @@ async def startup_event(app: FastAPI):
 
     logger.info("DB started")
 
-    add_user_service = EventService(app.state.channel_pool, config.RMQ_USER_ADD_QUEUE)
-    failed_reminders = EventService(app.state.channel_pool, config.RMQ_DLQ_NAME)
+    add_user_consume = ConsumeService(
+        app.state.channel_pool,
+        queue_config=QueueConfig(name=config.RMQ_USER_ADD_QUEUE),
+    )
+    await add_user_consume.setup()
+
+    failed_reminders_consume = ConsumeService(
+        app.state.channel_pool,
+        queue_config=QueueConfig(name=config.RMQ_DLQ_FAILED_REMINDERS_NAME),
+        exchange_config=ExchangeConfig(
+            name=config.RMQ_DLX_FAILED_REMINDERS_NAME, type=ExchangeType.FANOUT
+        ),
+    )
+    await failed_reminders_consume.setup()
 
     add_users_task = asyncio.create_task(
-        add_user_service.consume(
-            async_callback=add_user_callback, session_factory=AsyncSessionLocal
-        )
+        add_user_consume.consume(partial(add_user_callback, AsyncSessionLocal))
     )
 
     failed_reminders_task = asyncio.create_task(
-        failed_reminders.consume(
-            async_callback=failed_reminders_callback, session_factory=AsyncSessionLocal
+        failed_reminders_consume.consume(
+            partial(failed_reminders_callback, AsyncSessionLocal)
         )
     )
 

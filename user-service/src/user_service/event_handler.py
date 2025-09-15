@@ -1,18 +1,18 @@
 import logging
 
-from user_service.schemas import User, Reminder
-from user_service.services import UserService, NotificationService
+from user_service.schemas import Reminder, User
+from user_service.services import NotificationService, UserService
 
 logger = logging.getLogger(__name__)
 
 
-async def add_user_callback(data: str, session_factory):
+async def add_user_callback(session_factory, data: bytes):
     user = User.model_validate_json(data)
     service = UserService(session_factory)
     await service.add(user_id=user.id, name=user.name, email=user.email)
 
 
-async def failed_reminders_callback(data: str, session_factory):
+async def failed_reminders_callback(session_factory, data: bytes):
     try:
         reminder = Reminder.model_validate_json(data)
         service = NotificationService(session_factory)
