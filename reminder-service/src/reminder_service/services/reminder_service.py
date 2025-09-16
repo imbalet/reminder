@@ -1,11 +1,15 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from sqlalchemy import select, delete, update
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy import delete, select, update
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from reminder_service.schemas import ReminderEdit, ReminderResponse, DeliveryMethod
-from reminder_service.models import RemindersOrm, DeliveryMethodOrm, Status
+from reminder_service.models import DeliveryMethodOrm, RemindersOrm, Status
+from reminder_service.schemas import (
+    DeliveryMethodResponse,
+    ReminderEdit,
+    ReminderResponse,
+)
 
 
 class ReminderService:
@@ -19,7 +23,7 @@ class ReminderService:
         content: str,
         user_id: UUID,
         remind_date: datetime,
-        delivery_methods: list[DeliveryMethod],
+        delivery_methods: list[DeliveryMethodResponse],
     ) -> ReminderResponse:
         async with self.session_factory() as session:
             new_reminder = RemindersOrm(

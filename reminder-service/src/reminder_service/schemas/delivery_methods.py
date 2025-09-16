@@ -1,10 +1,9 @@
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Literal, Union
 from uuid import UUID
 
-from pydantic import BaseModel, Field
-
-from .base import BaseValidationModel
+from pydantic import BaseModel, EmailStr
 
 
 class DeliveryMethodEnum(str, Enum):
@@ -12,24 +11,22 @@ class DeliveryMethodEnum(str, Enum):
     EMAIL = "email"
 
 
-class DeliveryMethodBase(BaseModel):
-    delivery_method: DeliveryMethodEnum
-    contact_value: str
+class TelegramDelivery(BaseModel):
+    delivery_method: Literal[DeliveryMethodEnum.TELEGRAM]
+    confirm_code: str
 
 
-class DeliveryMethod(DeliveryMethodBase):
-    id: UUID
+class EmailDelivery(BaseModel):
+    delivery_method: Literal[DeliveryMethodEnum.EMAIL]
+    contact_value: EmailStr
 
 
-class RmqReminder(BaseModel):
+DeliveryMethodAdd = Union[TelegramDelivery, EmailDelivery]
+
+
+class DeliveryMethodResponse(BaseModel):
     id: UUID
     user_id: UUID
-    title: str
-    content: str
-    remind_date: datetime
-    delivery_requests: list[DeliveryMethodBase] = Field(min_length=1)
-
-
-class DeliveryMethodEdit(BaseValidationModel):
-    delivery_method: DeliveryMethodEnum | None = None
-    contact_value: str | None = None
+    created_at: datetime
+    delivery_method: DeliveryMethodEnum
+    contact_value: str

@@ -1,19 +1,22 @@
+from datetime import datetime
 from uuid import uuid4
 
 import pytest
 
 from reminder_service.schemas import (
-    DeliveryMethod,
     DeliveryMethodEnum,
+    DeliveryMethodResponse,
 )
 
 
 @pytest.fixture
-async def sample_methods_data() -> list[DeliveryMethod]:
+async def sample_methods_data() -> list[DeliveryMethodResponse]:
     return [
-        DeliveryMethod(
+        DeliveryMethodResponse(
             delivery_method=DeliveryMethodEnum.TELEGRAM,
             contact_value="telegram",
             id=uuid4(),
+            created_at=datetime.utcnow(),
+            user_id=uuid4(),
         )
     ]

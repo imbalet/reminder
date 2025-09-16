@@ -4,15 +4,14 @@ from uuid import UUID
 import httpx
 
 from reminder_service.config import config
-from reminder_service.services.reminder_service import ReminderService
 from reminder_service.schemas import (
+    DeliveryMethodResponse,
     ReminderCreate,
-    ReminderResponse,
     ReminderEdit,
-    DeliveryMethod,
+    ReminderResponse,
 )
+from reminder_service.services.reminder_service import ReminderService
 from reminder_service.use_cases import ForbiddenException
-
 
 __all__ = [
     "AddReminderUseCase",
@@ -43,7 +42,9 @@ class AddReminderUseCase:
             response = await client.get(f"/api/delivery/internal/users/{user_id}")
             response.raise_for_status()
             json_data: list[dict] = response.json()
-            methods = [DeliveryMethod.model_validate(item) for item in json_data]
+            methods = [
+                DeliveryMethodResponse.model_validate(item) for item in json_data
+            ]
 
         res = await self.reminder_service.create_reminder(
             title=data.title,

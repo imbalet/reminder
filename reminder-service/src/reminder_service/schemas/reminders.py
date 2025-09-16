@@ -5,7 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .base import BaseValidationModel
-from .delivery_methods import DeliveryMethod
+from .delivery_methods import DeliveryMethodResponse
 
 
 class Status(Enum):
@@ -40,7 +40,7 @@ class ReminderResponse(ReminderBase):
     created_at: datetime
     status: Status
     edited_at: datetime | None
-    delivery_methods: list[DeliveryMethod]
+    delivery_methods: list[DeliveryMethodResponse]
 
 
 class ReminderEdit(BaseValidationModel):
