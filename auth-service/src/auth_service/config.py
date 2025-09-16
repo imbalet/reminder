@@ -26,7 +26,7 @@ class Config(BaseSettings):
     KEY_PAIR_EXPIRES_DAYS: int
     ROTATING_BEFORE_EXPIRING_DAYS: int
 
-    RMQ_EVENTS_QUEUE: str
+    RMQ_USER_ADD_QUEUE: str
     RMQ_USER: str
     RMQ_PASS: str
     RMQ_HOST: str

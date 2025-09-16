@@ -1,8 +1,10 @@
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from functools import partial
 
 import aio_pika
+from aio_pika import ExchangeType
 from fastapi import FastAPI
 from redis import asyncio as aioredis
 from rmq_service import ConsumeService, ExchangeConfig, QueueConfig

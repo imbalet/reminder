@@ -5,7 +5,12 @@ import aio_pika
 
 from notification_service.config import config
 from notification_service.services import SenderInterface, TelegramSender
-from notification_service.schemas import Message, Reminder, DeliveryMethodEnum, ResultStatusEnum
+from notification_service.schemas import (
+    Message,
+    Reminder,
+    DeliveryMethodEnum,
+    ResultStatusEnum,
+)
 from notification_service.logger import setup_logger
 from rmq_service import ConsumeService, QueueConfig, ExchangeConfig
 

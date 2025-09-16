@@ -21,8 +21,8 @@ class Config(BaseSettings):
     DB_PASS: str
 
     RMQ_REMINDERS_QUEUE: str
-    RMQ_DLQ_FAILDER_REMINDERS_NAME: str
-    RMQ_DLX_FAILDER_REMINDERS_NAME: str
+    RMQ_DLQ_FAILED_REMINDERS_NAME: str
+    RMQ_DLX_FAILED_REMINDERS_NAME: str
     RMQ_USER: str
     RMQ_PASS: str
     RMQ_HOST: str
