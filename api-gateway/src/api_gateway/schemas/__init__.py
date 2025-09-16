@@ -12,8 +12,8 @@ from .user import (
 )
 from .reminders import ReminderCreate, ReminderResponse, ReminerEdit
 from .delivery_methods import (
-    DeliveryMethod,
-    DeliveryMethodEdit,
+    DeliveryMethodAdd,
+    DeliveryMethodResponse,
     DeliveryMethodEnum,
     DeliveryMethodResponse,
 )

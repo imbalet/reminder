@@ -1,17 +1,17 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
 import httpx
+from fastapi import APIRouter, Depends, status
 
 from api_gateway.config import config
-from api_gateway.schemas import (
-    DeliveryMethodResponse,
-    DeliveryMethod,
-    DeliveryMethodEdit,
-    AccesTokenData,
-)
 from api_gateway.dependencies import get_access_token_data
+from api_gateway.schemas import (
+    AccesTokenData,
+    DeliveryMethodAdd,
+    DeliveryMethodResponse,
+)
+
 from .utils import error_handler
 
 router = APIRouter(prefix="/api/delivery", tags=["delivery"])
@@ -24,7 +24,7 @@ BASE_URL = config.USER_URL
 @error_handler
 async def create_method(
     token_data: Annotated[AccesTokenData, Depends(get_access_token_data)],
-    data: DeliveryMethod,
+    data: DeliveryMethodAdd,
 ):
     async with httpx.AsyncClient(base_url=BASE_URL, timeout=10.0) as client:
         headers = {"App-User-Id": str(token_data.user_id)}
@@ -68,23 +68,5 @@ async def get_method(
     async with httpx.AsyncClient(base_url=BASE_URL, timeout=10.0) as client:
         headers = {"App-User-Id": str(token_data.user_id)}
         response = await client.get(f"/api/delivery/{method_id}", headers=headers)
-        response.raise_for_status()
-        return response.json()
-
-
-@router.patch("/{method_id}", response_model=DeliveryMethodResponse)
-@error_handler
-async def edit_method(
-    token_data: Annotated[AccesTokenData, Depends(get_access_token_data)],
-    method_id: UUID,
-    data: DeliveryMethodEdit,
-):
-    async with httpx.AsyncClient(base_url=BASE_URL, timeout=10.0) as client:
-        headers = {"App-User-Id": str(token_data.user_id)}
-        response = await client.patch(
-            f"/api/delivery/{method_id}",
-            json=data.model_dump(mode="json"),
-            headers=headers,
-        )
         response.raise_for_status()
         return response.json()

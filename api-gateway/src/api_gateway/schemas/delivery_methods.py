@@ -1,9 +1,9 @@
+from datetime import datetime
 from enum import Enum
+from typing import Literal, Union
 from uuid import UUID
 
-from pydantic import BaseModel, Field
-
-from .base import BaseValidationModel
+from pydantic import BaseModel, EmailStr
 
 
 class DeliveryMethodEnum(str, Enum):
@@ -11,17 +11,22 @@ class DeliveryMethodEnum(str, Enum):
     EMAIL = "email"
 
 
-class DeliveryMethod(BaseModel):
-    delivery_method: DeliveryMethodEnum
-    contact_value: str | None = Field(default=None)
-    confirm_code: str | None = Field(default=None)
+class TelegramDelivery(BaseModel):
+    delivery_method: Literal[DeliveryMethodEnum.TELEGRAM]
+    confirm_code: str
 
 
-class DeliveryMethodResponse(DeliveryMethod):
+class EmailDelivery(BaseModel):
+    delivery_method: Literal[DeliveryMethodEnum.EMAIL]
+    contact_value: EmailStr
+
+
+DeliveryMethodAdd = Union[TelegramDelivery, EmailDelivery]
+
+
+class DeliveryMethodResponse(BaseModel):
     id: UUID
     user_id: UUID
-
-
-class DeliveryMethodEdit(BaseValidationModel):
-    delivery_method: DeliveryMethodEnum | None = None
-    contact_value: str | None = None
+    created_at: datetime
+    delivery_method: DeliveryMethodEnum
+    contact_value: str
