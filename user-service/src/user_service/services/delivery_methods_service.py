@@ -1,12 +1,12 @@
 from uuid import UUID
 
-from sqlalchemy import select, delete
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from user_service.schemas import DeliveryMethodEnum, DeliveryMethodResponse
-from user_service.models import DeliveryMethodsOrm
 from user_service.exceptions import AlreadyExistsError
+from user_service.models import DeliveryMethodsOrm
+from user_service.schemas import DeliveryMethodEnum, DeliveryMethodResponse, MetaData
 
 
 class DeliveryMethodsService:
@@ -19,6 +19,7 @@ class DeliveryMethodsService:
         user_id: UUID,
         method: DeliveryMethodEnum,
         contact_value: str,
+        meta_data: MetaData | None = None,
         is_confirmed: bool = False,
     ) -> DeliveryMethodResponse:
         try:
@@ -28,6 +29,7 @@ class DeliveryMethodsService:
                     delivery_method=method,
                     contact_value=contact_value,
                     is_confirmed=is_confirmed,
+                    meta_data=meta_data,
                 )
                 session.add(new_method)
                 await session.commit()

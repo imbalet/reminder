@@ -2,21 +2,22 @@ from datetime import datetime
 from uuid import uuid4
 
 import pytest
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from user_service.services import (
-    UserService,
-    DeliveryMethodsService,
-    ConfirmCodesService,
-)
-from user_service.models import Base
 from tests.config import config
+from user_service.models import Base
 from user_service.schemas import (
-    DeliveryMethodResponse,
     DeliveryMethodEnum,
-    User,
-    TelegramDelivery,
+    DeliveryMethodResponse,
     EmailDelivery,
+    MetaData,
+    TelegramDelivery,
+    User,
+)
+from user_service.services import (
+    ConfirmCodesService,
+    DeliveryMethodsService,
+    UserService,
 )
 
 
@@ -84,6 +85,7 @@ def sample_delivery_method_tg_response(sample_user):
         delivery_method=DeliveryMethodEnum.TELEGRAM,
         contact_value="contact",
         created_at=datetime(year=2025, month=5, day=10, hour=12, minute=42),
+        meta_data=MetaData(username="username"),
     )
 
 
@@ -116,5 +118,5 @@ def mock_delivery_service(mocker, sample_delivery_method_tg_response):
 @pytest.fixture
 def mock_confirm_service(mocker):
     mock = mocker.create_autospec(ConfirmCodesService)
-    mock.confirm.return_value = 1
+    mock.confirm.return_value = "1", "username"
     return mock

@@ -1,13 +1,15 @@
 from uuid import uuid4
 
 import pytest
-from user_service.services import DeliveryMethodsService
+
+from user_service.exceptions import AlreadyExistsError
 from user_service.schemas import (
-    DeliveryMethodResponse,
     DeliveryMethodEnum,
+    DeliveryMethodResponse,
+    MetaData,
     User,
 )
-from user_service.exceptions import AlreadyExistsError
+from user_service.services import DeliveryMethodsService
 
 
 @pytest.fixture
@@ -15,7 +17,10 @@ async def sample_method(
     sample_user: User, delivery_methods_service: DeliveryMethodsService
 ):
     return await delivery_methods_service.add(
-        sample_user.id, DeliveryMethodEnum.TELEGRAM, "chat_id"
+        sample_user.id,
+        DeliveryMethodEnum.TELEGRAM,
+        "chat_id",
+        meta_data=MetaData(username=""),
     )
 
 
@@ -92,10 +97,10 @@ async def test_valid_get_all(
     delivery_methods_service: DeliveryMethodsService,
 ):
     await delivery_methods_service.add(
-        sample_user.id, DeliveryMethodEnum.EMAIL, "email"
+        sample_user.id, DeliveryMethodEnum.EMAIL, "email", meta_data=None
     )
     await delivery_methods_service.add(
-        sample_user.id, DeliveryMethodEnum.EMAIL, "email1"
+        sample_user.id, DeliveryMethodEnum.EMAIL, "email1", meta_data=None
     )
     res = await delivery_methods_service.get_all(sample_user.id)
 

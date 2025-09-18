@@ -1,10 +1,13 @@
 import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import UniqueConstraint, ForeignKey, DateTime, text
-from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
+from pydantic import BaseModel
+from sqlalchemy import DateTime, ForeignKey, UniqueConstraint, text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from user_service.schemas import DeliveryMethodEnum as DeliveryMethod
+from user_service.schemas import MetaData
 
 
 class Base(DeclarativeBase):
@@ -43,6 +46,7 @@ class DeliveryMethodsOrm(Base):
         DateTime(timezone=True),
         server_default=text("TIMEZONE('utc', now())"),
     )
+    meta_data: Mapped[dict] = mapped_column(JSONB, server_default=text("'{}'::jsonb"))
 
     user: Mapped["UserOrm"] = relationship(back_populates="delivery_methods")
 
@@ -58,11 +62,17 @@ class DeliveryMethodsOrm(Base):
         delivery_method: DeliveryMethod,
         contact_value: str,
         is_confirmed: bool,
+        meta_data: dict | MetaData | None,
     ):
         self.user_id = user_id
         self.delivery_method = delivery_method
         self.contact_value = contact_value
         self.is_confirmed = is_confirmed
+        self.meta_data = (
+            meta_data.model_dump(exclude_none=True)
+            if isinstance(meta_data, BaseModel)
+            else meta_data or {}
+        )
 
 
 class NotificationOrm(Base):

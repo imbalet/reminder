@@ -11,11 +11,11 @@ class ConfirmCodesService:
         code = random.randrange(0, 10**n)
         return f"{code:06d}"
 
-    async def create_code(self, chat_id: str) -> str | None:
+    async def create_code(self, chat_id: str, user_name: str) -> str | None:
         for retries in range(10):
             code = self._generate_code()
             result = await self.redis.set(
-                f"tg_confirm_code:{code}", chat_id, ex=300, nx=True
+                f"tg_confirm_code:{code}", f"{chat_id}:{user_name}", ex=300, nx=True
             )
             if result:
                 return code

@@ -1,12 +1,13 @@
 import logging
 from uuid import UUID
 
-from user_service.services import DeliveryMethodsService, ConfirmCodesService
 from user_service.schemas import (
     DeliveryMethodAdd,
-    DeliveryMethodResponse,
     DeliveryMethodEnum,
+    DeliveryMethodResponse,
+    MetaData,
 )
+from user_service.services import ConfirmCodesService, DeliveryMethodsService
 from user_service.use_cases import BadRequestException, ForbiddenException
 
 __all__ = [
@@ -44,8 +45,8 @@ class AddDeliveryUseCase:
         """
         if delivery_method.delivery_method == DeliveryMethodEnum.TELEGRAM:
             # Pydantic handles None validation for confirm_code
-            chat_id = await self.confirm_service.confirm(delivery_method.confirm_code)  # type: ignore
-            if not chat_id:
+            value = await self.confirm_service.confirm(delivery_method.confirm_code)  # type: ignore
+            if not value:
                 logger.info(
                     "Invalid confirmation code",
                     extra={
@@ -58,8 +59,13 @@ class AddDeliveryUseCase:
                 raise BadRequestException(
                     "Invalid or expired Telegram confirmation code"
                 )
+            chat_id, username = value
             res = await self.delivery_service.add(
-                user_id, delivery_method.delivery_method, chat_id, is_confirmed=True
+                user_id,
+                delivery_method.delivery_method,
+                chat_id,
+                is_confirmed=True,
+                meta_data=MetaData(username=username),
             )
         else:
             # Pydantic handles None validation for confirm_code
@@ -124,7 +130,7 @@ class DeleteMethodUseCase:
         res = await self.delivery_service.delete(user_id, method_id)
         if not res:
             logger.info(
-                "No acces to method",
+                "No access to method",
                 extra={
                     "user_id": str(user_id),
                     "method_type": None,

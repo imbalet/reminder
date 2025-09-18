@@ -5,6 +5,7 @@ from .delivery_method import (
     DeliveryMethodAdd,
     EmailDelivery,
     TelegramDelivery,
+    MetaData,
 )
 from .base import BaseValidationModel
 from .user import User, UserResponse

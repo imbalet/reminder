@@ -1,15 +1,22 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import status, APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Header, status
 
-from user_service.services import DeliveryMethodsService, ConfirmCodesService
-from user_service.schemas import DeliveryMethodAdd, DeliveryMethodResponse, ErrorResponse
-from user_service.dependencies import get_delivery_methods_service, get_confirm_code_service
+from user_service.dependencies import (
+    get_confirm_code_service,
+    get_delivery_methods_service,
+)
+from user_service.schemas import (
+    DeliveryMethodAdd,
+    DeliveryMethodResponse,
+    ErrorResponse,
+)
+from user_service.services import ConfirmCodesService, DeliveryMethodsService
 from user_service.use_cases import (
     AddDeliveryUseCase,
-    GetMethodUseCase,
     DeleteMethodUseCase,
+    GetMethodUseCase,
 )
 
 router = APIRouter(prefix="/api/delivery", tags=["delivery"])
@@ -46,19 +53,6 @@ async def create_method(
         delivery_service=delivery_service, confirm_service=confirm_service
     )
     res = await uc.execute(user_id=app_user_id, delivery_method=delivery_method)
-    return res
-
-
-@router.get("/internal/users/{user_id}", response_model=list[DeliveryMethodResponse])
-async def get_all_user_methods(
-    delivery_service: Annotated[
-        DeliveryMethodsService, Depends(get_delivery_methods_service)
-    ],
-    user_id: UUID,
-):
-    # method for internal communication
-    # TODO: Add validation
-    res = await delivery_service.get_all(user_id, only_confirmed=True)
     return res
 
 

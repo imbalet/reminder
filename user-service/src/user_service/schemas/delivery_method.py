@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 from enum import Enum
 from typing import Literal, Union
@@ -9,6 +11,10 @@ from pydantic import BaseModel, EmailStr
 class DeliveryMethodEnum(str, Enum):
     TELEGRAM = "telegram"
     EMAIL = "email"
+
+
+class MetaData(BaseModel):
+    username: str | None = None  # Only for telegram
 
 
 class TelegramDelivery(BaseModel):
@@ -30,3 +36,4 @@ class DeliveryMethodResponse(BaseModel):
     created_at: datetime
     delivery_method: DeliveryMethodEnum
     contact_value: str
+    meta_data: MetaData

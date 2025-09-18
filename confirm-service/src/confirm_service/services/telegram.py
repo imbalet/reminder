@@ -22,7 +22,15 @@ dp = Dispatcher()
 async def link_handler(message: Message) -> None:
     try:
         service = ConfirmCodesService(redis)
-        code = await service.create_code(str(message.chat.id))
+        user_name = (
+            message.from_user.username
+            if message.from_user and message.from_user.username
+            else "Unknown"
+        )
+        code = await service.create_code(
+            str(message.chat.id),
+            user_name,
+        )
         if not code:
             logger.error(
                 "Error creating confirm code",
