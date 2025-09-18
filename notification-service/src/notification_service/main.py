@@ -7,6 +7,7 @@ from notification_service.config import config
 from notification_service.services import SenderInterface, TelegramSender
 from notification_service.schemas import Message, Reminder, DeliveryMethodEnum, ResultStatusEnum
 from notification_service.logger import setup_logger
+from rmq_service import ConsumeService, QueueConfig, ExchangeConfig
 
 setup_logger()
 logger = logging.getLogger(__name__)
@@ -16,13 +17,11 @@ senders: dict[DeliveryMethodEnum, SenderInterface] = {
 }
 
 
-async def process_rmq_message(rmq_message: aio_pika.abc.AbstractIncomingMessage):
-    processing_success = True
-
+async def process_rmq_message(message: aio_pika.abc.AbstractIncomingMessage):
     try:
-        decoded_message = rmq_message.body.decode()
+        decoded_message = message.body.decode()
         reminder = Reminder.model_validate_json(decoded_message)
-        message = Message(title=reminder.title, content=reminder.content)
+        notification_message = Message(title=reminder.title, content=reminder.content)
 
         for request in reminder.delivery_methods:
             sender = senders.get(request.delivery_method, None)
@@ -37,12 +36,11 @@ async def process_rmq_message(rmq_message: aio_pika.abc.AbstractIncomingMessage)
                         "result": "error",
                     },
                 )
-                processing_success = False
-                continue
+                raise Exception()
 
             try:
                 res = await sender.send(
-                    contact_value=request.contact_value, message=message
+                    contact_value=request.contact_value, message=notification_message
                 )
                 if res.status == ResultStatusEnum.ERROR:
                     logger.warning(
@@ -54,7 +52,7 @@ async def process_rmq_message(rmq_message: aio_pika.abc.AbstractIncomingMessage)
                             "result": "error",
                         },
                     )
-                    processing_success = False
+                    raise Exception()
                 else:
                     logger.info(
                         "Sent reminder",
@@ -74,7 +72,7 @@ async def process_rmq_message(rmq_message: aio_pika.abc.AbstractIncomingMessage)
                         "error": str(e),
                     },
                 )
-                processing_success = False
+                raise
 
     except Exception as e:
         logger.exception(
@@ -85,31 +83,36 @@ async def process_rmq_message(rmq_message: aio_pika.abc.AbstractIncomingMessage)
                 "error": str(e),
             },
         )
-        processing_success = False
+        raise
 
-    if processing_success:
-        await rmq_message.ack()
-    else:
-        await rmq_message.nack(requeue=False)
+
+def get_channel_pool():
+    async def create_connection():
+        return await aio_pika.connect_robust(config.RMQ_URL)
+
+    async def create_channel():
+        async with connection_pool.acquire() as connection:
+            return await connection.channel()
+
+    connection_pool = aio_pika.pool.Pool(create_connection, max_size=10)
+    channel_pool = aio_pika.pool.Pool(create_channel, max_size=100)
+    return channel_pool
 
 
 async def main():
-    connection = await aio_pika.connect_robust(config.RMQ_URL)
-    channel = await connection.channel()
-    await channel.set_qos(prefetch_count=1)
-
-    await channel.declare_exchange(config.RMQ_DLX_NAME, durable=True)
-    await channel.declare_queue(config.RMQ_DLQ_NAME, durable=True)
-    reminder_queue = await channel.declare_queue(
-        config.RMQ_ROUTING_KEY,
-        durable=True,
-        arguments={
-            "x-dead-letter-exchange": config.RMQ_DLX_NAME,
-            "x-dead-letter-routing-key": config.RMQ_DLQ_NAME,
-        },
+    channel_pool = get_channel_pool()
+    consume_service = ConsumeService(
+        channel_pool=channel_pool,
+        queue_config=QueueConfig(name=config.RMQ_REMINDERS_QUEUE),
+        dlq=QueueConfig(name=config.RMQ_DLQ_FAILED_REMINDERS_NAME),
+        dlx=ExchangeConfig(
+            name=config.RMQ_DLX_FAILED_REMINDERS_NAME, type=aio_pika.ExchangeType.FANOUT
+        ),
     )
+    await consume_service.setup()
 
-    await reminder_queue.consume(process_rmq_message)
+    asyncio.create_task(consume_service.consume(callback=process_rmq_message))
+
     await asyncio.Future()
 
 

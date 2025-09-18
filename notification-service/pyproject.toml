@@ -10,10 +10,14 @@ dependencies = [
     "pydantic>=2.11.7",
     "pydantic-settings>=2.10.1",
     "requests>=2.32.4",
+    "rmq-service",
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.uv.sources]
+rmq-service = { git = "https://github.com/imbalet/rmq_service" }
 
 [build-system]
 requires = ["setuptools>=42"]
