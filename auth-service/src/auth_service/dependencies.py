@@ -12,7 +12,7 @@ from auth_service.services import (
     UserService,
     SecurityService,
 )
-from auth_service.schemas import AccesTokenData, RefreshTokenData, KeyPair, UserAuth
+from auth_service.schemas import AccessTokenData, RefreshTokenData, KeyPair, UserAuth
 from auth_service.security import oauth2_scheme, decode_jwt
 from rmq_service import ProduceService
 
@@ -56,9 +56,9 @@ def get_user_register_event_service(
 
 
 def get_last_key_pair(
-    security_servise: Annotated[SecurityService, Depends(get_security_service)],
+    security_service: Annotated[SecurityService, Depends(get_security_service)],
 ) -> KeyPair:
-    return security_servise.get_last_key_pair()
+    return security_service.get_last_key_pair()
 
 
 def get_refresh_token_from_cookies(request: Request):
@@ -73,7 +73,7 @@ def get_refresh_token_from_cookies(request: Request):
 def get_access_token_data(
     token: Annotated[str, Depends(oauth2_scheme)],
     key_pair: Annotated[KeyPair, Depends(get_last_key_pair)],
-) -> AccesTokenData:
+) -> AccessTokenData:
     """Get data from JWT
 
     Args:
@@ -83,7 +83,7 @@ def get_access_token_data(
     Raises:
         HTTPException: 401 - expired or invalid token
     Returns:
-        AccesTokenData: DTO with user data fields
+        AccessTokenData: DTO with user data fields
     """
     try:
         payload = decode_jwt(token, key_pair.public_key)
@@ -94,7 +94,7 @@ def get_access_token_data(
                 detail="Invalid token structure",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        token_data = AccesTokenData(user_id=id)
+        token_data = AccessTokenData(user_id=id)
         return token_data
     except jwt.exceptions.ExpiredSignatureError:
         raise HTTPException(

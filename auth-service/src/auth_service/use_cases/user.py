@@ -1,6 +1,6 @@
 from auth_service.services import UserService
 from auth_service.schemas.user import (
-    UserRegisterRequset,
+    UserRegisterRequest,
     UserAuth,
     UserResponse,
     UserRmqData,
@@ -17,11 +17,11 @@ class RegisterUserUseCase:
         self.user_service = user_service
         self.event_service = event_service
 
-    async def execute(self, data: UserRegisterRequset) -> UserResponse:
+    async def execute(self, data: UserRegisterRequest) -> UserResponse:
         """Register a new user
 
         Args:
-            data (UserRegisterRequset): User's data
+            data (UserRegisterRequest): User's data
 
         Returns:
             UserResponse: Registered user object

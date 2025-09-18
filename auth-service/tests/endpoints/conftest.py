@@ -7,7 +7,7 @@ from auth_service.schemas import (
     TokenResponse,
     UserAuth,
     UserResponse,
-    UserRegisterRequset,
+    UserRegisterRequest,
 )
 from auth_service.main import app
 from auth_service.dependencies import (
@@ -37,7 +37,7 @@ async def async_client(async_session_factory):
 
 @pytest.fixture
 def sample_register_user_data():
-    return UserRegisterRequset(
+    return UserRegisterRequest(
         name="john",
         email="john@example.com",
         password="password",
@@ -54,7 +54,7 @@ def sample_auth_user_data():
 
 @pytest.fixture
 async def registered_user(
-    async_client: AsyncClient, sample_register_user_data: UserRegisterRequset
+    async_client: AsyncClient, sample_register_user_data: UserRegisterRequest
 ):
     response = await async_client.post(
         "/api/auth/register", json=sample_register_user_data.model_dump()

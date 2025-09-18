@@ -6,7 +6,7 @@ import jwt
 from passlib.context import CryptContext
 
 from auth_service.config import config
-from auth_service.schemas import GeneratedToken, AccesTokenData, RefreshTokenData
+from auth_service.schemas import GeneratedToken, AccessTokenData, RefreshTokenData
 
 ALGORITHM = config.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = config.ACCESS_TOKEN_EXPIRE_MINUTES
@@ -55,7 +55,7 @@ def generate_token(
 
 
 def create_access_token(
-    data: AccesTokenData, kid: str, private_key: rsa.RSAPrivateKey
+    data: AccessTokenData, kid: str, private_key: rsa.RSAPrivateKey
 ) -> GeneratedToken:
     expires_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     return generate_token(

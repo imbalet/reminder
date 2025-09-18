@@ -7,7 +7,7 @@ class TokenResponse(BaseModel):
     token_type: str
 
 
-class AccesTokenData(BaseModel):
+class AccessTokenData(BaseModel):
     user_id: UUID4
 
 
@@ -22,5 +22,5 @@ class GeneratedToken(BaseModel):
 
 
 class TokenPair(BaseModel):
-    acces_token: str
+    access_token: str
     refresh_token: str

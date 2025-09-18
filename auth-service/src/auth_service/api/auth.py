@@ -11,7 +11,7 @@ from auth_service.use_cases import (
 )
 from auth_service.schemas import (
     TokenResponse,
-    UserRegisterRequset,
+    UserRegisterRequest,
     UserResponse,
     UserAuth,
     RefreshTokenData,
@@ -47,7 +47,7 @@ def set_token_to_cookie(response: Response, new_refresh_token: str):
 @router.post("/register")
 async def register(
     request: Request,
-    reg_data: UserRegisterRequset,
+    reg_data: UserRegisterRequest,
     user_service: Annotated[UserService, Depends(get_user_service)],
     event_service: Annotated[ProduceService, Depends(get_user_register_event_service)],
 ) -> UserResponse:
@@ -88,7 +88,7 @@ async def login(
 
     set_token_to_cookie(response, token_pair.refresh_token)
     return TokenResponse(
-        access_token=token_pair.acces_token,
+        access_token=token_pair.access_token,
         token_type="bearer",
     )
 
@@ -117,7 +117,7 @@ async def refresh_token(
 
     set_token_to_cookie(response, token_pair.refresh_token)
     return TokenResponse(
-        access_token=token_pair.acces_token,
+        access_token=token_pair.access_token,
         token_type="bearer",
     )
 

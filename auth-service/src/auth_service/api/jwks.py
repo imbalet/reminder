@@ -12,6 +12,6 @@ router = APIRouter(tags=["jwks"])
 
 @router.get("/.well-known/jwks.json", response_class=JSONResponse)
 async def get_jwks(
-    security_servise: Annotated[SecurityService, Depends(get_security_service)],
+    security_service: Annotated[SecurityService, Depends(get_security_service)],
 ) -> dict:
-    return security_servise.get_jwks()
+    return security_service.get_jwks()

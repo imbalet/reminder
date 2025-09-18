@@ -1,6 +1,6 @@
 # flake8: noqa
 from .token import (
-    AccesTokenData,
+    AccessTokenData,
     GeneratedToken,
     RefreshTokenData,
     TokenPair,
@@ -10,7 +10,7 @@ from .user import (
     UserAuth,
     UserBase,
     UserInDB,
-    UserRegisterRequset,
+    UserRegisterRequest,
     UserResponse,
     UserRmqData,
 )

@@ -11,7 +11,7 @@ class UserAuth(UserBase):
     password: str
 
 
-class UserRegisterRequset(UserBase):
+class UserRegisterRequest(UserBase):
     name: str
     password: str
 

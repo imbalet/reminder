@@ -2,7 +2,7 @@ from httpx import AsyncClient
 import pytest
 
 from auth_service.schemas import (
-    UserRegisterRequset,
+    UserRegisterRequest,
     UserAuth,
     UserResponse,
     TokenResponse,
@@ -11,7 +11,7 @@ from auth_service.schemas import (
 
 @pytest.mark.asyncio
 async def test_valid_register(
-    async_client: AsyncClient, sample_register_user_data: UserRegisterRequset
+    async_client: AsyncClient, sample_register_user_data: UserRegisterRequest
 ):
     response = await async_client.post(
         "/api/auth/register", json=sample_register_user_data.model_dump()

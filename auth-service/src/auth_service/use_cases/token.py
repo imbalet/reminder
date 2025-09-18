@@ -1,7 +1,7 @@
 from uuid import UUID, uuid4
 
 from auth_service.services import UserService, RefreshTokenService
-from auth_service.schemas import TokenPair, RefreshTokenData, AccesTokenData, KeyPair
+from auth_service.schemas import TokenPair, RefreshTokenData, AccessTokenData, KeyPair
 from auth_service.security import (
     create_refresh_token,
     create_access_token,
@@ -18,7 +18,7 @@ def _generate_token_pair(user_id: UUID, key_pair: KeyPair):
     )
     refresh_token_hash = get_hash(refresh_token.token)
     access_token = create_access_token(
-        data=AccesTokenData(user_id=user_id),
+        data=AccessTokenData(user_id=user_id),
         private_key=key_pair.private_key,
         kid=key_pair.kid,
     )
@@ -26,7 +26,6 @@ def _generate_token_pair(user_id: UUID, key_pair: KeyPair):
 
 
 class CreateTokenPairUseCase:
-
     def __init__(
         self, token_service: RefreshTokenService, user_service: UserService
     ) -> None:
@@ -51,13 +50,12 @@ class CreateTokenPairUseCase:
         )
 
         return TokenPair(
-            acces_token=access_token.token,
+            access_token=access_token.token,
             refresh_token=refresh_token.token,
         )
 
 
 class RefreshTokenPairUseCase:
-
     def __init__(
         self, token_service: RefreshTokenService, user_service: UserService
     ) -> None:
@@ -90,6 +88,6 @@ class RefreshTokenPairUseCase:
             user_id=user.id,
         )
         return TokenPair(
-            acces_token=new_access_token.token,
+            access_token=new_access_token.token,
             refresh_token=new_refresh_token.token,
         )
