@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status, APIRouter, Response
 
-from auth_service.services import RefreshTokenService, UserService, EventService
+from auth_service.services import RefreshTokenService, UserService
 from auth_service.use_cases import (
     AuthUseCase,
     CreateTokenPairUseCase,
@@ -24,8 +24,9 @@ from auth_service.dependencies import (
     get_refresh_token_data,
     get_last_key_pair,
     get_auth_data,
-    get_event_service,
+    get_user_register_event_service,
 )
+from rmq_service import ProduceService
 
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -48,7 +49,7 @@ async def register(
     request: Request,
     reg_data: UserRegisterRequset,
     user_service: Annotated[UserService, Depends(get_user_service)],
-    event_service: Annotated[EventService, Depends(get_event_service)],
+    event_service: Annotated[ProduceService, Depends(get_user_register_event_service)],
 ) -> UserResponse:
     if "refresh_token" in request.cookies:
         raise HTTPException(

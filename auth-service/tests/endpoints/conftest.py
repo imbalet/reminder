@@ -13,7 +13,8 @@ from auth_service.main import app
 from auth_service.dependencies import (
     get_async_session_factory,
     get_security_service,
-    get_event_service,
+    get_user_register_event_service,
+    get_channel_pool,
 )
 from auth_service.services import SecurityService
 
@@ -24,7 +25,8 @@ async def async_client(async_session_factory):
     app.dependency_overrides[get_security_service] = lambda: SecurityService(
         Path(".secrets")
     )
-    app.dependency_overrides[get_event_service] = (
+    app.dependency_overrides[get_channel_pool] = lambda: AsyncMock()
+    app.dependency_overrides[get_user_register_event_service] = (
         lambda: AsyncMock()
     )  # mock for sending data to rabbitmq
     async with AsyncClient(

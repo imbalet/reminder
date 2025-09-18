@@ -11,10 +11,12 @@ from auth_service.services import (
     RefreshTokenService,
     UserService,
     SecurityService,
-    EventService,
 )
 from auth_service.schemas import AccesTokenData, RefreshTokenData, KeyPair, UserAuth
 from auth_service.security import oauth2_scheme, decode_jwt
+from rmq_service import ProduceService
+
+from auth_service.config import config
 
 
 def get_async_session_factory(req: Request):
@@ -45,10 +47,12 @@ def get_security_service(req: Request) -> SecurityService:
     return req.app.state.security_service
 
 
-def get_event_service(
+def get_user_register_event_service(
     channel_pool: Annotated[Pool, Depends(get_channel_pool)],
-) -> EventService:
-    return EventService(channel_pool)
+) -> ProduceService:
+    return ProduceService(
+        channel_pool=channel_pool, routing_key=config.RMQ_USER_ADD_QUEUE
+    )
 
 
 def get_last_key_pair(

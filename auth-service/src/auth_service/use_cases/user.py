@@ -1,4 +1,4 @@
-from auth_service.services import UserService, EventService
+from auth_service.services import UserService
 from auth_service.schemas.user import (
     UserRegisterRequset,
     UserAuth,
@@ -7,9 +7,13 @@ from auth_service.schemas.user import (
 )
 from auth_service.security import get_hash, verify_password
 
+from rmq_service import ProduceService, Message
+
 
 class RegisterUserUseCase:
-    def __init__(self, user_service: UserService, event_service: EventService) -> None:
+    def __init__(
+        self, user_service: UserService, event_service: ProduceService
+    ) -> None:
         self.user_service = user_service
         self.event_service = event_service
 
@@ -26,8 +30,12 @@ class RegisterUserUseCase:
         res = await self.user_service.create_user(
             email=data.email, hashed_password=hashed_password
         )
-        await self.event_service.send_registration_event(
-            UserRmqData(id=res.id, email=res.email, name=data.name)
+        await self.event_service.produce(
+            Message.from_json(
+                UserRmqData(id=res.id, email=res.email, name=data.name).model_dump(
+                    mode="json"
+                )
+            )
         )
         return res
 
