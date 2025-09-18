@@ -15,10 +15,7 @@ class ConfirmCodesService:
         for retries in range(10):
             code = self._generate_code()
             result = await self.redis.set(
-                f"tg_confirm_code:{code}",
-                chat_id,
-                ex=300,
-                nx=True,
+                f"tg_confirm_code:{code}", chat_id, ex=300, nx=True
             )
             if result:
                 return code

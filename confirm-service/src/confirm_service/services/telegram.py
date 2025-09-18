@@ -11,7 +11,7 @@ from aiogram.types import Message
 
 from confirm_service.config import config
 from confirm_service.services import ConfirmCodesService
-from redis_pool import redis
+from confirm_service.redis_pool import redis
 
 
 logger = logging.getLogger(__name__)
@@ -62,10 +62,16 @@ class TelegramService:
         pass
 
     def start_bot(self):
-        api_server = TelegramAPIServer.from_base(config.TG_API_ADDRESS, is_local=True)
+        if config.TG_API_ADDRESS:
+            api_server = TelegramAPIServer.from_base(
+                config.TG_API_ADDRESS, is_local=True
+            )
+            session = AiohttpSession(api=api_server)
+        else:
+            session = None
         bot = Bot(
             token=config.TG_BOT_TOKEN,
             default=DefaultBotProperties(parse_mode=ParseMode.HTML),
-            session=AiohttpSession(api=api_server),
+            session=session,
         )
         return asyncio.create_task(dp.start_polling(bot))
