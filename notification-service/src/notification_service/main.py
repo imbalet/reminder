@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import signal
 
 import aio_pika
 
@@ -91,21 +92,22 @@ async def process_rmq_message(message: aio_pika.abc.AbstractIncomingMessage):
         raise
 
 
-def get_channel_pool():
+def get_channel_pools():
     async def create_connection():
         return await aio_pika.connect_robust(config.RMQ_URL)
+
+    connection_pool = aio_pika.pool.Pool(create_connection, max_size=10)
 
     async def create_channel():
         async with connection_pool.acquire() as connection:
             return await connection.channel()
 
-    connection_pool = aio_pika.pool.Pool(create_connection, max_size=10)
     channel_pool = aio_pika.pool.Pool(create_channel, max_size=100)
-    return channel_pool
+    return connection_pool, channel_pool
 
 
 async def main():
-    channel_pool = get_channel_pool()
+    connection_pool, channel_pool = get_channel_pools()
     consume_service = ConsumeService(
         channel_pool=channel_pool,
         queue_config=QueueConfig(name=config.RMQ_REMINDERS_QUEUE),
@@ -116,9 +118,36 @@ async def main():
     )
     await consume_service.setup()
 
-    asyncio.create_task(consume_service.consume(callback=process_rmq_message))
+    consume_task = asyncio.create_task(
+        consume_service.consume(callback=process_rmq_message)
+    )
 
-    await asyncio.Future()
+    stop_event = asyncio.Event()
+
+    logger.info("Notification service started")
+
+    def _signal_handler():
+        logger.info("Shutdown signal received")
+        stop_event.set()
+
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, _signal_handler)
+
+    await stop_event.wait()
+
+    consume_task.cancel()
+    try:
+        await consume_task
+    except asyncio.CancelledError:
+        logger.info("Consumer task cancelled")
+    except NotImplementedError:
+        logger.warning("Signal handlers are not supported on this platform")
+
+    await channel_pool.close()
+    await connection_pool.close()
+
+    logger.info("Shutdown complete")
 
 
 if __name__ == "__main__":
