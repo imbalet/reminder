@@ -6,6 +6,7 @@ from .delivery_method import (
     EmailDelivery,
     TelegramDelivery,
     MetaData,
+    DeliveryMethodRMQ,
 )
 from .base import BaseValidationModel
 from .user import User, UserResponse

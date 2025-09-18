@@ -1,10 +1,13 @@
 import logging
 from uuid import UUID
 
+from rmq_service import Message, ProduceService
+
 from user_service.schemas import (
     DeliveryMethodAdd,
     DeliveryMethodEnum,
     DeliveryMethodResponse,
+    DeliveryMethodRMQ,
     MetaData,
 )
 from user_service.services import ConfirmCodesService, DeliveryMethodsService
@@ -20,13 +23,16 @@ logger = logging.getLogger()
 
 
 class AddDeliveryUseCase:
+
     def __init__(
         self,
         delivery_service: DeliveryMethodsService,
         confirm_service: ConfirmCodesService,
+        produce_service: ProduceService,
     ):
         self.delivery_service = delivery_service
         self.confirm_service = confirm_service
+        self.produce_service = produce_service
 
     async def execute(
         self, user_id: UUID, delivery_method: DeliveryMethodAdd
@@ -60,20 +66,26 @@ class AddDeliveryUseCase:
                     "Invalid or expired Telegram confirmation code"
                 )
             chat_id, username = value
-            res = await self.delivery_service.add(
-                user_id,
-                delivery_method.delivery_method,
-                chat_id,
-                is_confirmed=True,
-                meta_data=MetaData(username=username),
-            )
+            contact_value = chat_id
+            meta_data = MetaData(username=username)
         else:
-            # Pydantic handles None validation for confirm_code
-            res = await self.delivery_service.add(
-                user_id,
-                delivery_method.delivery_method,
-                delivery_method.contact_value,  # type: ignore
+            contact_value = delivery_method.contact_value
+            meta_data = None
+
+        res = await self.delivery_service.add(
+            user_id,
+            delivery_method.delivery_method,
+            contact_value,
+            is_confirmed=True,
+            meta_data=meta_data,
+        )
+        await self.produce_service.produce(
+            Message.from_json(
+                DeliveryMethodRMQ.model_validate(res, from_attributes=True).model_dump(
+                    mode="json"
+                )
             )
+        )
 
         logger.info(
             "Delivery method added",
@@ -114,8 +126,14 @@ class GetMethodUseCase:
 
 
 class DeleteMethodUseCase:
-    def __init__(self, delivery_service: DeliveryMethodsService):
+
+    def __init__(
+        self,
+        delivery_service: DeliveryMethodsService,
+        produce_service: ProduceService,
+    ):
         self.delivery_service = delivery_service
+        self.produce_service = produce_service
 
     async def execute(self, user_id: UUID, method_id: UUID) -> None:
         """Deletes the delivery method with user validation
@@ -141,6 +159,7 @@ class DeleteMethodUseCase:
             raise ForbiddenException(
                 f"No access to delivery method with id {method_id}",
             )
+        await self.produce_service.produce(Message.from_text(str(res.id)))
 
         logger.info(
             "Delivery method deleted",

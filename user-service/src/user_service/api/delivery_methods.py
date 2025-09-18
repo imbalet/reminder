@@ -2,10 +2,13 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, status
+from rmq_service import ProduceService
 
 from user_service.dependencies import (
+    get_add_delivery_method_produce_service,
     get_confirm_code_service,
     get_delivery_methods_service,
+    get_remove_delivery_method_produce_service,
 )
 from user_service.schemas import (
     DeliveryMethodAdd,
@@ -47,10 +50,15 @@ async def create_method(
         DeliveryMethodsService, Depends(get_delivery_methods_service)
     ],
     confirm_service: Annotated[ConfirmCodesService, Depends(get_confirm_code_service)],
+    produce_service: Annotated[
+        ProduceService, Depends(get_add_delivery_method_produce_service)
+    ],
     delivery_method: DeliveryMethodAdd,
 ):
     uc = AddDeliveryUseCase(
-        delivery_service=delivery_service, confirm_service=confirm_service
+        delivery_service=delivery_service,
+        confirm_service=confirm_service,
+        produce_service=produce_service,
     )
     res = await uc.execute(user_id=app_user_id, delivery_method=delivery_method)
     return res
@@ -108,7 +116,12 @@ async def delete_method(
     delivery_service: Annotated[
         DeliveryMethodsService, Depends(get_delivery_methods_service)
     ],
+    produce_service: Annotated[
+        ProduceService, Depends(get_remove_delivery_method_produce_service)
+    ],
     method_id: UUID,
 ):
-    uc = DeleteMethodUseCase(delivery_service=delivery_service)
+    uc = DeleteMethodUseCase(
+        delivery_service=delivery_service, produce_service=produce_service
+    )
     await uc.execute(user_id=app_user_id, method_id=method_id)

@@ -2,6 +2,8 @@ from datetime import datetime
 from uuid import uuid4
 
 import pytest
+from aio_pika.pool import Pool
+from rmq_service import ProduceService
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from tests.config import config
@@ -119,4 +121,16 @@ def mock_delivery_service(mocker, sample_delivery_method_tg_response):
 def mock_confirm_service(mocker):
     mock = mocker.create_autospec(ConfirmCodesService)
     mock.confirm.return_value = "1", "username"
+    return mock
+
+
+@pytest.fixture
+def mock_channel_pool(mocker):
+    mock = mocker.create_autospec(Pool)
+    return mock
+
+
+@pytest.fixture
+def mock_produce_service(mocker) -> ProduceService:
+    mock = mocker.create_autospec(ProduceService)
     return mock

@@ -1,12 +1,15 @@
 from typing import Annotated
 
+from aio_pika.pool import Pool
 from fastapi import Depends, Request
 from redis import asyncio as aioredis
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from rmq_service import ProduceService
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from user_service.config import config
 from user_service.services import (
-    DeliveryMethodsService,
     ConfirmCodesService,
+    DeliveryMethodsService,
     NotificationService,
 )
 
@@ -37,3 +40,23 @@ def get_notification_service(
     ],
 ) -> NotificationService:
     return NotificationService(session_factory)
+
+
+def get_channel_pool(req: Request) -> Pool:
+    return req.app.state.channel_pool
+
+
+def get_add_delivery_method_produce_service(
+    channel_pool: Annotated[Pool, Depends(get_channel_pool)],
+):
+    return ProduceService(
+        channel_pool=channel_pool, routing_key=config.RMQ_DELIVERY_METHOD_ADD_QUEUE
+    )
+
+
+def get_remove_delivery_method_produce_service(
+    channel_pool: Annotated[Pool, Depends(get_channel_pool)],
+):
+    return ProduceService(
+        channel_pool=channel_pool, routing_key=config.RMQ_DELIVERY_METHOD_REMOVE_QUEUE
+    )

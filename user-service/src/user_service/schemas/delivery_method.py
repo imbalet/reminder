@@ -37,3 +37,10 @@ class DeliveryMethodResponse(BaseModel):
     delivery_method: DeliveryMethodEnum
     contact_value: str
     meta_data: MetaData
+
+
+class DeliveryMethodRMQ(BaseModel):
+    id: UUID
+    user_id: UUID
+    delivery_method: DeliveryMethodEnum
+    contact_value: str
