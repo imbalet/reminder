@@ -13,10 +13,15 @@ class DeliveryMethodService:
         self.session_factory = session_factory
 
     async def create(
-        self, delivery_method: DeliveryMethodEnum, contact_value: str, user_id: UUID
+        self,
+        id: UUID,
+        delivery_method: DeliveryMethodEnum,
+        contact_value: str,
+        user_id: UUID,
     ) -> DeliveryMethod:
         async with self.session_factory() as session:
             new_reminder = DeliveryMethodOrm(
+                id=id,
                 delivery_method=delivery_method,
                 contact_value=contact_value,
                 user_id=user_id,
@@ -43,12 +48,10 @@ class DeliveryMethodService:
                 for method in result.delivery_methods
             ]
 
-    async def delete(self, id: UUID, user_id: UUID) -> DeliveryMethod | None:
+    async def delete(self, id: UUID) -> DeliveryMethod | None:
         async with self.session_factory() as session:
             stmt = (
-                delete(DeliveryMethodOrm)
-                .filter_by(id=id, user_id=user_id)
-                .returning(DeliveryMethodOrm)
+                delete(DeliveryMethodOrm).filter_by(id=id).returning(DeliveryMethodOrm)
             )
             res = await session.execute(stmt)
             result = res.scalar()

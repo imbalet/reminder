@@ -50,7 +50,7 @@ class RemindersOrm(Base):
 class DeliveryMethodOrm(Base):
     __tablename__ = "delivery_methods"
 
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    id: Mapped[UUID] = mapped_column(primary_key=True)
     delivery_method: Mapped[DeliveryMethodEnum]
     contact_value: Mapped[str]
     user_id: Mapped[UUID]
@@ -62,8 +62,13 @@ class DeliveryMethodOrm(Base):
     )
 
     def __init__(
-        self, delivery_method: DeliveryMethodEnum, contact_value: str, user_id: UUID
+        self,
+        id: UUID,
+        delivery_method: DeliveryMethodEnum,
+        contact_value: str,
+        user_id: UUID,
     ):
+        self.id = id
         self.user_id = user_id
         self.delivery_method = delivery_method
         self.contact_value = contact_value

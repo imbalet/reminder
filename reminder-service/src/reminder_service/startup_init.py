@@ -34,7 +34,12 @@ async def startup_event(app: FastAPI):
 
     logger.info("DB started")
 
-    send_reminder_task_scheduler, consume_error_reminders_task = await setup_tasks(
+    (
+        send_reminder_task_scheduler,
+        consume_error_reminders_task,
+        consume_delivery_method_add_task,
+        consume_delivery_method_remove_task,
+    ) = await setup_tasks(
         channel_pool=app.state.channel_pool,
         session_factory=app.state.session_factory,
     )
@@ -42,8 +47,15 @@ async def startup_event(app: FastAPI):
     yield
     send_reminder_task_scheduler.shutdown(wait=False)
     consume_error_reminders_task.cancel()
+    consume_delivery_method_add_task.cancel()
+    consume_delivery_method_remove_task.cancel()
     try:
-        await consume_error_reminders_task
+        await asyncio.gather(
+            consume_error_reminders_task,
+            consume_delivery_method_add_task,
+            consume_delivery_method_remove_task,
+            return_exceptions=True,
+        )
     except asyncio.CancelledError:
         pass
 

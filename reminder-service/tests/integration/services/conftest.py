@@ -16,6 +16,7 @@ async def sample_db_delivery_method_telegram(
     delivery_methods_service: DeliveryMethodService,
 ):
     res = await delivery_methods_service.create(
+        id=uuid4(),
         delivery_method=DeliveryMethodEnum.TELEGRAM,
         contact_value="123",
         user_id=uuid4(),
@@ -28,6 +29,7 @@ async def sample_db_delivery_method_email(
     delivery_methods_service: DeliveryMethodService,
 ):
     res = await delivery_methods_service.create(
+        id=uuid4(),
         delivery_method=DeliveryMethodEnum.EMAIL,
         contact_value="example@example.com",
         user_id=uuid4(),
