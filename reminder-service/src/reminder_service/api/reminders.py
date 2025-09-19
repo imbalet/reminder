@@ -1,30 +1,27 @@
 from typing import Annotated
 from uuid import UUID
 
-
 from fastapi import APIRouter, Depends, Header, status
 
 from reminder_service.dependencies import get_reminders_service
-from reminder_service.services.reminder_service import ReminderService
 from reminder_service.schemas import (
     ReminderCreate,
-    ReminderResponse,
     ReminderEdit,
+    ReminderResponse,
 )
+from reminder_service.services.reminder_service import ReminderService
 from reminder_service.use_cases import (
     AddReminderUseCase,
-    GetReminderUseCase,
-    EditReminderUseCase,
     DeleteReminderUseCase,
+    EditReminderUseCase,
     GetRemindersByUserIdUseCase,
+    GetReminderUseCase,
 )
-from .utils import error_handler
 
 router = APIRouter(prefix="/api/reminders", tags=["reminds"])
 
 
 @router.post("/", response_model=ReminderResponse, status_code=status.HTTP_201_CREATED)
-@error_handler
 async def create(
     reminder_service: Annotated[ReminderService, Depends(get_reminders_service)],
     data: ReminderCreate,
