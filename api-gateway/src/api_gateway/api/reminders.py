@@ -1,12 +1,18 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
 import httpx
+from fastapi import APIRouter, Depends, status
 
 from api_gateway.config import config
-from api_gateway.schemas import ReminderCreate, ReminderResponse, ReminerEdit, AccesTokenData
 from api_gateway.dependencies import get_access_token_data
+from api_gateway.schemas import (
+    AccessTokenData,
+    ReminderCreate,
+    ReminderEdit,
+    ReminderResponse,
+)
+
 from .utils import error_handler
 
 router = APIRouter(prefix="/api/reminders", tags=["reminds"])
@@ -15,7 +21,7 @@ router = APIRouter(prefix="/api/reminders", tags=["reminds"])
 @router.post("/", response_model=ReminderResponse, status_code=status.HTTP_201_CREATED)
 @error_handler
 async def create(
-    token_data: Annotated[AccesTokenData, Depends(get_access_token_data)],
+    token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
     data: ReminderCreate,
 ):
     async with httpx.AsyncClient(base_url=config.REMINDER_URL, timeout=10.0) as client:
@@ -30,7 +36,7 @@ async def create(
 @router.get("/my", response_model=list[ReminderResponse])
 @error_handler
 async def get_my(
-    token_data: Annotated[AccesTokenData, Depends(get_access_token_data)],
+    token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
 ):
     async with httpx.AsyncClient(base_url=config.REMINDER_URL, timeout=10.0) as client:
         headers = {"App-User-Id": str(token_data.user_id)}
@@ -42,7 +48,7 @@ async def get_my(
 @router.get("/{reminder_id}", response_model=ReminderResponse)
 @error_handler
 async def get_by_id(
-    token_data: Annotated[AccesTokenData, Depends(get_access_token_data)],
+    token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
     reminder_id: UUID,
 ):
     async with httpx.AsyncClient(base_url=config.REMINDER_URL, timeout=10.0) as client:
@@ -55,7 +61,7 @@ async def get_by_id(
 @router.delete("/{reminder_id}", status_code=status.HTTP_204_NO_CONTENT)
 @error_handler
 async def delete_by_id(
-    token_data: Annotated[AccesTokenData, Depends(get_access_token_data)],
+    token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
     reminder_id: UUID,
 ):
     async with httpx.AsyncClient(base_url=config.REMINDER_URL, timeout=10.0) as client:
@@ -67,8 +73,8 @@ async def delete_by_id(
 @router.patch("/{reminder_id}", response_model=ReminderResponse)
 @error_handler
 async def edit_by_id(
-    token_data: Annotated[AccesTokenData, Depends(get_access_token_data)],
-    data: ReminerEdit,
+    token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
+    data: ReminderEdit,
     reminder_id: UUID,
 ):
     async with httpx.AsyncClient(base_url=config.REMINDER_URL, timeout=10.0) as client:

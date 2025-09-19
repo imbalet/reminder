@@ -1,4 +1,4 @@
-from pydantic import BaseModel, UUID4
+from pydantic import UUID4, BaseModel
 
 
 class TokenResponse(BaseModel):
@@ -6,7 +6,7 @@ class TokenResponse(BaseModel):
     token_type: str
 
 
-class AccesTokenData(BaseModel):
+class AccessTokenData(BaseModel):
     user_id: UUID4
 
 

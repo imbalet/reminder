@@ -2,13 +2,13 @@ from typing import Annotated
 
 import httpx
 import jwt
-from fastapi import HTTPException, Depends, status, Request
-from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from fastapi import Depends, HTTPException, Request, status
 
-from api_gateway.schemas import AccesTokenData, RefreshTokenData
-from api_gateway.security import oauth2_scheme, decode_jwt
 from api_gateway.config import config
+from api_gateway.schemas import AccessTokenData, RefreshTokenData
+from api_gateway.security import decode_jwt, oauth2_scheme
 
 
 async def get_jwks_pyjwt(token: Annotated[str, Depends(oauth2_scheme)]):
@@ -35,7 +35,7 @@ async def get_jwks_pyjwt(token: Annotated[str, Depends(oauth2_scheme)]):
 def get_access_token_data(
     token: Annotated[str, Depends(oauth2_scheme)],
     public_key: Annotated[rsa.RSAPublicKey, Depends(get_jwks_pyjwt)],
-) -> AccesTokenData:
+) -> AccessTokenData:
     try:
         payload = decode_jwt(token, public_key)
         id = payload.get("sub")
@@ -44,7 +44,7 @@ def get_access_token_data(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Invalid token structure",
             )
-        token_data = AccesTokenData(user_id=id)
+        token_data = AccessTokenData(user_id=id)
         return token_data
     except jwt.exceptions.ExpiredSignatureError:
         raise HTTPException(

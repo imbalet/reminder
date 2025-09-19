@@ -8,7 +8,7 @@ from api_gateway.config import config
 from api_gateway.dependencies import get_refresh_token_from_cookies
 from api_gateway.schemas import (
     TokenResponse,
-    UserRegisterRequset,
+    UserRegisterRequest,
     UserResponse,
 )
 
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 @router.post("/register")
 @error_handler
 async def register(
-    reg_data: UserRegisterRequset,
+    reg_data: UserRegisterRequest,
 ) -> UserResponse:
     async with httpx.AsyncClient(base_url=config.AUTH_URL, timeout=10.0) as client:
         response = await client.post("/api/auth/register", json=reg_data.model_dump())

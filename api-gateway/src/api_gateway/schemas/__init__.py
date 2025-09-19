@@ -1,16 +1,16 @@
 # flake8: noqa
 from .token import (
-    AccesTokenData,
+    AccessTokenData,
     RefreshTokenData,
     TokenResponse,
 )
 from .user import (
     UserAuth,
     UserBase,
-    UserRegisterRequset,
+    UserRegisterRequest,
     UserResponse,
 )
-from .reminders import ReminderCreate, ReminderResponse, ReminerEdit
+from .reminders import ReminderCreate, ReminderResponse, ReminderEdit
 from .delivery_methods import (
     DeliveryMethodAdd,
     DeliveryMethodResponse,

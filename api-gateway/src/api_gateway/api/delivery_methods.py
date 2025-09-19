@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, status
 from api_gateway.config import config
 from api_gateway.dependencies import get_access_token_data
 from api_gateway.schemas import (
-    AccesTokenData,
+    AccessTokenData,
     DeliveryMethodAdd,
     DeliveryMethodResponse,
 )
@@ -23,7 +23,7 @@ BASE_URL = config.USER_URL
 )
 @error_handler
 async def create_method(
-    token_data: Annotated[AccesTokenData, Depends(get_access_token_data)],
+    token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
     data: DeliveryMethodAdd,
 ):
     async with httpx.AsyncClient(base_url=BASE_URL, timeout=10.0) as client:
@@ -38,7 +38,7 @@ async def create_method(
 @router.delete("/{method_id}", status_code=status.HTTP_204_NO_CONTENT)
 @error_handler
 async def delete_by_id(
-    token_data: Annotated[AccesTokenData, Depends(get_access_token_data)],
+    token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
     method_id: UUID,
 ):
     async with httpx.AsyncClient(base_url=BASE_URL, timeout=10.0) as client:
@@ -50,7 +50,7 @@ async def delete_by_id(
 @router.get("/my", response_model=list[DeliveryMethodResponse])
 @error_handler
 async def get_all_methods(
-    token_data: Annotated[AccesTokenData, Depends(get_access_token_data)],
+    token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
 ):
     async with httpx.AsyncClient(base_url=BASE_URL, timeout=10.0) as client:
         headers = {"App-User-Id": str(token_data.user_id)}
@@ -62,7 +62,7 @@ async def get_all_methods(
 @router.get("/{method_id}", response_model=DeliveryMethodResponse)
 @error_handler
 async def get_method(
-    token_data: Annotated[AccesTokenData, Depends(get_access_token_data)],
+    token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
     method_id: UUID,
 ):
     async with httpx.AsyncClient(base_url=BASE_URL, timeout=10.0) as client:
