@@ -23,7 +23,7 @@ senders: dict[DeliveryMethodEnum, SenderInterface] = {
 }
 
 
-async def process_rmq_message(message: aio_pika.abc.AbstractIncomingMessage):
+async def process_rmq_message(message: aio_pika.abc.AbstractIncomingMessage, **kwargs):
     try:
         decoded_message = message.body.decode()
         reminder = Reminder.model_validate_json(decoded_message)
