@@ -1,11 +1,7 @@
 import logging
 from uuid import UUID
 
-import httpx
-
-from reminder_service.config import config
 from reminder_service.schemas import (
-    DeliveryMethodResponse,
     ReminderCreate,
     ReminderEdit,
     ReminderResponse,
@@ -38,20 +34,12 @@ class AddReminderUseCase:
         Returns:
             ReminderResponse: DTO for the created reminder
         """
-        async with httpx.AsyncClient(base_url=config.USER_URL, timeout=10.0) as client:
-            response = await client.get(f"/api/delivery/internal/users/{user_id}")
-            response.raise_for_status()
-            json_data: list[dict] = response.json()
-            methods = [
-                DeliveryMethodResponse.model_validate(item) for item in json_data
-            ]
-
         res = await self.reminder_service.create_reminder(
             title=data.title,
             content=data.content,
             remind_date=data.remind_date,
             user_id=user_id,
-            delivery_methods=methods,
+            delivery_method_ids=data.delivery_methods_ids,
         )
 
         logger.info(

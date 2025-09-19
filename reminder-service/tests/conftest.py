@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from reminder_service.models import Base
-from reminder_service.services import ReminderService
+from reminder_service.services import DeliveryMethodService, ReminderService
 from tests.config import config
 
 
@@ -36,3 +36,8 @@ async def async_session_factory():
 @pytest.fixture
 def reminder_service(async_session_factory):
     return ReminderService(async_session_factory)
+
+
+@pytest.fixture
+def delivery_methods_service(async_session_factory):
+    return DeliveryMethodService(async_session_factory)

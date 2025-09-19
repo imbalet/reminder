@@ -5,7 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .base import BaseValidationModel
-from .delivery_methods import DeliveryMethodResponse
+from .delivery_methods import DeliveryMethod
 
 
 class Status(Enum):
@@ -21,6 +21,8 @@ class ReminderBase(BaseModel):
 
 
 class ReminderCreate(ReminderBase):
+    delivery_methods_ids: list[UUID]
+
     model_config = ConfigDict(str_strip_whitespace=True)
 
     @field_validator("remind_date")
@@ -40,10 +42,11 @@ class ReminderResponse(ReminderBase):
     created_at: datetime
     status: Status
     edited_at: datetime | None
-    delivery_methods: list[DeliveryMethodResponse]
+    delivery_methods: list[DeliveryMethod]
 
 
 class ReminderEdit(BaseValidationModel):
     title: str | None = Field(default=None, min_length=3, max_length=100)
     content: str | None = Field(default=None, min_length=3, max_length=2048)
     remind_date: datetime | None = Field(default=None)
+    delivery_methods_ids: list[UUID] | None = Field(default=None)
