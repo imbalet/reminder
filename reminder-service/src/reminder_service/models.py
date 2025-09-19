@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, text, ForeignKey, UniqueConstraint
-from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
+from sqlalchemy import DateTime, ForeignKey, UniqueConstraint, text
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from reminder_service.schemas import DeliveryMethodEnum
 from reminder_service.schemas.reminders import Status
@@ -22,16 +24,11 @@ class RemindersOrm(Base):
     remind_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     status: Mapped[Status] = mapped_column(server_default="PENDING", index=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=text("TIMEZONE('utc', now())"),
+        DateTime(timezone=True), server_default=text("TIMEZONE('utc', now())")
     )
-    edited_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True,
-    )
+    edited_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     delivery_methods: Mapped[list["DeliveryMethodOrm"]] = relationship(
-        back_populates="reminder",
-        cascade="all, delete-orphan",
+        secondary="reminder_delivery_method",
         lazy="selectin",
     )
 
@@ -54,26 +51,31 @@ class DeliveryMethodOrm(Base):
     __tablename__ = "delivery_methods"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    reminder_id: Mapped[UUID] = mapped_column(
-        ForeignKey(RemindersOrm.id, ondelete="CASCADE"), index=True
-    )
     delivery_method: Mapped[DeliveryMethodEnum]
     contact_value: Mapped[str]
-    reminder: Mapped["RemindersOrm"] = relationship(back_populates="delivery_methods")
+    user_id: Mapped[UUID]
 
     __table_args__ = (
         UniqueConstraint(
-            "reminder_id",
-            "delivery_method",
-            "contact_value",
-            name="uq_user_method_contact",
+            "delivery_method", "contact_value", "user_id", name="uq_user_method_contact"
         ),
     )
 
     def __init__(
-        self,
-        delivery_method: DeliveryMethodEnum,
-        contact_value: str,
+        self, delivery_method: DeliveryMethodEnum, contact_value: str, user_id: UUID
     ):
+        self.user_id = user_id
         self.delivery_method = delivery_method
         self.contact_value = contact_value
+
+
+class ReminderDeliveryMethodOrm(Base):
+    __tablename__ = "reminder_delivery_method"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    reminder_id: Mapped[UUID] = mapped_column(
+        ForeignKey(RemindersOrm.id, ondelete="CASCADE"), index=True
+    )
+    delivery_method_id: Mapped[UUID] = mapped_column(
+        ForeignKey(DeliveryMethodOrm.id, ondelete="CASCADE")
+    )
