@@ -102,9 +102,11 @@ async def test_valid_get_all(
     await delivery_methods_service.add(
         sample_user.id, DeliveryMethodEnum.EMAIL, "email1", meta_data=None
     )
-    res = await delivery_methods_service.get_all(sample_user.id)
+    paged_items = await delivery_methods_service.get_all(
+        sample_user.id, page=1, page_size=100
+    )
 
-    assert len(res) == 2
+    assert len(paged_items.items) == 2
 
 
 @pytest.mark.asyncio
@@ -112,6 +114,40 @@ async def test_empty_get_all(
     sample_user: User,
     delivery_methods_service: DeliveryMethodsService,
 ):
-    res = await delivery_methods_service.get_all(sample_user.id)
+    paged_items = await delivery_methods_service.get_all(
+        sample_user.id, page=1, page_size=100
+    )
+    assert len(paged_items.items) == 0
 
-    assert len(res) == 0
+
+@pytest.mark.parametrize(
+    "count, page_size, page, expect_count",
+    [
+        (1, 1, 1, 1),
+        (2, 1, 1, 1),
+        (10, 10, 1, 10),
+        (10, 5, 2, 5),
+        (2, 10, 1, 2),
+    ],
+)
+async def test_valid_get_all_pagination(
+    sample_user: User,
+    delivery_methods_service: DeliveryMethodsService,
+    count: int,
+    page_size: int,
+    page: int,
+    expect_count: int,
+):
+    methods = [
+        await delivery_methods_service.add(
+            sample_user.id, DeliveryMethodEnum.EMAIL, f"email{i}", meta_data=None
+        )
+        for i in range(count)
+    ]
+
+    paged_items = await delivery_methods_service.get_all(
+        sample_user.id, page=page, page_size=page_size
+    )
+
+    assert len(paged_items.items) == expect_count
+    assert paged_items.items == methods[((page - 1) * page_size) :][:page_size]

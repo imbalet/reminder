@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from fastapi_pagination import Page, Params
+from fastapi_pagination.ext.sqlalchemy import apaginate
 from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -64,21 +66,31 @@ class DeliveryMethodsService:
             return DeliveryMethodResponse.model_validate(result, from_attributes=True)
 
     async def get_all(
-        self, user_id: UUID, only_confirmed: bool = False
-    ) -> list[DeliveryMethodResponse]:
+        self,
+        user_id: UUID,
+        page: int,
+        page_size: int,
+        only_confirmed: bool = False,
+    ) -> Page[DeliveryMethodResponse]:
         async with self.session_factory() as session:
             if only_confirmed:
-                stmt = select(DeliveryMethodsOrm).filter_by(
-                    user_id=user_id, is_confirmed=True
+                stmt = (
+                    select(DeliveryMethodsOrm)
+                    .filter_by(user_id=user_id, is_confirmed=True)
+                    .order_by(DeliveryMethodsOrm.created_at.desc())
                 )
             else:
                 stmt = select(DeliveryMethodsOrm).filter_by(user_id=user_id)
-            res = await session.execute(stmt)
-            result = res.scalars().all()
-            return [
+
+            pages: Page = await apaginate(
+                session, stmt, Params(page=page, size=page_size)
+            )
+
+            pages.items = [
                 DeliveryMethodResponse.model_validate(method, from_attributes=True)
-                for method in result
+                for method in pages.items
             ]
+            return pages
 
     async def set_confirm(self, method_id: UUID) -> DeliveryMethodResponse | None:
         async with self.session_factory() as session:

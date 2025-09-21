@@ -6,6 +6,7 @@ from user_service.dependencies import (
     get_async_session_factory,
     get_confirm_code_service,
     get_delivery_methods_service,
+    get_notification_service,
     get_remove_delivery_method_produce_service,
 )
 from user_service.main import app
@@ -17,6 +18,7 @@ async def async_client(
     mock_delivery_service,
     mock_confirm_service,
     mock_produce_service,
+    mock_notification_service,
 ):
     app.dependency_overrides.update(
         {
@@ -25,6 +27,7 @@ async def async_client(
             get_confirm_code_service: lambda: mock_confirm_service,
             get_add_delivery_method_produce_service: lambda: mock_produce_service,
             get_remove_delivery_method_produce_service: lambda: mock_produce_service,
+            get_notification_service: lambda: mock_notification_service,
         }
     )
 

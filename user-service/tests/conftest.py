@@ -1,8 +1,9 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
 from aio_pika.pool import Pool
+from fastapi_pagination import Page, Params
 from rmq_service import ProduceService
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -13,12 +14,14 @@ from user_service.schemas import (
     DeliveryMethodResponse,
     EmailDelivery,
     MetaData,
+    NotificationResponse,
     TelegramDelivery,
     User,
 )
 from user_service.services import (
     ConfirmCodesService,
     DeliveryMethodsService,
+    NotificationService,
     UserService,
 )
 
@@ -108,11 +111,30 @@ def sample_delivery_method_email_add():
 
 
 @pytest.fixture
+def sample_notification(sample_user_data):
+    return NotificationResponse(
+        user_id=sample_user_data.id,
+        title="title",
+        content="content",
+        id=uuid4(),
+        created_at=datetime.now(UTC),
+        is_read=False,
+    )
+
+
+@pytest.fixture
 def mock_delivery_service(mocker, sample_delivery_method_tg_response):
+    def __get_page_args_delivery_methods(page: int, page_size: int, *args, **kwargs):
+        return Page.create(
+            [sample_delivery_method_tg_response],
+            Params(page=page, size=page_size),
+            total=100,
+        )
+
     mock = mocker.create_autospec(DeliveryMethodsService)
     mock.add.return_value = sample_delivery_method_tg_response
     mock.get.return_value = sample_delivery_method_tg_response
-    mock.get_all.return_value = [sample_delivery_method_tg_response]
+    mock.get_all.side_effect = __get_page_args_delivery_methods
     mock.delete.return_value = sample_delivery_method_tg_response
     return mock
 
@@ -121,6 +143,20 @@ def mock_delivery_service(mocker, sample_delivery_method_tg_response):
 def mock_confirm_service(mocker):
     mock = mocker.create_autospec(ConfirmCodesService)
     mock.confirm.return_value = "1", "username"
+    return mock
+
+
+@pytest.fixture
+def mock_notification_service(mocker, sample_notification):
+    def __get_page_args_notifications(page: int, page_size: int, *args, **kwargs):
+        return Page.create(
+            [sample_notification], Params(page=page, size=page_size), total=100
+        )
+
+    mock = mocker.create_autospec(NotificationService)
+    mock.get_all.side_effect = __get_page_args_notifications
+    mock.get.return_value = sample_notification
+    mock.delete.return_value = sample_notification
     return mock
 
 

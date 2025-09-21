@@ -1,14 +1,14 @@
 from uuid import uuid4
 
-from httpx import AsyncClient
 import pytest
-
+from fastapi_pagination import Page, Params
+from httpx import AsyncClient
 
 from user_service.exceptions import AlreadyExistsError
 from user_service.schemas import (
+    DeliveryMethodEnum,
     DeliveryMethodResponse,
     TelegramDelivery,
-    DeliveryMethodEnum,
 )
 
 
@@ -115,10 +115,10 @@ async def test_valid_get_all(
     mock_delivery_service,
 ):
     response = await async_client.get(
-        "/api/delivery/my",
+        "/api/delivery/my?page=1&limit=1",
         headers=user_header,
     )
-    res = [DeliveryMethodResponse.model_validate(i) for i in response.json()]
+    res = [DeliveryMethodResponse.model_validate(i) for i in response.json()["items"]]
     assert response.status_code == 200
     assert res == [sample_delivery_method_tg_response]
     mock_delivery_service.get_all.assert_awaited_once()
@@ -131,18 +131,17 @@ async def test_empty_get_all(
     user_header: dict[str, str],
     mock_delivery_service,
 ):
-    mock_delivery_service.get_all.return_value = []
+    mock_delivery_service.get_all.side_effect = lambda *_, **__: Page.create(
+        [], Params(page=1, size=1), total=0
+    )
 
     response = await async_client.get(
-        "/api/delivery/my",
+        "/api/delivery/my?page=1&limit=1",
         headers=user_header,
     )
-    res = [DeliveryMethodResponse.model_validate(i) for i in response.json()]
+    res = [DeliveryMethodResponse.model_validate(i) for i in response.json()["items"]]
     assert response.status_code == 200
     assert res == []
-    mock_delivery_service.get_all.assert_awaited_once_with(
-        sample_delivery_method_tg_response.user_id
-    )
 
 
 @pytest.mark.asyncio

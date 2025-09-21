@@ -1,9 +1,6 @@
 import pytest
 
-from user_service.use_cases import (
-    AddDeliveryUseCase,
-    BadRequestException,
-)
+from user_service.use_cases import AddDeliveryUseCase, BadRequestException
 
 
 @pytest.mark.asyncio

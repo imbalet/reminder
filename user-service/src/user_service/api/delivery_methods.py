@@ -2,6 +2,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, status
+from fastapi_pagination import Page, Params
 from rmq_service import ProduceService
 
 from user_service.dependencies import (
@@ -64,14 +65,19 @@ async def create_method(
     return res
 
 
-@router.get("/my", response_model=list[DeliveryMethodResponse])
+@router.get("/my", response_model=Page[DeliveryMethodResponse])
 async def get_all_methods(
     app_user_id: Annotated[UUID, Header()],
+    pagination_params: Annotated[Params, Depends()],
     delivery_service: Annotated[
         DeliveryMethodsService, Depends(get_delivery_methods_service)
     ],
 ):
-    res = await delivery_service.get_all(app_user_id)
+    res = await delivery_service.get_all(
+        user_id=app_user_id,
+        page=pagination_params.page,
+        page_size=pagination_params.size,
+    )
     return res
 
 

@@ -1,7 +1,9 @@
 from uuid import UUID
 
-from sqlalchemy import delete, update, select
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from fastapi_pagination import Page, Params
+from fastapi_pagination.ext.sqlalchemy import apaginate
+from sqlalchemy import delete, select, update
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from user_service.models import NotificationOrm
 from user_service.schemas import NotificationResponse
@@ -66,12 +68,21 @@ class NotificationService:
                 return None
             return NotificationResponse.model_validate(res, from_attributes=True)
 
-    async def get_all(self, user_id: UUID) -> list[NotificationResponse]:
+    async def get_all(
+        self, user_id: UUID, page: int, page_size: int
+    ) -> Page[NotificationResponse]:
         async with self.session_factory() as session:
-            stmt = select(NotificationOrm).filter_by(user_id=user_id)
-            res = await session.execute(stmt)
-            result = res.scalars()
-            return [
-                NotificationResponse.model_validate(i, from_attributes=True)
-                for i in result
+            stmt = (
+                select(NotificationOrm)
+                .filter_by(user_id=user_id)
+                .order_by(NotificationOrm.created_at.desc())
+            )
+            pages: Page = await apaginate(
+                session, stmt, Params(page=page, size=page_size)
+            )
+
+            pages.items = [
+                NotificationResponse.model_validate(method, from_attributes=True)
+                for method in pages.items
             ]
+            return pages

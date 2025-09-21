@@ -15,11 +15,11 @@ from user_service.services import (
 
 
 def get_async_session_factory(req: Request):
-    return req.app.state.session_factory  # type: ignore
+    return req.app.state.session_factory
 
 
 def get_redis(req: Request):
-    return req.app.state.redis  # type: ignore
+    return req.app.state.redis
 
 
 def get_delivery_methods_service(
