@@ -74,9 +74,10 @@ async def test_not_exists_get(reminder_service: ReminderService):
 async def test_valid_get_by_user_id(
     reminder_service: ReminderService, sample_db_reminder: ReminderResponse
 ):
-    res = await reminder_service.get_reminders_by_user_id(sample_db_reminder.user_id)
-    assert res is not None
-    assert res[0] == sample_db_reminder
+    res = await reminder_service.get_reminders_by_user_id(
+        sample_db_reminder.user_id, page_size=100, page=1
+    )
+    assert res.items == [sample_db_reminder]
 
 
 @pytest.mark.asyncio
@@ -95,15 +96,19 @@ async def test_valid_get_by_user_id_multiply(
                 sample_db_delivery_method_email.id,
             ],
         )
-    res = await reminder_service.get_reminders_by_user_id(sample_db_reminder.user_id)
+    res = await reminder_service.get_reminders_by_user_id(
+        sample_db_reminder.user_id, page_size=100, page=1
+    )
     assert res is not None
-    assert len(res) == 4
+    assert len(res.items) == 4
 
 
 @pytest.mark.asyncio
 async def test_user_not_exists_get_by_user_id(reminder_service: ReminderService):
-    res = await reminder_service.get_reminders_by_user_id(uuid4())
-    assert res == []
+    res = await reminder_service.get_reminders_by_user_id(
+        uuid4(), page_size=100, page=1
+    )
+    assert len(res.items) == 0
 
 
 @pytest.mark.asyncio

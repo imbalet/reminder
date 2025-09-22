@@ -1,7 +1,8 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, status
+from fastapi import APIRouter, Depends, Header, Request, status
+from fastapi_pagination import Page, Params
 
 from reminder_service.dependencies import get_reminders_service
 from reminder_service.schemas import (
@@ -9,12 +10,11 @@ from reminder_service.schemas import (
     ReminderEdit,
     ReminderResponse,
 )
-from reminder_service.services.reminder_service import ReminderService
+from reminder_service.services import ReminderService
 from reminder_service.use_cases import (
     AddReminderUseCase,
     DeleteReminderUseCase,
     EditReminderUseCase,
-    GetRemindersByUserIdUseCase,
     GetReminderUseCase,
 )
 
@@ -32,13 +32,18 @@ async def create(
     return res
 
 
-@router.get("/my", response_model=list[ReminderResponse])
+@router.get("/my", response_model=Page[ReminderResponse])
 async def get_my(
+    request: Request,
+    pagination_params: Annotated[Params, Depends()],
     reminder_service: Annotated[ReminderService, Depends(get_reminders_service)],
     app_user_id: UUID = Header(),
-) -> list[ReminderResponse]:
-    uc = GetRemindersByUserIdUseCase(reminder_service=reminder_service)
-    res = await uc.execute(user_id=app_user_id)
+) -> Page[ReminderResponse]:
+    res = await reminder_service.get_reminders_by_user_id(
+        page=pagination_params.page,
+        page_size=pagination_params.size,
+        user_id=app_user_id,
+    )
     return res
 
 

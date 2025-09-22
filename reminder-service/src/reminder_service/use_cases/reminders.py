@@ -11,7 +11,6 @@ from reminder_service.use_cases import ForbiddenException
 
 __all__ = [
     "AddReminderUseCase",
-    "GetRemindersByUserIdUseCase",
     "GetReminderUseCase",
     "DeleteReminderUseCase",
     "EditReminderUseCase",
@@ -51,23 +50,6 @@ class AddReminderUseCase:
             },
         )
 
-        return res
-
-
-class GetRemindersByUserIdUseCase:
-    def __init__(self, reminder_service: ReminderService):
-        self.reminder_service = reminder_service
-
-    async def execute(self, user_id: UUID) -> list[ReminderResponse]:
-        """Returns the list of reminders for a user
-
-        Args:
-            user_id (UUID): User ID
-
-        Returns:
-            list[ReminderResponse]: the list of reminders DTOs
-        """
-        res = await self.reminder_service.get_reminders_by_user_id(user_id=user_id)
         return res
 
 

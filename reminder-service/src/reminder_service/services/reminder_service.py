@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
+from fastapi_pagination import Page, Params
+from fastapi_pagination.ext.sqlalchemy import apaginate
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -52,15 +54,24 @@ class ReminderService:
                 return None
             return ReminderResponse.model_validate(result, from_attributes=True)
 
-    async def get_reminders_by_user_id(self, user_id: UUID) -> list[ReminderResponse]:
+    async def get_reminders_by_user_id(
+        self, user_id: UUID, page: int, page_size: int
+    ) -> Page[ReminderResponse]:
         async with self.session_factory() as session:
-            stmt = select(RemindersOrm).where(RemindersOrm.user_id == user_id)
-            result = await session.execute(stmt)
-            res = result.scalars().all()
-            return [
-                ReminderResponse.model_validate(reminder, from_attributes=True)
-                for reminder in res
+            stmt = (
+                select(RemindersOrm)
+                .filter_by(user_id=user_id)
+                .order_by(RemindersOrm.created_at.desc())
+            )
+            pages: Page = await apaginate(
+                session, stmt, Params(page=page, size=page_size)
+            )
+
+            pages.items = [
+                ReminderResponse.model_validate(method, from_attributes=True)
+                for method in pages.items
             ]
+            return pages
 
     async def delete_reminder(
         self, reminder_id: UUID, user_id: UUID
