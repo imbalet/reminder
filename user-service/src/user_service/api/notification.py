@@ -11,6 +11,7 @@ from user_service.schemas import (
 )
 from user_service.services import NotificationService
 from user_service.use_cases import (
+    DeleteNotificationUseCase,
     GetNotificationUseCase,
     ReadNotificationUseCase,
 )
@@ -76,3 +77,27 @@ async def read_notification(
     uc = ReadNotificationUseCase(notification_service=notification_service)
     res = await uc.execute(user_id=app_user_id, notification_id=notification_id)
     return res
+
+
+@router.delete(
+    "/{notification_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "Notification was deleted",
+        },
+        status.HTTP_403_FORBIDDEN: {
+            "model": ErrorResponse,
+            "description": "No access to notification",
+        },
+    },
+)
+async def delete_notification(
+    app_user_id: Annotated[UUID, Header()],
+    notification_service: Annotated[
+        NotificationService, Depends(get_notification_service)
+    ],
+    notification_id: UUID,
+):
+    uc = DeleteNotificationUseCase(notification_service=notification_service)
+    await uc.execute(user_id=app_user_id, notification_id=notification_id)

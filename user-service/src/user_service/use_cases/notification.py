@@ -1,11 +1,15 @@
 import logging
 from uuid import UUID
 
-from user_service.services import NotificationService
 from user_service.schemas import NotificationResponse
-from user_service.use_cases import ForbiddenException, BadRequestException
+from user_service.services import NotificationService
+from user_service.use_cases import BadRequestException, ForbiddenException
 
-__all__ = ["GetNotificationUseCase", "ReadNotificationUseCase"]
+__all__ = [
+    "GetNotificationUseCase",
+    "ReadNotificationUseCase",
+    "DeleteNotificationUseCase",
+]
 
 logger = logging.getLogger()
 
@@ -62,3 +66,25 @@ class ReadNotificationUseCase:
                 f"Notification with id {notification_id} is already read"
             )
         return res
+
+
+class DeleteNotificationUseCase:
+    def __init__(self, notification_service: NotificationService):
+        self.notification_service = notification_service
+
+    async def execute(self, user_id: UUID, notification_id: UUID) -> None:
+        """Deletes notification by ID with user validation
+
+        Args:
+            user_id (UUID): User ID
+            method_id (UUID): Notification ID.
+
+        Raises:
+            ForbiddenException: Notification doesn't exist or user doesn't own the notification.
+
+        """
+        res = await self.notification_service.delete(notification_id, user_id)
+        if not res:
+            raise BadRequestException(
+                f"Notification with id {notification_id} is already read"
+            )
