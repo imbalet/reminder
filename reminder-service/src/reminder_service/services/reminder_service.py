@@ -6,11 +6,11 @@ from fastapi_pagination.ext.sqlalchemy import apaginate
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from reminder_service.models import DeliveryMethodOrm, RemindersOrm, Status
-from reminder_service.schemas import (
-    ReminderEdit,
-    ReminderResponse,
+from reminder_service.models import (
+    DeliveryMethodOrm,
+    RemindersOrm,
 )
+from reminder_service.schemas import ReminderEdit, ReminderResponse, Status
 
 
 class ReminderService:
@@ -153,3 +153,45 @@ class ReminderService:
             if res is None:
                 return None
             return ReminderResponse.model_validate(res, from_attributes=True)
+
+    async def deactivate_orphan_reminders(self, user_id: UUID):
+        async with self.session_factory() as session:
+            stmt = (
+                update(RemindersOrm)
+                .where(
+                    RemindersOrm.user_id == user_id,
+                    RemindersOrm.status == Status.PENDING,
+                    ~RemindersOrm.delivery_methods.any(),
+                )
+                .values(status=Status.INACTIVE)
+                .returning(RemindersOrm)
+            )
+
+            res = await session.execute(stmt)
+            result = res.scalars().all()
+            return [
+                ReminderResponse.model_validate(rem, from_attributes=True)
+                for rem in result
+            ]
+
+    async def deactivate_reminders_by_method(self, delivery_method_id: UUID):
+        async with self.session_factory() as session:
+            stmt = (
+                update(RemindersOrm)
+                .where(
+                    RemindersOrm.status == Status.PENDING,
+                    RemindersOrm.delivery_methods.any(
+                        DeliveryMethodOrm.id == delivery_method_id
+                    ),
+                )
+                .values(status=Status.INACTIVE)
+                .returning(RemindersOrm)
+            )
+
+            res = await session.execute(stmt)
+            result = res.scalars().all()
+            await session.commit()
+            return [
+                ReminderResponse.model_validate(rem, from_attributes=True)
+                for rem in result
+            ]

@@ -16,9 +16,17 @@ from reminder_service.event_handlers import (
     handle_remove_delivery_method,
     send_reminders,
 )
-from reminder_service.services import ReminderService
+from reminder_service.services import DeliveryMethodService, ReminderService
 
 logger = logging.getLogger(__name__)
+
+
+def get_delivery_method_service(session_factory: async_sessionmaker):
+    return DeliveryMethodService(session_factory)
+
+
+def get_reminder_service(session_factory: async_sessionmaker):
+    return ReminderService(session_factory)
 
 
 async def setup_send_reminders_task(
@@ -54,7 +62,10 @@ async def setup_consume_error_reminders_task(
     await consume_service.setup()
     handle_error_reminders_task = asyncio.create_task(
         consume_service.consume(
-            partial(handle_error_reminders, session_factory),
+            partial(
+                handle_error_reminders,
+                reminder_service=get_reminder_service(session_factory),
+            ),
         )
     )
     return handle_error_reminders_task
@@ -70,7 +81,10 @@ async def setup_consume_delivery_method_add_task(
     await consume_service.setup()
     handle_error_reminders_task = asyncio.create_task(
         consume_service.consume(
-            partial(handle_add_delivery_method, session_factory),
+            partial(
+                handle_add_delivery_method,
+                delivery_method_service=get_delivery_method_service(session_factory),
+            ),
         )
     )
     return handle_error_reminders_task
@@ -84,9 +98,20 @@ async def setup_consume_delivery_method_remove_task(
         queue_config=QueueConfig(name=config.RMQ_DELIVERY_METHOD_REMOVE_QUEUE),
     )
     await consume_service.setup()
+
+    produce_service = ProduceService(
+        channel_pool=channel_pool, routing_key=config.RMQ_REMINDER_DEACTIVATE_QUEUE
+    )
+    await produce_service.setup()
+
     handle_error_reminders_task = asyncio.create_task(
         consume_service.consume(
-            partial(handle_remove_delivery_method, session_factory),
+            partial(
+                handle_remove_delivery_method,
+                delivery_method_service=get_delivery_method_service(session_factory),
+                reminder_service=get_reminder_service(session_factory),
+                produce_service=produce_service,
+            ),
         )
     )
     return handle_error_reminders_task

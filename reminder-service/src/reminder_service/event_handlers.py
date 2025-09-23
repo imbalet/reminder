@@ -2,12 +2,11 @@ import logging
 from uuid import UUID
 
 from rmq_service import ProduceService
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from reminder_service.models import Status
 from reminder_service.schemas import DeliveryMethod, ReminderResponse
 from reminder_service.services import DeliveryMethodService, ReminderService
-from reminder_service.use_cases import SendRemindersUseCase
+from reminder_service.use_cases import DeactivateReminders, SendRemindersUseCase
 
 logger = logging.getLogger(__name__)
 
@@ -22,33 +21,47 @@ async def send_reminders(
 
 
 async def handle_error_reminders(
-    session_factory: async_sessionmaker[AsyncSession], data: str, **kwargs
+    reminder_service: ReminderService, data: str, **kwargs
 ):
     reminder = ReminderResponse.model_validate_json(data)
-    service = ReminderService(session_factory)
-    res = await service.set_status(reminder.id, Status.FAILED)
+    res = await reminder_service.set_status(reminder.id, Status.FAILED)
     if res is None:
         logger.error("Error set failed status for reminder %s", reminder.id)
 
 
 async def handle_add_delivery_method(
-    session_factory: async_sessionmaker[AsyncSession], data: str, **kwargs
+    delivery_method_service: DeliveryMethodService, data: str, **kwargs
 ):
     method = DeliveryMethod.model_validate_json(data)
-    service = DeliveryMethodService(session_factory)
-    await service.create(
+    await delivery_method_service.create(
         id=method.id,
         delivery_method=method.delivery_method,
         contact_value=method.contact_value,
         user_id=method.user_id,
     )
+    logger.info("Delivery method with id %s was added", method.id)
 
 
 async def handle_remove_delivery_method(
-    session_factory: async_sessionmaker[AsyncSession], data: bytes, **kwargs
+    delivery_method_service: DeliveryMethodService,
+    reminder_service: ReminderService,
+    produce_service: ProduceService,
+    data: bytes,
+    **kwargs,
 ):
     method_id = UUID(data.decode())
-    service = DeliveryMethodService(session_factory)
-    res = await service.delete(id=method_id)
+
+    method = await delivery_method_service.get(method_id)
+    if not method:
+        raise ValueError(f"Method with id {method_id} does not exists")
+
+    uc = DeactivateReminders(
+        reminder_service=reminder_service, produce_service=produce_service
+    )
+    await uc.execute(delivery_method_id=method_id)
+
+    res = await delivery_method_service.delete(id=method_id)
     if not res:
         raise ValueError(f"Unable to delete delivery method with id {method_id}")
+
+    logger.info("Delivery method with id %s was removed", method.id)

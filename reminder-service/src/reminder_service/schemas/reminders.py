@@ -12,6 +12,7 @@ class Status(Enum):
     PENDING = "pending"
     SENT = "sent"
     FAILED = "failed"
+    INACTIVE = "inactive"
 
 
 class ReminderBase(BaseModel):
@@ -50,3 +51,7 @@ class ReminderEdit(BaseValidationModel):
     content: str | None = Field(default=None, min_length=3, max_length=2048)
     remind_date: datetime | None = Field(default=None)
     delivery_methods_ids: list[UUID] | None = Field(default=None)
+
+
+class DeactivatedReminder(ReminderBase):
+    id: UUID

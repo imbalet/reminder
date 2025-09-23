@@ -1,43 +1,74 @@
+import datetime
+from unittest.mock import AsyncMock
+from uuid import uuid4
+
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from aio_pika import Channel
+from aio_pika.pool import Pool
+from rmq_service import ProduceService
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from reminder_service.models import Base
+from reminder_service.schemas import (
+    DeliveryMethod,
+    DeliveryMethodEnum,
+    ReminderResponse,
+    Status,
+)
 from reminder_service.services import DeliveryMethodService, ReminderService
-from tests.config import config
 
 
 @pytest.fixture
-async def async_session_factory():
-    engine = create_async_engine(
-        config.DB_URL,
-        echo=True,
-        pool_size=10,
-        max_overflow=20,
-        future=True,
+def mock_async_session_factory():
+    mock = AsyncMock(spec=async_sessionmaker)
+    return mock
+
+
+@pytest.fixture
+def mock_channel_pool():
+    mock = AsyncMock(spec=Pool[Channel])
+    return mock
+
+
+@pytest.fixture
+def mock_reminder_service():
+    return AsyncMock(spec=ReminderService)
+
+
+@pytest.fixture
+def mock_produce_service():
+    return AsyncMock(spec=ProduceService)
+
+
+@pytest.fixture
+def mock_delivery_methods_service():
+    return AsyncMock(spec=DeliveryMethodService)
+
+
+@pytest.fixture
+def user_id():
+    return uuid4()
+
+
+@pytest.fixture
+def delivery_method_tg(user_id):
+    return DeliveryMethod(
+        id=uuid4(),
+        user_id=user_id,
+        delivery_method=DeliveryMethodEnum.TELEGRAM,
+        contact_value="contact",
     )
 
-    AsyncSessionLocal = async_sessionmaker(
-        bind=engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-        autoflush=False,
+
+@pytest.fixture
+def reminder(user_id, delivery_method_tg):
+    return ReminderResponse(
+        id=uuid4(),
+        title="title",
+        content="content",
+        remind_date=datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=1),
+        user_id=user_id,
+        created_at=datetime.datetime.now(datetime.UTC) - datetime.timedelta(hours=1),
+        status=Status.PENDING,
+        edited_at=None,
+        delivery_methods=[delivery_method_tg],
     )
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
-
-    yield AsyncSessionLocal
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-
-
-@pytest.fixture
-def reminder_service(async_session_factory):
-    return ReminderService(async_session_factory)
-
-
-@pytest.fixture
-def delivery_methods_service(async_session_factory):
-    return DeliveryMethodService(async_session_factory)

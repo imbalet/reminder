@@ -48,14 +48,16 @@ class DeliveryMethodService:
                 for method in result.delivery_methods
             ]
 
-    async def delete(self, id: UUID) -> DeliveryMethod | None:
+    async def delete(self, id: UUID) -> UUID | None:
         async with self.session_factory() as session:
             stmt = (
-                delete(DeliveryMethodOrm).filter_by(id=id).returning(DeliveryMethodOrm)
+                delete(DeliveryMethodOrm)
+                .filter_by(id=id)
+                .returning(DeliveryMethodOrm.id)
             )
             res = await session.execute(stmt)
             result = res.scalar()
             if not result:
                 return None
             await session.commit()
-            return DeliveryMethod.model_validate(result, from_attributes=True)
+            return result

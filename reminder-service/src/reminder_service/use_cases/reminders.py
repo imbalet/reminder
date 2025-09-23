@@ -1,7 +1,11 @@
+import json
 import logging
 from uuid import UUID
 
+from rmq_service import Message, ProduceService
+
 from reminder_service.schemas import (
+    DeactivatedReminder,
     ReminderCreate,
     ReminderEdit,
     ReminderResponse,
@@ -151,3 +155,32 @@ class EditReminderUseCase:
         )
 
         return res
+
+
+class DeactivateReminders:
+
+    def __init__(
+        self, reminder_service: ReminderService, produce_service: ProduceService
+    ):
+        self.reminder_service = reminder_service
+        self.produce_service = produce_service
+
+    async def execute(self, delivery_method_id: UUID):
+        res = await self.reminder_service.deactivate_reminders_by_method(
+            delivery_method_id=delivery_method_id
+        )
+
+        message = json.dumps(
+            [
+                DeactivatedReminder.model_validate(i, from_attributes=True).model_dump(
+                    mode="json"
+                )
+                for i in res
+            ]
+        )
+        await self.produce_service.produce(
+            Message(
+                body=message.encode(),
+                content_type="application/json",
+            )
+        )
