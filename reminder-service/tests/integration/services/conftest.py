@@ -43,7 +43,7 @@ async def sample_db_reminder(
     sample_db_delivery_method_email,
     sample_db_delivery_method_telegram,
 ):
-    res = await reminder_service.create_reminder(
+    res = await reminder_service.create(
         title="reminder",
         content="reminder",
         user_id=uuid4(),

@@ -6,8 +6,6 @@ from rmq_service import Message, ProduceService
 from reminder_service.schemas import ReminderResponse
 from reminder_service.services import ReminderService
 
-__all__ = ["SendRemindersUseCase"]
-
 logger = logging.getLogger(__name__)
 
 

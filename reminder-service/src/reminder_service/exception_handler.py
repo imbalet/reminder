@@ -2,6 +2,7 @@ import logging
 
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
+
 from reminder_service.use_cases import ForbiddenException
 
 logger = logging.getLogger(__name__)
@@ -11,7 +12,7 @@ def use_case_exception_handler(request: Request, exc: Exception):
     match exc:
         case ForbiddenException():
             return JSONResponse(
-                content=str(exc),
+                content={"detail": str(exc)},
                 status_code=exc.http_code,
             )
         case _:

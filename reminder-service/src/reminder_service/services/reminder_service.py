@@ -18,7 +18,7 @@ class ReminderService:
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self.session_factory = session_factory
 
-    async def create_reminder(
+    async def create(
         self,
         title: str,
         content: str,
@@ -47,14 +47,14 @@ class ReminderService:
             await session.refresh(reminder)
             return ReminderResponse.model_validate(reminder, from_attributes=True)
 
-    async def get_reminder(self, reminder_id: UUID) -> ReminderResponse | None:
+    async def get(self, reminder_id: UUID) -> ReminderResponse | None:
         async with self.session_factory() as session:
             result = await session.get(RemindersOrm, reminder_id)
             if result is None:
                 return None
             return ReminderResponse.model_validate(result, from_attributes=True)
 
-    async def get_reminders_by_user_id(
+    async def get_all(
         self, user_id: UUID, page: int, page_size: int
     ) -> Page[ReminderResponse]:
         async with self.session_factory() as session:
@@ -73,9 +73,7 @@ class ReminderService:
             ]
             return pages
 
-    async def delete_reminder(
-        self, reminder_id: UUID, user_id: UUID
-    ) -> ReminderResponse | None:
+    async def delete(self, reminder_id: UUID, user_id: UUID) -> ReminderResponse | None:
         async with self.session_factory() as session:
             stmt = (
                 delete(RemindersOrm)
@@ -89,7 +87,7 @@ class ReminderService:
             await session.commit()
             return ReminderResponse.model_validate(result, from_attributes=True)
 
-    async def edit_reminder(
+    async def edit(
         self,
         reminder_id: UUID,
         data: ReminderEdit,

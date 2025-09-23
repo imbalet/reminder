@@ -1,11 +1,12 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, Request, status
+from fastapi import APIRouter, Depends, Header, status
 from fastapi_pagination import Page, Params
 
 from reminder_service.dependencies import get_reminders_service
 from reminder_service.schemas import (
+    ErrorResponse,
     ReminderCreate,
     ReminderEdit,
     ReminderResponse,
@@ -18,10 +19,20 @@ from reminder_service.use_cases import (
     GetReminderUseCase,
 )
 
-router = APIRouter(prefix="/api/reminders", tags=["reminds"])
+router = APIRouter(prefix="/api/reminders", tags=["reminders"])
 
 
-@router.post("/", response_model=ReminderResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=ReminderResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_201_CREATED: {
+            "description": "Delivery method created",
+            "model": ReminderResponse,
+        }
+    },
+)
 async def create(
     reminder_service: Annotated[ReminderService, Depends(get_reminders_service)],
     data: ReminderCreate,
@@ -34,12 +45,11 @@ async def create(
 
 @router.get("/my", response_model=Page[ReminderResponse])
 async def get_my(
-    request: Request,
     pagination_params: Annotated[Params, Depends()],
     reminder_service: Annotated[ReminderService, Depends(get_reminders_service)],
     app_user_id: UUID = Header(),
 ) -> Page[ReminderResponse]:
-    res = await reminder_service.get_reminders_by_user_id(
+    res = await reminder_service.get_all(
         page=pagination_params.page,
         page_size=pagination_params.size,
         user_id=app_user_id,
@@ -47,7 +57,16 @@ async def get_my(
     return res
 
 
-@router.get("/{reminder_id}", response_model=ReminderResponse)
+@router.get(
+    "/{reminder_id}",
+    response_model=ReminderResponse,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "model": ErrorResponse,
+            "description": "No access to reminder",
+        },
+    },
+)
 async def get_by_id(
     reminder_service: Annotated[ReminderService, Depends(get_reminders_service)],
     reminder_id: UUID,
@@ -58,17 +77,16 @@ async def get_by_id(
     return res
 
 
-@router.delete("/{reminder_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_by_id(
-    reminder_service: Annotated[ReminderService, Depends(get_reminders_service)],
-    reminder_id: UUID,
-    app_user_id: UUID = Header(),
-) -> None:
-    uc = DeleteReminderUseCase(reminder_service=reminder_service)
-    await uc.execute(user_id=app_user_id, reminder_id=reminder_id)
-
-
-@router.patch("/{reminder_id}", response_model=ReminderResponse)
+@router.patch(
+    "/{reminder_id}",
+    response_model=ReminderResponse,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "model": ErrorResponse,
+            "description": "No access to reminder",
+        },
+    },
+)
 async def edit_by_id(
     reminder_service: Annotated[ReminderService, Depends(get_reminders_service)],
     data: ReminderEdit,
@@ -78,3 +96,22 @@ async def edit_by_id(
     uc = EditReminderUseCase(reminder_service=reminder_service)
     res = await uc.execute(user_id=app_user_id, reminder_id=reminder_id, data=data)
     return res
+
+
+@router.delete(
+    "/{reminder_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "model": ErrorResponse,
+            "description": "No access to reminder",
+        },
+    },
+)
+async def delete_by_id(
+    reminder_service: Annotated[ReminderService, Depends(get_reminders_service)],
+    reminder_id: UUID,
+    app_user_id: UUID = Header(),
+) -> None:
+    uc = DeleteReminderUseCase(reminder_service=reminder_service)
+    await uc.execute(user_id=app_user_id, reminder_id=reminder_id)

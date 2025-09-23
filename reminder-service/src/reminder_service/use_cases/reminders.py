@@ -9,13 +9,6 @@ from reminder_service.schemas import (
 from reminder_service.services.reminder_service import ReminderService
 from reminder_service.use_cases import ForbiddenException
 
-__all__ = [
-    "AddReminderUseCase",
-    "GetReminderUseCase",
-    "DeleteReminderUseCase",
-    "EditReminderUseCase",
-]
-
 logger = logging.getLogger()
 
 
@@ -33,7 +26,7 @@ class AddReminderUseCase:
         Returns:
             ReminderResponse: DTO for the created reminder
         """
-        res = await self.reminder_service.create_reminder(
+        res = await self.reminder_service.create(
             title=data.title,
             content=data.content,
             remind_date=data.remind_date,
@@ -70,7 +63,7 @@ class GetReminderUseCase:
         Returns:
             ReminderResponse: DTO for the reminder
         """
-        res = await self.reminder_service.get_reminder(reminder_id=reminder_id)
+        res = await self.reminder_service.get(reminder_id=reminder_id)
         if not res or res.user_id != user_id:
             raise ForbiddenException(f"No access to reminder with id {reminder_id}")
         return res
@@ -90,7 +83,7 @@ class DeleteReminderUseCase:
         Raises:
             ForbiddenException: The reminder doesn't exist or the user doesn't own the reminder
         """
-        res = await self.reminder_service.delete_reminder(
+        res = await self.reminder_service.delete(
             reminder_id=reminder_id, user_id=user_id
         )
         if not res:
@@ -134,7 +127,7 @@ class EditReminderUseCase:
         Returns:
             ReminderResponse: DTO for the edited reminder
         """
-        res = await self.reminder_service.edit_reminder(
+        res = await self.reminder_service.edit(
             data=data, reminder_id=reminder_id, user_id=user_id
         )
         if not res:

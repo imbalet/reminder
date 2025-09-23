@@ -21,7 +21,7 @@ async def test_valid_creating(
     sample_db_delivery_method_telegram,
     sample_db_delivery_method_email,
 ):
-    created = await reminder_service.create_reminder(
+    created = await reminder_service.create(
         title="reminder",
         content="reminder",
         user_id=uuid4(),
@@ -31,7 +31,7 @@ async def test_valid_creating(
             sample_db_delivery_method_email.id,
         ],
     )
-    assert await reminder_service.get_reminder(created.id) is not None
+    assert await reminder_service.get(created.id) is not None
 
 
 @pytest.mark.asyncio
@@ -41,7 +41,7 @@ async def test_valid_creating_not_utc(
     time = datetime.datetime.now(
         zoneinfo.ZoneInfo("Europe/Moscow")
     ) + datetime.timedelta(days=1)
-    created = await reminder_service.create_reminder(
+    created = await reminder_service.create(
         title="reminder",
         content="reminder",
         user_id=uuid4(),
@@ -50,7 +50,7 @@ async def test_valid_creating_not_utc(
             sample_db_delivery_method_email.id,
         ],
     )
-    res = await reminder_service.get_reminder(created.id)
+    res = await reminder_service.get(created.id)
     assert res is not None
     assert res.remind_date == time
 
@@ -59,14 +59,14 @@ async def test_valid_creating_not_utc(
 async def test_valid_get(
     reminder_service: ReminderService, sample_db_reminder: ReminderResponse
 ):
-    res = await reminder_service.get_reminder(sample_db_reminder.id)
+    res = await reminder_service.get(sample_db_reminder.id)
     assert res is not None
     assert res == sample_db_reminder
 
 
 @pytest.mark.asyncio
 async def test_not_exists_get(reminder_service: ReminderService):
-    res = await reminder_service.get_reminder(uuid4())
+    res = await reminder_service.get(uuid4())
     assert res is None
 
 
@@ -74,7 +74,7 @@ async def test_not_exists_get(reminder_service: ReminderService):
 async def test_valid_get_by_user_id(
     reminder_service: ReminderService, sample_db_reminder: ReminderResponse
 ):
-    res = await reminder_service.get_reminders_by_user_id(
+    res = await reminder_service.get_all(
         sample_db_reminder.user_id, page_size=100, page=1
     )
     assert res.items == [sample_db_reminder]
@@ -87,7 +87,7 @@ async def test_valid_get_by_user_id_multiply(
     sample_db_delivery_method_email,
 ):
     for _ in range(3):
-        await reminder_service.create_reminder(
+        await reminder_service.create(
             title="reminder",
             content="reminder",
             user_id=sample_db_reminder.user_id,
@@ -96,7 +96,7 @@ async def test_valid_get_by_user_id_multiply(
                 sample_db_delivery_method_email.id,
             ],
         )
-    res = await reminder_service.get_reminders_by_user_id(
+    res = await reminder_service.get_all(
         sample_db_reminder.user_id, page_size=100, page=1
     )
     assert res is not None
@@ -105,9 +105,7 @@ async def test_valid_get_by_user_id_multiply(
 
 @pytest.mark.asyncio
 async def test_user_not_exists_get_by_user_id(reminder_service: ReminderService):
-    res = await reminder_service.get_reminders_by_user_id(
-        uuid4(), page_size=100, page=1
-    )
+    res = await reminder_service.get_all(uuid4(), page_size=100, page=1)
     assert len(res.items) == 0
 
 
@@ -115,16 +113,16 @@ async def test_user_not_exists_get_by_user_id(reminder_service: ReminderService)
 async def test_valid_delete(
     reminder_service: ReminderService, sample_db_reminder: ReminderResponse
 ):
-    res = await reminder_service.delete_reminder(
+    res = await reminder_service.delete(
         sample_db_reminder.id, sample_db_reminder.user_id
     )
     assert res is not None
-    assert await reminder_service.get_reminder(sample_db_reminder.id) is None
+    assert await reminder_service.get(sample_db_reminder.id) is None
 
 
 @pytest.mark.asyncio
 async def test_not_exist_delete(reminder_service: ReminderService):
-    res = await reminder_service.delete_reminder(uuid4(), uuid4())
+    res = await reminder_service.delete(uuid4(), uuid4())
     assert res is None
 
 
@@ -140,10 +138,10 @@ async def test_valid_edit(
         )
         + datetime.timedelta(days=1),
     )
-    edited = await reminder_service.edit_reminder(
+    edited = await reminder_service.edit(
         sample_db_reminder.id, data=new_data, user_id=sample_db_reminder.user_id
     )
-    res = await reminder_service.get_reminder(sample_db_reminder.id)
+    res = await reminder_service.get(sample_db_reminder.id)
     assert sample_db_reminder.edited_at is None
     assert res == edited
     assert res is not None

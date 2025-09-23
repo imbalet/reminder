@@ -1,1 +1,3 @@
-from .reminders import router  # noqa
+from .reminders import router
+
+__all__ = ["router"]
