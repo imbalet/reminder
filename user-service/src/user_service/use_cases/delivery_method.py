@@ -13,12 +13,6 @@ from user_service.schemas import (
 from user_service.services import ConfirmCodesService, DeliveryMethodsService
 from user_service.use_cases import BadRequestException, ForbiddenException
 
-__all__ = [
-    "AddDeliveryUseCase",
-    "GetMethodUseCase",
-    "DeleteMethodUseCase",
-]
-
 logger = logging.getLogger()
 
 
@@ -72,7 +66,7 @@ class AddDeliveryUseCase:
             contact_value = delivery_method.contact_value
             meta_data = None
 
-        res = await self.delivery_service.add(
+        res = await self.delivery_service.create(
             user_id,
             delivery_method.delivery_method,
             contact_value,

@@ -4,7 +4,7 @@ from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
 from user_service.exceptions import AlreadyExistsError, NotFoundError
-from user_service.use_cases import ForbiddenException, BadRequestException
+from user_service.use_cases import BadRequestException, ForbiddenException
 
 logger = logging.getLogger(__name__)
 

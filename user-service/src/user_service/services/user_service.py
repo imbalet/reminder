@@ -1,11 +1,11 @@
 from uuid import UUID
 
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from user_service.schemas import UserResponse
-from user_service.models import UserOrm
 from user_service.exceptions import AlreadyExistsError
+from user_service.models import UserOrm
+from user_service.schemas import UserResponse
 
 
 class UserService:
@@ -13,7 +13,7 @@ class UserService:
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self.session_factory = session_factory
 
-    async def add(self, user_id: UUID, name: str, email: str) -> UserResponse:
+    async def create(self, user_id: UUID, name: str, email: str) -> UserResponse:
         try:
             async with self.session_factory() as session:
                 new_user = UserOrm(id=user_id, name=name, email=email)

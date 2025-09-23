@@ -5,12 +5,6 @@ from user_service.schemas import NotificationResponse
 from user_service.services import NotificationService
 from user_service.use_cases import BadRequestException, ForbiddenException
 
-__all__ = [
-    "GetNotificationUseCase",
-    "ReadNotificationUseCase",
-    "DeleteNotificationUseCase",
-]
-
 logger = logging.getLogger()
 
 

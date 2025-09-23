@@ -85,10 +85,6 @@ async def get_all_methods(
     "/{method_id}",
     response_model=DeliveryMethodResponse,
     responses={
-        status.HTTP_200_OK: {
-            "description": "Delivery method created",
-            "model": DeliveryMethodResponse,
-        },
         status.HTTP_403_FORBIDDEN: {
             "model": ErrorResponse,
             "description": "No access to delivery method",

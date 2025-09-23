@@ -1,6 +1,3 @@
-__all__ = ["UseCaseException", "ForbiddenException", "BadRequestException"]
-
-
 class UseCaseException(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)

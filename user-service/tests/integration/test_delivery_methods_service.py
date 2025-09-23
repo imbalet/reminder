@@ -16,7 +16,7 @@ from user_service.services import DeliveryMethodsService
 async def sample_method(
     sample_user: User, delivery_methods_service: DeliveryMethodsService
 ):
-    return await delivery_methods_service.add(
+    return await delivery_methods_service.create(
         sample_user.id,
         DeliveryMethodEnum.TELEGRAM,
         "chat_id",
@@ -33,7 +33,7 @@ async def sample_method(
 async def test_valid_add_get(
     delivery_methods_service: DeliveryMethodsService, sample_user: User
 ):
-    res = await delivery_methods_service.add(
+    res = await delivery_methods_service.create(
         sample_user.id, DeliveryMethodEnum.TELEGRAM, "tg_nickname"
     )
     from_db = await delivery_methods_service.get(res.id)
@@ -47,11 +47,11 @@ async def test_valid_add_get(
 async def test_method_already_exists_add(
     delivery_methods_service: DeliveryMethodsService, sample_user: User
 ):
-    await delivery_methods_service.add(
+    await delivery_methods_service.create(
         sample_user.id, DeliveryMethodEnum.TELEGRAM, "tg_nickname"
     )
     with pytest.raises(AlreadyExistsError):
-        await delivery_methods_service.add(
+        await delivery_methods_service.create(
             sample_user.id, DeliveryMethodEnum.TELEGRAM, "tg_nickname"
         )
 
@@ -96,10 +96,10 @@ async def test_valid_get_all(
     sample_user: User,
     delivery_methods_service: DeliveryMethodsService,
 ):
-    await delivery_methods_service.add(
+    await delivery_methods_service.create(
         sample_user.id, DeliveryMethodEnum.EMAIL, "email", meta_data=None
     )
-    await delivery_methods_service.add(
+    await delivery_methods_service.create(
         sample_user.id, DeliveryMethodEnum.EMAIL, "email1", meta_data=None
     )
     paged_items = await delivery_methods_service.get_all(
@@ -139,7 +139,7 @@ async def test_valid_get_all_pagination(
     expect_count: int,
 ):
     methods = [
-        await delivery_methods_service.add(
+        await delivery_methods_service.create(
             sample_user.id, DeliveryMethodEnum.EMAIL, f"email{i}", meta_data=None
         )
         for i in range(count)

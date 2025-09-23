@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 async def add_user_callback(session_factory, data: bytes, **kwargs):
     user = User.model_validate_json(data)
     service = UserService(session_factory)
-    await service.add(user_id=user.id, name=user.name, email=user.email)
+    await service.create(user_id=user.id, name=user.name, email=user.email)
 
 
 async def failed_reminders_callback(session_factory, data: bytes, **kwargs):

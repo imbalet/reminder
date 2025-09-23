@@ -33,7 +33,7 @@ def sample_user_data():
 
 @pytest.fixture
 async def sample_user(user_service: UserService, sample_user_data: User):
-    return await user_service.add(
+    return await user_service.create(
         user_id=sample_user_data.id,
         name=sample_user_data.name,
         email=sample_user_data.email,

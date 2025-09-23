@@ -16,7 +16,7 @@ class DeliveryMethodsService:
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self.session_factory = session_factory
 
-    async def add(
+    async def create(
         self,
         user_id: UUID,
         method: DeliveryMethodEnum,
@@ -46,12 +46,12 @@ class DeliveryMethodsService:
         self, user_id: UUID, method_id: UUID
     ) -> DeliveryMethodResponse | None:
         async with self.session_factory() as session:
-            query = (
+            stmt = (
                 delete(DeliveryMethodsOrm)
                 .filter_by(id=method_id, user_id=user_id)
                 .returning(DeliveryMethodsOrm)
             )
-            res = await session.execute(query)
+            res = await session.execute(stmt)
             await session.commit()
             result = res.scalar()
             if not result:
