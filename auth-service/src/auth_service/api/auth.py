@@ -1,33 +1,33 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, Request, status, APIRouter, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from rmq_service import ProduceService
 
+from auth_service.config import config
+from auth_service.dependencies import (
+    get_auth_data,
+    get_last_key_pair,
+    get_refresh_token_data,
+    get_token_service,
+    get_user_register_event_service,
+    get_user_service,
+)
+from auth_service.schemas import (
+    ErrorResponse,
+    KeyPair,
+    RefreshTokenData,
+    TokenResponse,
+    UserAuth,
+    UserRegisterRequest,
+    UserResponse,
+)
 from auth_service.services import RefreshTokenService, UserService
 from auth_service.use_cases import (
     AuthUseCase,
     CreateTokenPairUseCase,
-    RegisterUserUseCase,
     RefreshTokenPairUseCase,
+    RegisterUserUseCase,
 )
-from auth_service.schemas import (
-    TokenResponse,
-    UserRegisterRequest,
-    UserResponse,
-    UserAuth,
-    RefreshTokenData,
-    KeyPair,
-)
-from auth_service.config import config
-from auth_service.dependencies import (
-    get_user_service,
-    get_token_service,
-    get_refresh_token_data,
-    get_last_key_pair,
-    get_auth_data,
-    get_user_register_event_service,
-)
-from rmq_service import ProduceService
-
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -44,24 +44,42 @@ def set_token_to_cookie(response: Response, new_refresh_token: str):
     )
 
 
-@router.post("/register")
+@router.post(
+    "/register",
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_201_CREATED: {
+            "description": "User was registered",
+            "model": UserResponse,
+        },
+        status.HTTP_409_CONFLICT: {
+            "model": ErrorResponse,
+            "description": "User already exists",
+        },
+    },
+)
 async def register(
     request: Request,
     reg_data: UserRegisterRequest,
     user_service: Annotated[UserService, Depends(get_user_service)],
     event_service: Annotated[ProduceService, Depends(get_user_register_event_service)],
 ) -> UserResponse:
-    if "refresh_token" in request.cookies:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are already authenticated",
-        )
     register_uc = RegisterUserUseCase(user_service, event_service)
     res = await register_uc.execute(reg_data)
     return res
 
 
-@router.post("/login")
+@router.post(
+    "/login",
+    response_model=TokenResponse,
+    responses={
+        status.HTTP_401_UNAUTHORIZED: {
+            "model": ErrorResponse,
+            "description": "Incorrect username or password",
+        },
+    },
+)
 async def login(
     response: Response,
     auth_data: Annotated[UserAuth, Depends(get_auth_data)],
@@ -122,7 +140,7 @@ async def refresh_token(
     )
 
 
-@router.post("/logout")
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
     response: Response,
     token_service: Annotated[RefreshTokenService, Depends(get_token_service)],
@@ -133,4 +151,4 @@ async def logout(
 
     response.delete_cookie(key="refresh_token", path="/api/auth")
 
-    return {"message": "Successfully logged out"}
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

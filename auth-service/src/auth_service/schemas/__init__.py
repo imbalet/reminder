@@ -1,4 +1,5 @@
 from .keys import KeyPair
+from .response import ErrorResponse
 from .token import (
     AccessTokenData,
     GeneratedToken,
@@ -28,4 +29,5 @@ __all__ = [
     "UserResponse",
     "UserRmqData",
     "KeyPair",
+    "ErrorResponse",
 ]
