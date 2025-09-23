@@ -1,12 +1,12 @@
 from uuid import UUID, uuid4
 
-from auth_service.services import UserService, RefreshTokenService
-from auth_service.schemas import TokenPair, RefreshTokenData, AccessTokenData, KeyPair
+from auth_service.schemas import AccessTokenData, KeyPair, RefreshTokenData, TokenPair
 from auth_service.security import (
-    create_refresh_token,
     create_access_token,
+    create_refresh_token,
     get_hash,
 )
+from auth_service.services import RefreshTokenService, UserService
 
 
 def _generate_token_pair(user_id: UUID, key_pair: KeyPair):
@@ -33,7 +33,7 @@ class CreateTokenPairUseCase:
         self.user_service = user_service
 
     async def execute(self, user_id: UUID, key_pair: KeyPair) -> TokenPair | None:
-        user = await self.user_service.get_user(user_id)
+        user = await self.user_service.get(user_id)
 
         if user is None:
             return None
@@ -69,7 +69,7 @@ class RefreshTokenPairUseCase:
         if token is None:
             return None
 
-        user = await self.user_service.get_user(token.user_id)
+        user = await self.user_service.get(token.user_id)
         if user is None:
             return None
 

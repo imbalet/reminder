@@ -3,18 +3,18 @@ import datetime
 from uuid import uuid4
 
 import pytest
-from sqlalchemy.ext.asyncio.session import async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio.session import AsyncSession, async_sessionmaker
 
+from auth_service.exceptions import AlreadyExistsError, NotFoundError
 from auth_service.models import RefreshTokensOrm
+from auth_service.schemas import RefreshTokenData, UserResponse
 from auth_service.services import RefreshTokenService, UserService
-from auth_service.schemas import UserResponse, RefreshTokenData
-from auth_service.exceptions import NotFoundError, AlreadyExistsError
 
 
 @pytest.fixture
 async def sample_user(async_session_factory: async_sessionmaker[AsyncSession]):
     service = UserService(async_session_factory)
-    res = await service.create_user(email="john@example.com", hashed_password="hash")
+    res = await service.create(email="john@example.com", hashed_password="hash")
     return UserResponse.model_validate(res, from_attributes=True)
 
 

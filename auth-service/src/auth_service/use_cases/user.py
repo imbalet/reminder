@@ -1,13 +1,13 @@
-from auth_service.services import UserService
+from rmq_service import Message, ProduceService
+
 from auth_service.schemas.user import (
-    UserRegisterRequest,
     UserAuth,
+    UserRegisterRequest,
     UserResponse,
     UserRmqData,
 )
 from auth_service.security import get_hash, verify_password
-
-from rmq_service import ProduceService, Message
+from auth_service.services import UserService
 
 
 class RegisterUserUseCase:
@@ -27,7 +27,7 @@ class RegisterUserUseCase:
             UserResponse: Registered user object
         """
         hashed_password = get_hash(data.password)
-        res = await self.user_service.create_user(
+        res = await self.user_service.create(
             email=data.email, hashed_password=hashed_password
         )
         await self.event_service.produce(
@@ -53,7 +53,7 @@ class AuthUseCase:
         Returns:
             UserResponse | None: Authenticated user object if successful, None otherwise
         """
-        user = await self.user_service.get_user_by_email(data.email)
+        user = await self.user_service.get_by_email(data.email)
         if not user:
             return None
         if not verify_password(data.password, user.hashed_password):

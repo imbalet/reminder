@@ -1,12 +1,12 @@
 from uuid import UUID
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from auth_service.schemas import UserResponse, UserInDB
-from auth_service.models import UserOrm
 from auth_service.exceptions import AlreadyExistsError
+from auth_service.models import UserOrm
+from auth_service.schemas import UserInDB, UserResponse
 
 
 class UserService:
@@ -14,7 +14,7 @@ class UserService:
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self.session_factory = session_factory
 
-    async def create_user(self, email: str, hashed_password: str) -> UserResponse:
+    async def create(self, email: str, hashed_password: str) -> UserResponse:
         try:
             async with self.session_factory() as session:
                 new_user = UserOrm(email=email, hashed_password=hashed_password)
@@ -25,14 +25,14 @@ class UserService:
         except IntegrityError as e:
             raise AlreadyExistsError("User already exists") from e
 
-    async def get_user(self, user_id: UUID) -> UserInDB | None:
+    async def get(self, user_id: UUID) -> UserInDB | None:
         async with self.session_factory() as session:
             result = await session.get(UserOrm, user_id)
             if result is None:
                 return None
             return UserInDB.model_validate(result, from_attributes=True)
 
-    async def get_user_by_email(self, email: str) -> UserInDB | None:
+    async def get_by_email(self, email: str) -> UserInDB | None:
         async with self.session_factory() as session:
             stmt = select(UserOrm).filter_by(email=email)
             result = await session.execute(stmt)
