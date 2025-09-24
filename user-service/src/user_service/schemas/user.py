@@ -1,6 +1,6 @@
 from uuid import UUID
+
 from pydantic import BaseModel, EmailStr
-from .delivery_method import DeliveryMethodResponse
 
 
 class User(BaseModel):
@@ -10,4 +10,4 @@ class User(BaseModel):
 
 
 class UserResponse(User):
-    list[DeliveryMethodResponse]
+    pass
