@@ -46,23 +46,17 @@ async def startup_event(app: FastAPI):
 
     logger.info("DB started")
 
-    consume_users_task, consume_failed_reminders_task = await setup_tasks(
-        app.state.channel_pool, app.state.session_factory
-    )
+    all_tasks = await setup_tasks(app.state.channel_pool, app.state.session_factory)
 
     logger.info("Consume tasks started")
-    yield
-    consume_users_task.cancel()
-    try:
-        await consume_users_task
-    except asyncio.CancelledError:
-        pass
 
-    consume_failed_reminders_task.cancel()
-    try:
-        await consume_failed_reminders_task
-    except asyncio.CancelledError:
-        pass
+    yield
+
+    for i in all_tasks["tasks"]:
+        try:
+            await i
+        except asyncio.CancelledError:
+            pass
 
     await app.state.channel_pool.close()
     await app.state.connection_pool.close()

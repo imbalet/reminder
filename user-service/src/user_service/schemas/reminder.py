@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel
+
 from .delivery_method import DeliveryMethodEnum
 
 
@@ -20,3 +21,10 @@ class Reminder(BaseModel):
     created_at: datetime
     edited_at: datetime | None
     delivery_methods: list[DeliveryMethod]
+
+
+class DeactivatedReminder(BaseModel):
+    id: UUID
+    title: str
+    content: str
+    remind_date: datetime

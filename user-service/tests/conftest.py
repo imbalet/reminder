@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
@@ -132,7 +133,7 @@ def mock_delivery_service(mocker, sample_delivery_method_tg_response):
         )
 
     mock = mocker.create_autospec(DeliveryMethodsService)
-    mock.add.return_value = sample_delivery_method_tg_response
+    mock.create.return_value = sample_delivery_method_tg_response
     mock.get.return_value = sample_delivery_method_tg_response
     mock.get_all.side_effect = __get_page_args_delivery_methods
     mock.delete.return_value = sample_delivery_method_tg_response
@@ -143,6 +144,12 @@ def mock_delivery_service(mocker, sample_delivery_method_tg_response):
 def mock_confirm_service(mocker):
     mock = mocker.create_autospec(ConfirmCodesService)
     mock.confirm.return_value = "1", "username"
+    return mock
+
+
+@pytest.fixture
+def mock_user_service():
+    mock = AsyncMock(spec=UserService)
     return mock
 
 

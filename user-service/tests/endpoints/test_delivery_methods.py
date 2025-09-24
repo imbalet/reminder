@@ -28,7 +28,7 @@ async def test_valid_create(
     res = DeliveryMethodResponse.model_validate(response.json())
     assert res
     assert response.status_code == 201
-    mock_delivery_service.add.assert_awaited_once()
+    mock_delivery_service.create.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -37,7 +37,7 @@ async def test_already_exists_create(
     user_header: dict[str, str],
     mock_delivery_service,
 ):
-    mock_delivery_service.add.side_effect = AlreadyExistsError("")
+    mock_delivery_service.create.side_effect = AlreadyExistsError("")
 
     data = TelegramDelivery(
         delivery_method=DeliveryMethodEnum.TELEGRAM, confirm_code="telegram"
@@ -49,7 +49,7 @@ async def test_already_exists_create(
         headers=user_header,
     )
     assert response.status_code == 409
-    mock_delivery_service.add.assert_awaited_once()
+    mock_delivery_service.create.assert_awaited_once()
 
 
 @pytest.mark.asyncio

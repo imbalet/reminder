@@ -11,7 +11,8 @@ from user_service.schemas import (
     MetaData,
 )
 from user_service.services import ConfirmCodesService, DeliveryMethodsService
-from user_service.use_cases import BadRequestException, ForbiddenException
+
+from .exceptions import BadRequestException, ForbiddenException
 
 logger = logging.getLogger()
 

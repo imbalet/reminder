@@ -22,7 +22,7 @@ async def test_valid_add_tg(
 
     assert res.user_id == sample_user_data.id
     mock_confirm_service.confirm.assert_awaited_once()
-    mock_delivery_service.add.assert_awaited_once()
+    mock_delivery_service.create.assert_awaited_once()
 
 
 @pytest.mark.asyncio

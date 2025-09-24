@@ -29,6 +29,7 @@ class Config(BaseSettings):
     RMQ_USER_ADD_QUEUE: str
     RMQ_DELIVERY_METHOD_ADD_QUEUE: str
     RMQ_DELIVERY_METHOD_REMOVE_QUEUE: str
+    RMQ_REMINDER_DEACTIVATE_QUEUE: str
     RMQ_USER: str
     RMQ_PASS: str
     RMQ_HOST: str

@@ -9,7 +9,7 @@ from .delivery_method import (
     TelegramDelivery,
 )
 from .notification import NotificationResponse
-from .reminder import Reminder
+from .reminder import DeactivatedReminder, Reminder
 from .response import ErrorResponse
 from .user import User, UserResponse
 
@@ -26,5 +26,6 @@ __all__ = [
     "UserResponse",
     "NotificationResponse",
     "Reminder",
+    "DeactivatedReminder",
     "ErrorResponse",
 ]
