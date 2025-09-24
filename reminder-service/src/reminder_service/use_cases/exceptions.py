@@ -8,3 +8,8 @@ class UseCaseException(Exception):
 class ForbiddenException(UseCaseException):
     http_code = 403
     pass
+
+
+class BadRequestException(UseCaseException):
+    http_code = 400
+    pass

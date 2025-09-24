@@ -29,10 +29,14 @@ class ReminderService:
         async with self.session_factory() as session:
             result = await session.execute(
                 select(DeliveryMethodOrm).where(
-                    DeliveryMethodOrm.id.in_(delivery_method_ids)
+                    DeliveryMethodOrm.id.in_(delivery_method_ids),
+                    DeliveryMethodOrm.user_id == user_id,
                 )
             )
             delivery_methods = result.scalars().all()
+
+            if len(delivery_methods) != len(delivery_method_ids):
+                raise ValueError("Invalid delivery method(s)")
 
             reminder = RemindersOrm(
                 title=title,

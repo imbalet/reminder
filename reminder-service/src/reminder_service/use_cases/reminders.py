@@ -10,7 +10,7 @@ from reminder_service.schemas import (
     ReminderResponse,
 )
 from reminder_service.services.reminder_service import ReminderService
-from reminder_service.use_cases import ForbiddenException
+from reminder_service.use_cases import BadRequestException, ForbiddenException
 
 logger = logging.getLogger()
 
@@ -29,22 +29,25 @@ class AddReminderUseCase:
         Returns:
             ReminderResponse: DTO for the created reminder
         """
-        res = await self.reminder_service.create(
-            title=data.title,
-            content=data.content,
-            remind_date=data.remind_date,
-            user_id=user_id,
-            delivery_method_ids=data.delivery_methods_ids,
-        )
+        try:
+            res = await self.reminder_service.create(
+                title=data.title,
+                content=data.content,
+                remind_date=data.remind_date,
+                user_id=user_id,
+                delivery_method_ids=data.delivery_methods_ids,
+            )
 
-        logger.info(
-            "Reminder added",
-            extra={
-                "user_id": str(user_id),
-                "operation": "add_reminder",
-                "result": "success",
-            },
-        )
+            logger.info(
+                "Reminder added",
+                extra={
+                    "user_id": str(user_id),
+                    "operation": "add_reminder",
+                    "result": "success",
+                },
+            )
+        except ValueError:
+            raise BadRequestException("one or more delivery method ids are invalid")
 
         return res
 

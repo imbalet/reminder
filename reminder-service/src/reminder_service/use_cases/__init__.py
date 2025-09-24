@@ -1,8 +1,5 @@
 # flake8: noqa
-from .exceptions import (
-    UseCaseException,
-    ForbiddenException,
-)
+from .exceptions import UseCaseException, ForbiddenException, BadRequestException
 from .reminders import (
     AddReminderUseCase,
     GetReminderUseCase,
@@ -23,4 +20,5 @@ __all__ = [
     "DeleteReminderUseCase",
     "EditReminderUseCase",
     "DeactivateRemindersUseCase",
+    "BadRequestException",
 ]
