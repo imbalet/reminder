@@ -8,7 +8,7 @@ from .reminders import (
     GetReminderUseCase,
     DeleteReminderUseCase,
     EditReminderUseCase,
-    DeactivateReminders,
+    DeactivateRemindersUseCase,
 )
 from .events import (
     SendRemindersUseCase,
@@ -22,5 +22,5 @@ __all__ = [
     "GetReminderUseCase",
     "DeleteReminderUseCase",
     "EditReminderUseCase",
-    "DeactivateReminders",
+    "DeactivateRemindersUseCase",
 ]

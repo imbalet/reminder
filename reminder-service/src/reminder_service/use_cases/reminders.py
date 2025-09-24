@@ -1,4 +1,3 @@
-import json
 import logging
 from uuid import UUID
 
@@ -157,7 +156,7 @@ class EditReminderUseCase:
         return res
 
 
-class DeactivateReminders:
+class DeactivateRemindersUseCase:
 
     def __init__(
         self, reminder_service: ReminderService, produce_service: ProduceService
@@ -169,18 +168,19 @@ class DeactivateReminders:
         res = await self.reminder_service.deactivate_reminders_by_method(
             delivery_method_id=delivery_method_id
         )
+        if len(res) == 0:
+            return
 
-        message = json.dumps(
-            [
-                DeactivatedReminder.model_validate(i, from_attributes=True).model_dump(
-                    mode="json"
-                )
-                for i in res
-            ]
-        )
         await self.produce_service.produce(
-            Message(
-                body=message.encode(),
-                content_type="application/json",
+            Message.from_json(
+                {
+                    "user_id": str(res[0].user_id),
+                    "reminders": [
+                        DeactivatedReminder.model_validate(
+                            i, from_attributes=True
+                        ).model_dump(mode="json")
+                        for i in res
+                    ],
+                }
             )
         )

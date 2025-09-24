@@ -6,7 +6,7 @@ from rmq_service import ProduceService
 from reminder_service.models import Status
 from reminder_service.schemas import DeliveryMethod, ReminderResponse
 from reminder_service.services import DeliveryMethodService, ReminderService
-from reminder_service.use_cases import DeactivateReminders, SendRemindersUseCase
+from reminder_service.use_cases import DeactivateRemindersUseCase, SendRemindersUseCase
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ async def handle_remove_delivery_method(
     if not method:
         raise ValueError(f"Method with id {method_id} does not exists")
 
-    uc = DeactivateReminders(
+    uc = DeactivateRemindersUseCase(
         reminder_service=reminder_service, produce_service=produce_service
     )
     await uc.execute(delivery_method_id=method_id)
