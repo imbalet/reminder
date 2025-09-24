@@ -24,8 +24,8 @@ class DeliveryMethodsService:
         meta_data: MetaData | None = None,
         is_confirmed: bool = False,
     ) -> DeliveryMethodResponse:
-        try:
-            async with self.session_factory() as session:
+        async with self.session_factory() as session:
+            try:
                 new_method = DeliveryMethodsOrm(
                     user_id=user_id,
                     delivery_method=method,
@@ -39,8 +39,9 @@ class DeliveryMethodsService:
                 return DeliveryMethodResponse.model_validate(
                     new_method, from_attributes=True
                 )
-        except IntegrityError as e:
-            raise AlreadyExistsError("Delivery method already exists") from e
+            except IntegrityError as e:
+                await session.rollback()
+                raise AlreadyExistsError("Delivery method already exists") from e
 
     async def delete(
         self, user_id: UUID, method_id: UUID

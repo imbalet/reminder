@@ -38,5 +38,5 @@ async def deactivated_reminders_callback(
         user_id=user_id,
         title=f"{len(reminders)} reminder(s) were deactivated",
         content=f"Your reminders have no delivery methods and were disabled:\
-              {'\n'.join(f'{i.title} - {i.remind_date}' for i in reminders)}",
+{'\n'.join(f'{i.title} - {i.remind_date}' for i in reminders)}",
     )
