@@ -22,7 +22,7 @@ class ReminderBase(BaseModel):
 
 
 class ReminderCreate(ReminderBase):
-    delivery_methods_ids: list[UUID]
+    delivery_methods_ids: list[UUID] = Field(min_length=1)
 
     model_config = ConfigDict(str_strip_whitespace=True)
 
