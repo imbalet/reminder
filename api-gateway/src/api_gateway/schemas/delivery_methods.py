@@ -11,6 +11,10 @@ class DeliveryMethodEnum(str, Enum):
     EMAIL = "email"
 
 
+class MetaData(BaseModel):
+    username: str | None = None  # Only for telegram
+
+
 class TelegramDelivery(BaseModel):
     delivery_method: Literal[DeliveryMethodEnum.TELEGRAM]
     confirm_code: str
@@ -30,3 +34,4 @@ class DeliveryMethodResponse(BaseModel):
     created_at: datetime
     delivery_method: DeliveryMethodEnum
     contact_value: str
+    meta_data: MetaData

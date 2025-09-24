@@ -16,6 +16,7 @@ dependencies = [
     "cryptography>=45.0.4",
     "passlib[bcrypt]>=1.7.4",
     "python-multipart>=0.0.20",
+    "fastapi-pagination>=0.14.1",
 ]
 
 [tool.setuptools.packages.find]

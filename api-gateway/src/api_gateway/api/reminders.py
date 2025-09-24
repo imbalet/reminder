@@ -3,11 +3,13 @@ from uuid import UUID
 
 import httpx
 from fastapi import APIRouter, Depends, status
+from fastapi_pagination import Page, Params
 
 from api_gateway.config import config
 from api_gateway.dependencies import get_access_token_data
 from api_gateway.schemas import (
     AccessTokenData,
+    ErrorResponse,
     ReminderCreate,
     ReminderEdit,
     ReminderResponse,
@@ -15,10 +17,20 @@ from api_gateway.schemas import (
 
 from .utils import error_handler
 
-router = APIRouter(prefix="/api/reminders", tags=["reminds"])
+router = APIRouter(prefix="/api/reminders", tags=["reminders"])
 
 
-@router.post("/", response_model=ReminderResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=ReminderResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_201_CREATED: {
+            "description": "Delivery method created",
+            "model": ReminderResponse,
+        }
+    },
+)
 @error_handler
 async def create(
     token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
@@ -33,19 +45,33 @@ async def create(
         return response.json()
 
 
-@router.get("/my", response_model=list[ReminderResponse])
+@router.get("/my", response_model=Page[ReminderResponse])
 @error_handler
 async def get_my(
     token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
+    pagination_params: Annotated[Params, Depends()],
 ):
     async with httpx.AsyncClient(base_url=config.REMINDER_URL, timeout=10.0) as client:
         headers = {"App-User-Id": str(token_data.user_id)}
-        response = await client.get("/api/reminders/my", headers=headers)
+        response = await client.get(
+            "/api/reminders/my",
+            headers=headers,
+            params=pagination_params.model_dump(mode="json"),
+        )
         response.raise_for_status()
         return response.json()
 
 
-@router.get("/{reminder_id}", response_model=ReminderResponse)
+@router.get(
+    "/{reminder_id}",
+    response_model=ReminderResponse,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "model": ErrorResponse,
+            "description": "No access to reminder",
+        },
+    },
+)
 @error_handler
 async def get_by_id(
     token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
@@ -58,19 +84,16 @@ async def get_by_id(
         return response.json()
 
 
-@router.delete("/{reminder_id}", status_code=status.HTTP_204_NO_CONTENT)
-@error_handler
-async def delete_by_id(
-    token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
-    reminder_id: UUID,
-):
-    async with httpx.AsyncClient(base_url=config.REMINDER_URL, timeout=10.0) as client:
-        headers = {"App-User-Id": str(token_data.user_id)}
-        response = await client.delete(f"/api/reminders/{reminder_id}", headers=headers)
-        response.raise_for_status()
-
-
-@router.patch("/{reminder_id}", response_model=ReminderResponse)
+@router.patch(
+    "/{reminder_id}",
+    response_model=ReminderResponse,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "model": ErrorResponse,
+            "description": "No access to reminder",
+        },
+    },
+)
 @error_handler
 async def edit_by_id(
     token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
@@ -86,3 +109,24 @@ async def edit_by_id(
         )
         response.raise_for_status()
         return response.json()
+
+
+@router.delete(
+    "/{reminder_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "model": ErrorResponse,
+            "description": "No access to reminder",
+        },
+    },
+)
+@error_handler
+async def delete_by_id(
+    token_data: Annotated[AccessTokenData, Depends(get_access_token_data)],
+    reminder_id: UUID,
+):
+    async with httpx.AsyncClient(base_url=config.REMINDER_URL, timeout=10.0) as client:
+        headers = {"App-User-Id": str(token_data.user_id)}
+        response = await client.delete(f"/api/reminders/{reminder_id}", headers=headers)
+        response.raise_for_status()

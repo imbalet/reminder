@@ -6,7 +6,6 @@ from .token import (
 )
 from .user import (
     UserAuth,
-    UserBase,
     UserRegisterRequest,
     UserResponse,
 )
@@ -18,3 +17,4 @@ from .delivery_methods import (
     DeliveryMethodResponse,
 )
 from .notification import NotificationResponse
+from .response import ErrorResponse

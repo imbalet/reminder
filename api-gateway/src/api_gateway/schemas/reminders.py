@@ -2,9 +2,8 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
-from .base import BaseValidationModel
 from .delivery_methods import DeliveryMethodEnum
 
 
@@ -19,13 +18,14 @@ class Status(Enum):
     PENDING = "pending"
     SENT = "sent"
     FAILED = "failed"
+    INACTIVE = "inactive"
 
 
 class ReminderBase(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    title: str = Field(min_length=3, max_length=100)
-    content: str = Field(min_length=3, max_length=2048)
+    title: str
+    content: str
     remind_date: datetime
 
 
@@ -42,8 +42,8 @@ class ReminderResponse(ReminderBase):
     delivery_methods: list[DeliveryMethod]
 
 
-class ReminderEdit(BaseValidationModel):
-    title: str | None = Field(default=None, min_length=3, max_length=100)
-    content: str | None = Field(default=None, min_length=3, max_length=2048)
-    remind_date: datetime | None = Field(default=None)
-    delivery_methods_ids: list[UUID] | None = Field(default=None)
+class ReminderEdit(BaseModel):
+    title: str | None
+    content: str | None
+    remind_date: datetime | None
+    delivery_methods_ids: list[UUID] | None

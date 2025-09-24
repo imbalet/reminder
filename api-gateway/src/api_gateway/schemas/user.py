@@ -9,15 +9,13 @@ class UserAuth(BaseModel):
     password: str
 
 
-class UserBase(BaseModel):
+class UserRegisterRequest(BaseModel):
     email: EmailStr
-
-
-class UserRegisterRequest(UserBase):
     name: str
     password: str
 
 
-class UserResponse(UserBase):
+class UserResponse(BaseModel):
     id: UUID
+    email: EmailStr
     registered_at: datetime
