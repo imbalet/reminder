@@ -13,7 +13,7 @@ from user_service.schemas import (
 
 
 @pytest.mark.asyncio
-async def test_valid_create(
+async def test_create(
     async_client: AsyncClient, user_header: dict[str, str], mock_delivery_service
 ):
     data = TelegramDelivery(
@@ -32,7 +32,7 @@ async def test_valid_create(
 
 
 @pytest.mark.asyncio
-async def test_already_exists_create(
+async def test_create_already_exists(
     async_client: AsyncClient,
     user_header: dict[str, str],
     mock_delivery_service,
@@ -53,66 +53,62 @@ async def test_already_exists_create(
 
 
 @pytest.mark.asyncio
-async def test_valid_get(
+async def test_get(
     async_client: AsyncClient,
-    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
     mock_delivery_service,
+    delivery_method_tg_response: DeliveryMethodResponse,
 ):
     response = await async_client.get(
-        f"/api/delivery/{sample_delivery_method_tg_response.id}",
+        f"/api/delivery/{delivery_method_tg_response.id}",
         headers=user_header,
     )
     res = DeliveryMethodResponse.model_validate(response.json())
     assert response.status_code == 200
-    assert res == sample_delivery_method_tg_response
+    assert res == delivery_method_tg_response
     mock_delivery_service.get.assert_awaited_once()
 
 
 @pytest.mark.asyncio
-async def test_forbidden_not_found_get(
+async def test_get_forbidden_not_found(
     async_client: AsyncClient,
-    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
     mock_delivery_service,
+    delivery_method_tg_response: DeliveryMethodResponse,
 ):
     mock_delivery_service.get.return_value = None
 
     response = await async_client.get(
-        f"/api/delivery/{sample_delivery_method_tg_response.id}",
+        f"/api/delivery/{delivery_method_tg_response.id}",
         headers=user_header,
     )
     assert response.status_code == 403
-    mock_delivery_service.get.assert_awaited_once_with(
-        sample_delivery_method_tg_response.id
-    )
+    mock_delivery_service.get.assert_awaited_once_with(delivery_method_tg_response.id)
 
 
 @pytest.mark.asyncio
-async def test_forbidden_no_permissions_get(
+async def test_get_forbidden_no_permissions(
     async_client: AsyncClient,
-    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
     mock_delivery_service,
+    delivery_method_tg_response: DeliveryMethodResponse,
 ):
     mock_delivery_service.get.return_value.user_id = uuid4()
 
     response = await async_client.get(
-        f"/api/delivery/{sample_delivery_method_tg_response.id}",
+        f"/api/delivery/{delivery_method_tg_response.id}",
         headers=user_header,
     )
     assert response.status_code == 403
-    mock_delivery_service.get.assert_awaited_once_with(
-        sample_delivery_method_tg_response.id
-    )
+    mock_delivery_service.get.assert_awaited_once_with(delivery_method_tg_response.id)
 
 
 @pytest.mark.asyncio
-async def test_valid_get_all(
+async def test_get_all(
     async_client: AsyncClient,
-    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
     mock_delivery_service,
+    delivery_method_tg_response: DeliveryMethodResponse,
 ):
     response = await async_client.get(
         "/api/delivery/my?page=1&limit=1",
@@ -120,14 +116,13 @@ async def test_valid_get_all(
     )
     res = [DeliveryMethodResponse.model_validate(i) for i in response.json()["items"]]
     assert response.status_code == 200
-    assert res == [sample_delivery_method_tg_response]
+    assert res == [delivery_method_tg_response]
     mock_delivery_service.get_all.assert_awaited_once()
 
 
 @pytest.mark.asyncio
-async def test_empty_get_all(
+async def test_get_all_empty(
     async_client: AsyncClient,
-    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
     mock_delivery_service,
 ):
@@ -145,14 +140,14 @@ async def test_empty_get_all(
 
 
 @pytest.mark.asyncio
-async def test_valid_delete(
+async def test_delete(
     async_client: AsyncClient,
-    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
     mock_delivery_service,
+    delivery_method_tg_response: DeliveryMethodResponse,
 ):
     response = await async_client.delete(
-        f"/api/delivery/{sample_delivery_method_tg_response.id}",
+        f"/api/delivery/{delivery_method_tg_response.id}",
         headers=user_header,
     )
     assert response.status_code == 204
@@ -160,20 +155,20 @@ async def test_valid_delete(
 
 
 @pytest.mark.asyncio
-async def test_forbidden_delete(
+async def test_delete_forbidden(
     async_client: AsyncClient,
-    sample_delivery_method_tg_response: DeliveryMethodResponse,
     user_header: dict[str, str],
     mock_delivery_service,
+    delivery_method_tg_response: DeliveryMethodResponse,
 ):
     mock_delivery_service.delete.return_value = None
 
     response = await async_client.delete(
-        f"/api/delivery/{sample_delivery_method_tg_response.id}",
+        f"/api/delivery/{delivery_method_tg_response.id}",
         headers=user_header,
     )
     assert response.status_code == 403
     mock_delivery_service.delete.assert_awaited_once_with(
-        sample_delivery_method_tg_response.user_id,
-        sample_delivery_method_tg_response.id,
+        delivery_method_tg_response.user_id,
+        delivery_method_tg_response.id,
     )
