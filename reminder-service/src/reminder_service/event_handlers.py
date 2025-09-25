@@ -15,13 +15,13 @@ async def send_reminders(
     send_service: ProduceService, reminder_service: ReminderService
 ):
     send_uc = SendRemindersUseCase(
-        event_service=send_service, reminder_service=reminder_service
+        produce_service=send_service, reminder_service=reminder_service
     )
     await send_uc.execute()
 
 
 async def handle_error_reminders(
-    reminder_service: ReminderService, data: str, **kwargs
+    reminder_service: ReminderService, data: bytes, **kwargs
 ):
     reminder = ReminderResponse.model_validate_json(data)
     res = await reminder_service.set_status(reminder.id, Status.FAILED)
@@ -30,7 +30,7 @@ async def handle_error_reminders(
 
 
 async def handle_add_delivery_method(
-    delivery_method_service: DeliveryMethodService, data: str, **kwargs
+    delivery_method_service: DeliveryMethodService, data: bytes, **kwargs
 ):
     method = DeliveryMethod.model_validate_json(data)
     await delivery_method_service.create(

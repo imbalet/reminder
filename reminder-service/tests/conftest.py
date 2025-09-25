@@ -11,10 +11,13 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from reminder_service.schemas import (
     DeliveryMethod,
     DeliveryMethodEnum,
+    ReminderCreate,
     ReminderResponse,
     Status,
 )
 from reminder_service.services import DeliveryMethodService, ReminderService
+
+# Services
 
 
 @pytest.fixture
@@ -44,6 +47,9 @@ def mock_delivery_methods_service():
     return AsyncMock(spec=DeliveryMethodService)
 
 
+# Objects
+
+
 @pytest.fixture
 def user_id():
     return uuid4()
@@ -56,6 +62,16 @@ def delivery_method_tg(user_id):
         user_id=user_id,
         delivery_method=DeliveryMethodEnum.TELEGRAM,
         contact_value="contact",
+    )
+
+
+@pytest.fixture
+def reminder_create(delivery_method_tg):
+    return ReminderCreate(
+        title="title",
+        content="content",
+        remind_date=datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=1),
+        delivery_methods_ids=[delivery_method_tg.id],
     )
 
 

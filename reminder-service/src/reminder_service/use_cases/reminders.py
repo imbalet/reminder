@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from uuid import UUID
 
@@ -129,34 +130,61 @@ class EditReminderUseCase:
 
         Raises:
             ForbiddenException: The reminder doesn't exist or the user doesn't own the reminder
+            BadRequestException: One or more delivery methods are forbidden
 
         Returns:
             ReminderResponse: DTO for the edited reminder
         """
-        res = await self.reminder_service.edit(
-            data=data, reminder_id=reminder_id, user_id=user_id
-        )
-        if not res:
+
+        try:
+            res = await self.reminder_service.edit(
+                data=data, reminder_id=reminder_id, user_id=user_id
+            )
+            if not res:
+                logger.info(
+                    "No access to reminder",
+                    extra={
+                        "user_id": str(user_id),
+                        "operation": "edit_reminder",
+                        "result": "error",
+                    },
+                )
+                raise ForbiddenException(f"No access to reminder with id {reminder_id}")
             logger.info(
-                "No access to reminder",
+                "Reminder edited",
                 extra={
                     "user_id": str(user_id),
                     "operation": "edit_reminder",
-                    "result": "error",
+                    "result": "success",
                 },
             )
-            raise ForbiddenException(f"No access to reminder with id {reminder_id}")
-
-        logger.info(
-            "Reminder edited",
-            extra={
-                "user_id": str(user_id),
-                "operation": "edit_reminder",
-                "result": "success",
-            },
-        )
+        except ValueError:
+            raise BadRequestException("Invalid delivery method(s)")
 
         return res
+
+
+class SendRemindersUseCase:
+
+    def __init__(
+        self, produce_service: ProduceService, reminder_service: ReminderService
+    ) -> None:
+        self.produce_service = produce_service
+        self.reminder_service = reminder_service
+
+    async def _send_message(self, reminder: ReminderResponse, sem: asyncio.Semaphore):
+        async with sem:
+            await self.produce_service.produce(
+                Message.from_json(reminder.model_dump(mode="json"))
+            )
+
+    async def execute(self):
+        reminders = await self.reminder_service.get_upcoming_reminders()
+
+        sem = asyncio.Semaphore(100)
+        tasks = [asyncio.create_task(self._send_message(m, sem)) for m in reminders]
+        await asyncio.gather(*tasks)
+        logger.info(f"Sent {len(reminders)} reminders")
 
 
 class DeactivateRemindersUseCase:

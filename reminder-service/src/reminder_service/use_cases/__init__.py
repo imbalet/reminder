@@ -6,13 +6,10 @@ from .reminders import (
     DeleteReminderUseCase,
     EditReminderUseCase,
     DeactivateRemindersUseCase,
-)
-from .events import (
     SendRemindersUseCase,
 )
 
 __all__ = [
-    "SendRemindersUseCase",
     "UseCaseException",
     "ForbiddenException",
     "AddReminderUseCase",

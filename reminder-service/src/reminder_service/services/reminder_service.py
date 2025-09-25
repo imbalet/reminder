@@ -36,6 +36,7 @@ class ReminderService:
             delivery_methods = result.scalars().all()
 
             if len(delivery_methods) != len(delivery_method_ids):
+                await session.rollback()
                 raise ValueError("Invalid delivery method(s)")
 
             reminder = RemindersOrm(
@@ -101,21 +102,24 @@ class ReminderService:
             reminder = await session.get(RemindersOrm, reminder_id)
             if not reminder or reminder.user_id != user_id:
                 return None
-            update_data = data.model_dump(
-                exclude_unset=True, exclude={"delivery_methods"}
-            )
+            update_data = data.model_dump(exclude_unset=True)
             for field, value in update_data.items():
                 setattr(reminder, field, value)
 
             if data.delivery_methods_ids:
-                delivery_method_ids = update_data["delivery_methods"]
+                delivery_method_ids = update_data["delivery_methods_ids"]
                 if delivery_method_ids is not None:
                     result = await session.execute(
                         select(DeliveryMethodOrm).where(
-                            DeliveryMethodOrm.id.in_(delivery_method_ids)
+                            DeliveryMethodOrm.id.in_(delivery_method_ids),
+                            DeliveryMethodOrm.user_id == user_id,
                         )
                     )
-                    reminder.delivery_methods = list(result.scalars().all())
+                    delivery_methods = list(result.scalars().all())
+                    if len(delivery_methods) != len(delivery_method_ids):
+                        await session.rollback()
+                        raise ValueError("Invalid delivery method(s)")
+                    reminder.delivery_methods = delivery_methods
             reminder.edited_at = datetime.now(timezone.utc)
 
             await session.commit()

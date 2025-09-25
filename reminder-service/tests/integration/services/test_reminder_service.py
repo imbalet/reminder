@@ -1,28 +1,26 @@
-import datetime
 import zoneinfo
-from uuid import uuid4
+from datetime import UTC, datetime, timedelta
+from uuid import UUID, uuid4
 
 import pytest
 
 from reminder_service.schemas import ReminderEdit, ReminderResponse, Status
+from reminder_service.schemas.delivery_methods import DeliveryMethod
 from reminder_service.services import ReminderService
-
-# ------------------------------------#
-#               TESTS                 #
-# ------------------------------------#
+from reminder_service.services.delivery_method import DeliveryMethodService
 
 
-@pytest.mark.asyncio
-async def test_valid_creating(
+async def test_create(
     reminder_service: ReminderService,
-    sample_db_delivery_method_telegram,
-    sample_db_delivery_method_email,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+    sample_db_delivery_method_email: DeliveryMethod,
+    user_id: UUID,
 ):
     created = await reminder_service.create(
         title="reminder",
         content="reminder",
-        user_id=uuid4(),
-        remind_date=datetime.datetime.now() + datetime.timedelta(days=1),
+        user_id=user_id,
+        remind_date=datetime.now() + timedelta(days=1),
         delivery_method_ids=[
             sample_db_delivery_method_telegram.id,
             sample_db_delivery_method_email.id,
@@ -31,17 +29,16 @@ async def test_valid_creating(
     assert await reminder_service.get(created.id) is not None
 
 
-@pytest.mark.asyncio
-async def test_valid_creating_not_utc(
-    reminder_service: ReminderService, sample_db_delivery_method_email
+async def test_create_not_utc(
+    reminder_service: ReminderService,
+    sample_db_delivery_method_email: DeliveryMethod,
+    user_id: UUID,
 ):
-    time = datetime.datetime.now(
-        zoneinfo.ZoneInfo("Europe/Moscow")
-    ) + datetime.timedelta(days=1)
+    time = datetime.now(zoneinfo.ZoneInfo("Europe/Moscow")) + timedelta(days=1)
     created = await reminder_service.create(
         title="reminder",
         content="reminder",
-        user_id=uuid4(),
+        user_id=user_id,
         remind_date=time,
         delivery_method_ids=[
             sample_db_delivery_method_email.id,
@@ -52,8 +49,56 @@ async def test_valid_creating_not_utc(
     assert res.remind_date == time
 
 
-@pytest.mark.asyncio
-async def test_valid_get(
+async def test_create_with_invalid_delivery_method(
+    reminder_service: ReminderService,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+    sample_db_delivery_method_email: DeliveryMethod,
+    user_id: UUID,
+):
+
+    with pytest.raises(ValueError):
+        await reminder_service.create(
+            title="reminder",
+            content="reminder",
+            user_id=user_id,
+            remind_date=datetime.now() + timedelta(days=1),
+            delivery_method_ids=[
+                sample_db_delivery_method_telegram.id,
+                sample_db_delivery_method_email.id,
+                uuid4(),
+            ],
+        )
+
+
+async def test_create_with_invalid_delivery_method_other_user(
+    reminder_service: ReminderService,
+    delivery_methods_service: DeliveryMethodService,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+    sample_db_delivery_method_email: DeliveryMethod,
+    user_id: UUID,
+):
+    new_method = await delivery_methods_service.create(
+        id=uuid4(),
+        delivery_method=sample_db_delivery_method_telegram.delivery_method,
+        contact_value=sample_db_delivery_method_telegram.contact_value,
+        user_id=uuid4(),
+    )
+
+    with pytest.raises(ValueError):
+        await reminder_service.create(
+            title="reminder",
+            content="reminder",
+            user_id=user_id,
+            remind_date=datetime.now() + timedelta(days=1),
+            delivery_method_ids=[
+                sample_db_delivery_method_telegram.id,
+                sample_db_delivery_method_email.id,
+                new_method.id,
+            ],
+        )
+
+
+async def test_get(
     reminder_service: ReminderService, sample_db_reminder: ReminderResponse
 ):
     res = await reminder_service.get(sample_db_reminder.id)
@@ -61,14 +106,12 @@ async def test_valid_get(
     assert res == sample_db_reminder
 
 
-@pytest.mark.asyncio
-async def test_not_exists_get(reminder_service: ReminderService):
+async def test_get_not_exists(reminder_service: ReminderService):
     res = await reminder_service.get(uuid4())
     assert res is None
 
 
-@pytest.mark.asyncio
-async def test_valid_get_by_user_id(
+async def test_get_by_user_id(
     reminder_service: ReminderService, sample_db_reminder: ReminderResponse
 ):
     res = await reminder_service.get_all(
@@ -77,18 +120,17 @@ async def test_valid_get_by_user_id(
     assert res.items == [sample_db_reminder]
 
 
-@pytest.mark.asyncio
-async def test_valid_get_by_user_id_multiply(
+async def test_get_by_user_id_multiply(
     reminder_service: ReminderService,
     sample_db_reminder: ReminderResponse,
-    sample_db_delivery_method_email,
+    sample_db_delivery_method_email: DeliveryMethod,
 ):
     for _ in range(3):
         await reminder_service.create(
             title="reminder",
             content="reminder",
             user_id=sample_db_reminder.user_id,
-            remind_date=datetime.datetime.now() + datetime.timedelta(days=1),
+            remind_date=datetime.now() + timedelta(days=1),
             delivery_method_ids=[
                 sample_db_delivery_method_email.id,
             ],
@@ -100,14 +142,12 @@ async def test_valid_get_by_user_id_multiply(
     assert len(res.items) == 4
 
 
-@pytest.mark.asyncio
-async def test_user_not_exists_get_by_user_id(reminder_service: ReminderService):
+async def test_get_by_user_id_user_not_exists(reminder_service: ReminderService):
     res = await reminder_service.get_all(uuid4(), page_size=100, page=1)
     assert len(res.items) == 0
 
 
-@pytest.mark.asyncio
-async def test_valid_delete(
+async def test_delete(
     reminder_service: ReminderService, sample_db_reminder: ReminderResponse
 ):
     res = await reminder_service.delete(
@@ -117,28 +157,24 @@ async def test_valid_delete(
     assert await reminder_service.get(sample_db_reminder.id) is None
 
 
-@pytest.mark.asyncio
-async def test_not_exist_delete(reminder_service: ReminderService):
+async def test_delete_not_exist(reminder_service: ReminderService):
     res = await reminder_service.delete(uuid4(), uuid4())
     assert res is None
 
 
-@pytest.mark.asyncio
-async def test_valid_edit(
+async def test_edit(
     reminder_service: ReminderService, sample_db_reminder: ReminderResponse
 ):
     new_data = ReminderEdit(
         title="new_title",
         content="new content",
-        remind_date=datetime.datetime.now(
-            datetime.timezone(datetime.timedelta(hours=3))
-        )
-        + datetime.timedelta(days=1),
+        remind_date=datetime.now(UTC) + timedelta(days=1),
     )
     edited = await reminder_service.edit(
         sample_db_reminder.id, data=new_data, user_id=sample_db_reminder.user_id
     )
     res = await reminder_service.get(sample_db_reminder.id)
+
     assert sample_db_reminder.edited_at is None
     assert res == edited
     assert res is not None
@@ -146,14 +182,163 @@ async def test_valid_edit(
     assert res.content == new_data.content
     assert res.remind_date == new_data.remind_date
     assert res.edited_at is not None
+    assert res.delivery_methods == sample_db_reminder.delivery_methods
 
 
-async def test_valid_deactivate_orphans(reminder_service: ReminderService):
+async def test_edit_forbidden(
+    reminder_service: ReminderService, sample_db_reminder: ReminderResponse
+):
+    new_data = ReminderEdit(
+        title="new_title",
+        content="new content",
+        remind_date=datetime.now(UTC) + timedelta(days=1),
+    )
+    edited = await reminder_service.edit(
+        uuid4(), data=new_data, user_id=sample_db_reminder.user_id
+    )
+
+    assert edited is None
+
+
+async def test_edit_forbidden_other_user(
+    reminder_service: ReminderService, sample_db_reminder: ReminderResponse
+):
+    new_data = ReminderEdit(
+        title="new_title",
+        content="new content",
+        remind_date=datetime.now(UTC) + timedelta(days=1),
+    )
+    edited = await reminder_service.edit(
+        sample_db_reminder.id, data=new_data, user_id=uuid4()
+    )
+
+    assert edited is None
+
+
+async def test_edit_delivery_methods_add(
+    reminder_service: ReminderService,
+    delivery_methods_service: DeliveryMethodService,
+    sample_db_reminder: ReminderResponse,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+):
+    new_method = await delivery_methods_service.create(
+        id=uuid4(),
+        delivery_method=sample_db_delivery_method_telegram.delivery_method,
+        contact_value="123456",
+        user_id=sample_db_reminder.user_id,
+    )
+    new_data = ReminderEdit(
+        delivery_methods_ids=[
+            new_method.id,
+            *[i.id for i in sample_db_reminder.delivery_methods],
+        ]
+    )
+    edited = await reminder_service.edit(
+        sample_db_reminder.id, data=new_data, user_id=sample_db_reminder.user_id
+    )
+    res = await reminder_service.get(sample_db_reminder.id)
+    assert sample_db_reminder.edited_at is None
+    assert res == edited
+    assert res is not None and edited is not None
+    assert res.edited_at is not None
+    assert len(edited.delivery_methods) == 3
+
+
+async def test_edit_delivery_methods_remove(
+    reminder_service: ReminderService,
+    sample_db_reminder: ReminderResponse,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+):
+    new_data = ReminderEdit(
+        delivery_methods_ids=[sample_db_delivery_method_telegram.id]
+    )
+    edited = await reminder_service.edit(
+        sample_db_reminder.id, data=new_data, user_id=sample_db_reminder.user_id
+    )
+    res = await reminder_service.get(sample_db_reminder.id)
+    assert sample_db_reminder.edited_at is None
+    assert res == edited
+    assert res is not None and edited is not None
+    assert res.edited_at is not None
+    assert len(edited.delivery_methods) == 1
+
+
+async def test_edit_delivery_methods_invalid_delivery_methods(
+    reminder_service: ReminderService, sample_db_reminder: ReminderResponse
+):
+    new_data = ReminderEdit(delivery_methods_ids=[uuid4()])
+    with pytest.raises(ValueError):
+        await reminder_service.edit(
+            sample_db_reminder.id, data=new_data, user_id=sample_db_reminder.user_id
+        )
+
+
+async def test_get_upcoming_reminders_one(
+    reminder_service: ReminderService,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+):
+    upcoming_reminder = await reminder_service.create(
+        title="title",
+        content="content",
+        user_id=sample_db_delivery_method_telegram.user_id,
+        remind_date=datetime.now(UTC),
+        delivery_method_ids=[sample_db_delivery_method_telegram.id],
+    )
+    res = await reminder_service.get_upcoming_reminders()
+    res2 = await reminder_service.get_upcoming_reminders()
+
+    from_db = await reminder_service.get(upcoming_reminder.id)
+
+    assert len(res) == 1
+    assert len(res2) == 0
+    assert res[0] == from_db
+    assert from_db and from_db.status == Status.SENT
+
+
+async def test_get_upcoming_reminders_10(
+    reminder_service: ReminderService,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+):
+    _ = [
+        await reminder_service.create(
+            title="title",
+            content="content",
+            user_id=sample_db_delivery_method_telegram.user_id,
+            remind_date=datetime.now(UTC),
+            delivery_method_ids=[sample_db_delivery_method_telegram.id],
+        )
+        for _ in range(10)
+    ]
+    res = await reminder_service.get_upcoming_reminders()
+
+    res2 = await reminder_service.get_upcoming_reminders()
+
+    assert len(res) == 10
+    assert len(res2) == 0
+
+
+async def test_get_upcoming_reminders_no_one(
+    reminder_service: ReminderService,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+):
+    await reminder_service.create(
+        title="title",
+        content="content",
+        user_id=sample_db_delivery_method_telegram.user_id,
+        remind_date=datetime.now(UTC) + timedelta(minutes=5),
+        delivery_method_ids=[sample_db_delivery_method_telegram.id],
+    )
+    res = await reminder_service.get_upcoming_reminders()
+
+    assert len(res) == 0
+
+
+async def test_deactivate_orphans(reminder_service: ReminderService):
     orphan = await reminder_service.create(
         title="title",
         content="content",
         user_id=uuid4(),
-        remind_date=datetime.datetime.now(datetime.UTC),
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[],
     )
 
@@ -164,13 +349,13 @@ async def test_valid_deactivate_orphans(reminder_service: ReminderService):
     assert res[0].status == Status.INACTIVE
 
 
-async def test_valid_deactivate_orphans_empty(reminder_service: ReminderService):
+async def test_deactivate_orphans_empty(reminder_service: ReminderService):
     res = await reminder_service.deactivate_orphan_reminders(uuid4())
 
     assert len(res) == 0
 
 
-async def test_valid_deactivate_orphans_with_inactive_status(
+async def test_deactivate_orphans_with_inactive_status(
     reminder_service: ReminderService,
 ):
     user_id = uuid4()
@@ -178,14 +363,14 @@ async def test_valid_deactivate_orphans_with_inactive_status(
         title="title",
         content="content",
         user_id=user_id,
-        remind_date=datetime.datetime.now(datetime.UTC),
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[],
     )
     inactive = await reminder_service.create(
         title="title",
         content="content",
         user_id=user_id,
-        remind_date=datetime.datetime.now(datetime.UTC),
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[],
     )
     inactive = await reminder_service.set_status(inactive.id, Status.INACTIVE)
@@ -203,22 +388,23 @@ async def test_valid_deactivate_orphans_with_inactive_status(
     assert orphans[0].status == Status.INACTIVE
 
 
-async def test_valid_deactivate_orphans_with_not_orphan(
-    reminder_service: ReminderService, sample_db_delivery_method_telegram
+async def test_deactivate_orphans_with_not_orphan(
+    reminder_service: ReminderService,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+    user_id: UUID,
 ):
-    user_id = uuid4()
     orphan = await reminder_service.create(
         title="title",
         content="content",
         user_id=user_id,
-        remind_date=datetime.datetime.now(datetime.UTC),
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[],
     )
     not_orphan = await reminder_service.create(
         title="title",
         content="content",
         user_id=user_id,
-        remind_date=datetime.datetime.now(datetime.UTC),
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[sample_db_delivery_method_telegram.id],
     )
 
@@ -235,20 +421,20 @@ async def test_valid_deactivate_orphans_with_not_orphan(
     assert orphans[0].status == Status.INACTIVE
 
 
-async def test_valid_deactivate_orphans_two_orphans(reminder_service: ReminderService):
+async def test_deactivate_orphans_two_orphans(reminder_service: ReminderService):
     user_id = uuid4()
     await reminder_service.create(
         title="title",
         content="content",
         user_id=user_id,
-        remind_date=datetime.datetime.now(datetime.UTC),
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[],
     )
     await reminder_service.create(
         title="title",
         content="content",
         user_id=user_id,
-        remind_date=datetime.datetime.now(datetime.UTC),
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[],
     )
 
@@ -260,13 +446,15 @@ async def test_valid_deactivate_orphans_two_orphans(reminder_service: ReminderSe
 
 
 async def test_deactivate_reminders_by_method(
-    reminder_service: ReminderService, sample_db_delivery_method_telegram
+    reminder_service: ReminderService,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+    user_id: UUID,
 ):
     method = await reminder_service.create(
         title="title",
         content="content",
-        user_id=uuid4(),
-        remind_date=datetime.datetime.now(datetime.UTC),
+        user_id=user_id,
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[sample_db_delivery_method_telegram.id],
     )
 
@@ -286,21 +474,22 @@ async def test_deactivate_reminders_by_method_empty(reminder_service: ReminderSe
 
 
 async def test_deactivate_reminders_by_method_with_inactive_status(
-    reminder_service: ReminderService, sample_db_delivery_method_telegram
+    reminder_service: ReminderService,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+    user_id: UUID,
 ):
-    user_id = uuid4()
     active = await reminder_service.create(
         title="title",
         content="content",
         user_id=user_id,
-        remind_date=datetime.datetime.now(datetime.UTC),
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[sample_db_delivery_method_telegram.id],
     )
     inactive = await reminder_service.create(
         title="title",
         content="content",
         user_id=user_id,
-        remind_date=datetime.datetime.now(datetime.UTC),
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[],
     )
     inactive = await reminder_service.set_status(inactive.id, Status.INACTIVE)
@@ -322,22 +511,22 @@ async def test_deactivate_reminders_by_method_with_inactive_status(
 
 async def test_deactivate_reminders_by_method_with_other_method(
     reminder_service: ReminderService,
-    sample_db_delivery_method_telegram,
-    sample_db_delivery_method_email,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+    sample_db_delivery_method_email: DeliveryMethod,
+    user_id: UUID,
 ):
-    user_id = uuid4()
     reminder1 = await reminder_service.create(
         title="title",
         content="content",
         user_id=user_id,
-        remind_date=datetime.datetime.now(datetime.UTC),
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[sample_db_delivery_method_email.id],
     )
     reminder2 = await reminder_service.create(
         title="title",
         content="content",
         user_id=user_id,
-        remind_date=datetime.datetime.now(datetime.UTC),
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[sample_db_delivery_method_telegram.id],
     )
 
@@ -357,21 +546,22 @@ async def test_deactivate_reminders_by_method_with_other_method(
 
 
 async def test_deactivate_reminders_by_method_two_methods(
-    reminder_service: ReminderService, sample_db_delivery_method_telegram
+    reminder_service: ReminderService,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+    user_id: UUID,
 ):
-    user_id = uuid4()
     await reminder_service.create(
         title="title",
         content="content",
         user_id=user_id,
-        remind_date=datetime.datetime.now(datetime.UTC),
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[sample_db_delivery_method_telegram.id],
     )
     await reminder_service.create(
         title="title",
         content="content",
         user_id=user_id,
-        remind_date=datetime.datetime.now(datetime.UTC),
+        remind_date=datetime.now(UTC),
         delivery_method_ids=[sample_db_delivery_method_telegram.id],
     )
 

@@ -1,8 +1,10 @@
 from uuid import UUID
 
 from sqlalchemy import delete
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from reminder_service.exceptions import AlreadyExistsError
 from reminder_service.models import DeliveryMethodOrm, RemindersOrm
 from reminder_service.schemas import DeliveryMethod, DeliveryMethodEnum
 
@@ -20,16 +22,20 @@ class DeliveryMethodService:
         user_id: UUID,
     ) -> DeliveryMethod:
         async with self.session_factory() as session:
-            new_reminder = DeliveryMethodOrm(
-                id=id,
-                delivery_method=delivery_method,
-                contact_value=contact_value,
-                user_id=user_id,
-            )
-            session.add(new_reminder)
-            await session.commit()
-            await session.refresh(new_reminder)
-            return DeliveryMethod.model_validate(new_reminder, from_attributes=True)
+            try:
+                new_reminder = DeliveryMethodOrm(
+                    id=id,
+                    delivery_method=delivery_method,
+                    contact_value=contact_value,
+                    user_id=user_id,
+                )
+                session.add(new_reminder)
+                await session.commit()
+                await session.refresh(new_reminder)
+                return DeliveryMethod.model_validate(new_reminder, from_attributes=True)
+            except IntegrityError:
+                await session.rollback()
+                raise AlreadyExistsError("Delivery method already exists")
 
     async def get(self, id: UUID) -> DeliveryMethod | None:
         async with self.session_factory() as session:

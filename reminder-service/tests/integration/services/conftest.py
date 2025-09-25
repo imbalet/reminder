@@ -54,27 +54,32 @@ def delivery_methods_service(async_session_factory):
 
 
 @pytest.fixture
+def user_id():
+    return uuid4()
+
+
+@pytest.fixture
 async def sample_db_delivery_method_telegram(
-    delivery_methods_service: DeliveryMethodService,
+    delivery_methods_service: DeliveryMethodService, user_id
 ):
     res = await delivery_methods_service.create(
         id=uuid4(),
         delivery_method=DeliveryMethodEnum.TELEGRAM,
         contact_value="123",
-        user_id=uuid4(),
+        user_id=user_id,
     )
     return DeliveryMethod.model_validate(res, from_attributes=True)
 
 
 @pytest.fixture
 async def sample_db_delivery_method_email(
-    delivery_methods_service: DeliveryMethodService,
+    delivery_methods_service: DeliveryMethodService, user_id
 ):
     res = await delivery_methods_service.create(
         id=uuid4(),
         delivery_method=DeliveryMethodEnum.EMAIL,
         contact_value="example@example.com",
-        user_id=uuid4(),
+        user_id=user_id,
     )
     return DeliveryMethod.model_validate(res, from_attributes=True)
 
@@ -84,11 +89,12 @@ async def sample_db_reminder(
     reminder_service: ReminderService,
     sample_db_delivery_method_email,
     sample_db_delivery_method_telegram,
+    user_id,
 ):
     res = await reminder_service.create(
         title="reminder",
         content="reminder",
-        user_id=uuid4(),
+        user_id=user_id,
         remind_date=datetime.datetime.now() + datetime.timedelta(days=1),
         delivery_method_ids=[
             sample_db_delivery_method_telegram.id,

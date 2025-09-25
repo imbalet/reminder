@@ -30,7 +30,11 @@ router = APIRouter(prefix="/api/reminders", tags=["reminders"])
         status.HTTP_201_CREATED: {
             "description": "Delivery method created",
             "model": ReminderResponse,
-        }
+        },
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Invalid delivery method(s)",
+            "model": ReminderResponse,
+        },
     },
 )
 async def create(
@@ -82,6 +86,10 @@ async def get_by_id(
     response_model=ReminderResponse,
     responses={
         status.HTTP_403_FORBIDDEN: {
+            "model": ErrorResponse,
+            "description": "No access to reminder",
+        },
+        status.HTTP_400_BAD_REQUEST: {
             "model": ErrorResponse,
             "description": "No access to reminder",
         },
