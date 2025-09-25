@@ -3,7 +3,7 @@ from uuid import UUID
 
 from user_service.schemas import NotificationResponse
 from user_service.services import NotificationService
-from user_service.use_cases import BadRequestException, ForbiddenException
+from user_service.use_cases import ForbiddenException
 
 logger = logging.getLogger()
 
@@ -56,8 +56,8 @@ class ReadNotificationUseCase:
         """
         res = await self.notification_service.read(notification_id, user_id)
         if not res:
-            raise BadRequestException(
-                f"Notification with id {notification_id} is already read"
+            raise ForbiddenException(
+                f"Notification with id {notification_id} is already read or not found"
             )
         return res
 
@@ -79,6 +79,6 @@ class DeleteNotificationUseCase:
         """
         res = await self.notification_service.delete(notification_id, user_id)
         if not res:
-            raise BadRequestException(
-                f"Notification with id {notification_id} is already read"
+            raise ForbiddenException(
+                f"Notification with id {notification_id} not found"
             )

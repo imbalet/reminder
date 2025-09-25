@@ -14,15 +14,16 @@ class UserService:
         self.session_factory = session_factory
 
     async def create(self, user_id: UUID, name: str, email: str) -> UserResponse:
-        try:
-            async with self.session_factory() as session:
+        async with self.session_factory() as session:
+            try:
                 new_user = UserOrm(id=user_id, name=name, email=email)
                 session.add(new_user)
                 await session.commit()
                 await session.refresh(new_user)
                 return UserResponse.model_validate(new_user, from_attributes=True)
-        except IntegrityError as e:
-            raise AlreadyExistsError("User already exists") from e
+            except IntegrityError as e:
+                await session.rollback()
+                raise AlreadyExistsError("User already exists") from e
 
     async def get(self, user_id: UUID) -> UserResponse | None:
         async with self.session_factory() as session:

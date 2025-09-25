@@ -1,8 +1,8 @@
-from redis import asyncio as aioredis
+from redis.asyncio import Redis
 
 
 class ConfirmCodesService:
-    def __init__(self, redis: aioredis.Redis) -> None:
+    def __init__(self, redis: Redis) -> None:
         self.redis = redis
 
     async def confirm(self, code: str) -> tuple[str, str] | None:
