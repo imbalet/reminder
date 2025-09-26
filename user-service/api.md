@@ -1,563 +1,603 @@
+# /api/delivery/
 
+## POST
 
+\[delivery\]
 
+Create Method
 
-# `POST /api/delivery/`
+### header
 
+| Имя             | Тип    | Обязательный | Формат |
+| --------------- | ------ | ------------ | ------ |
+| ` app-user-id ` | string | Да           | uuid   |
 
-**Описание**: Create Method
-## Параметры:
+### Тело запроса:
 
-### Header параметры:
+**Content-Type:** ` application/json `
 
-|Имя|Тип|Обязательный|Формат|
-| :---: | :---: | :---: | :---: |
-|`app-user-id`|string|Да|uuid|
+**Любая из следующих схем:**
 
-## Тело запроса:
-
-### Content-Type: `application/json`
-
-
-**Тип**: `object`
-
-**Название**: DeliveryMethodAdd
-
-**Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`delivery_method`|string, Enum['telegram', 'email']|Да|DeliveryMethodEnum|
-|`contact_value`|string \| null|Нет|Контакт (для email)|
-|`confirm_code`|string \| null|Нет|Код подтверждения (для telegram)|
-
-## Ответы:
+- **Тип:** ` object `  
+  **Название:**  
+  TelegramDelivery  
+  **Свойства:**  
+  | Свойство            | Тип    | Обязательное | Описание        |
+  | ------------------- | ------ | ------------ | --------------- |
+  | ` delivery_method ` | string | Да           | Delivery Method |
+  | ` confirm_code `    | string | Да           | Confirm Code    |
+  
+- **Тип:** ` object `  
+  **Название:**  
+  EmailDelivery  
+  **Свойства:**  
+  | Свойство            | Тип    | Обязательное | Описание        |
+  | ------------------- | ------ | ------------ | --------------- |
+  | ` delivery_method ` | string | Да           | Delivery Method |
+  | ` contact_value `   | string | Да           | Contact Value   |
+  ## Ответы:
 
 ### Код состояния: 201
 
+Delivery method created
 
-**Описание**: Delivery method created
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: DeliveryMethodResponse
+DeliveryMethodResponse
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`delivery_method`|string, Enum['telegram', 'email']|Да|DeliveryMethodEnum|
-|`contact_value`|string \| null|Нет|Contact Value|
-|`confirm_code`|string \| null|Нет|Confirm Code|
-|`id`|string|Да|Id|
-|`user_id`|string|Да|User Id|
+
+| Свойство            | Тип                                 | Обязательное | Описание           |
+| ------------------- | ----------------------------------- | ------------ | ------------------ |
+| ` id `              | string                              | Да           | Id                 |
+| ` user_id `         | string                              | Да           | User Id            |
+| ` created_at `      | string                              | Да           | Created At         |
+| ` delivery_method ` | string, Enum\['telegram', 'email'\] | Да           | DeliveryMethodEnum |
+| ` contact_value `   | string                              | Да           | Contact Value      |
+| ` meta_data `       | object                              | Да           | MetaData           |
 
 ### Код состояния: 400
 
+Invalid or expired Telegram confirmation code
 
-**Описание**: Invalid or expired Telegram confirmation code
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: ErrorResponse
+ErrorResponse
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|string|Да|Detail|
+
+| Свойство   | Тип    | Обязательное | Описание |
+| ---------- | ------ | ------------ | -------- |
+| ` detail ` | string | Да           | Detail   |
 
 ### Код состояния: 409
 
+Delivery method already exists
 
-**Описание**: Delivery method already exists
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: ErrorResponse
+ErrorResponse
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|string|Да|Detail|
+
+| Свойство   | Тип    | Обязательное | Описание |
+| ---------- | ------ | ------------ | -------- |
+| ` detail ` | string | Да           | Detail   |
 
 ### Код состояния: 422
 
+Validation Error
 
-**Описание**: Validation Error
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: HTTPValidationError
+HTTPValidationError
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|array|Нет|Detail|
 
+| Свойство   | Тип   | Обязательное | Описание |
+| ---------- | ----- | ------------ | -------- |
+| ` detail ` | array | Нет          | Detail   |
 
----
+# /api/delivery/my
 
-# `GET /api/delivery/internal/users/{user_id}`
+## GET
 
+\[delivery\]
 
-**Описание**: Get All User Methods
-> Только для внутреннего использования. НЕ имеет валидации
-## Параметры:
+Get All Methods
 
-### Path параметры:
+### query
 
-|Имя|Тип|Обязательный|Формат|
-| :---: | :---: | :---: | :---: |
-|`user_id`|string|Да|uuid|
+| Имя      | Тип     | Обязательный | Формат |
+| -------- | ------- | ------------ | ------ |
+| ` page ` | integer | Нет          |  -     |
+| ` size ` | integer | Нет          |  -     |
+
+### header
+
+| Имя             | Тип    | Обязательный | Формат |
+| --------------- | ------ | ------------ | ------ |
+| ` app-user-id ` | string | Да           | uuid   |
 
 ## Ответы:
 
 ### Код состояния: 200
 
+Successful Response
 
-**Описание**: Successful Response
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `array`
+**Название:**
 
-**Название**: Response Get All User Methods Api Delivery Internal Users  User Id  Get
-
-**Элементы массива:**
-
-**Тип**: `object`
-
-**Название**: DeliveryMethodResponse
+Page\[DeliveryMethodResponse\]
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`delivery_method`|string, Enum['telegram', 'email']|Да|DeliveryMethodEnum|
-|`contact_value`|string \| null|Нет|Contact Value|
-|`confirm_code`|string \| null|Нет|Confirm Code|
-|`id`|string|Да|Id|
-|`user_id`|string|Да|User Id|
+
+| Свойство  | Тип     | Обязательное | Описание |
+| --------- | ------- | ------------ | -------- |
+| ` items ` | array   | Да           | Items    |
+| ` total ` | integer | Да           | Total    |
+| ` page `  | integer | Да           | Page     |
+| ` size `  | integer | Да           | Size     |
+| ` pages ` | integer | Да           | Pages    |
 
 ### Код состояния: 422
 
+Validation Error
 
-**Описание**: Validation Error
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: HTTPValidationError
+HTTPValidationError
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|array|Нет|Detail|
 
+| Свойство   | Тип   | Обязательное | Описание |
+| ---------- | ----- | ------------ | -------- |
+| ` detail ` | array | Нет          | Detail   |
 
----
+# /api/delivery/{method\_id}
 
-# `GET /api/delivery/my`
+## GET
 
+\[delivery\]
 
-**Описание**: Get All Methods
-## Параметры:
+Get Method
 
-### Header параметры:
+### path
 
-|Имя|Тип|Обязательный|Формат|
-| :---: | :---: | :---: | :---: |
-|`app-user-id`|string|Да|uuid|
+| Имя           | Тип    | Обязательный | Формат |
+| ------------- | ------ | ------------ | ------ |
+| ` method_id ` | string | Да           | uuid   |
+
+### header
+
+| Имя             | Тип    | Обязательный | Формат |
+| --------------- | ------ | ------------ | ------ |
+| ` app-user-id ` | string | Да           | uuid   |
 
 ## Ответы:
 
 ### Код состояния: 200
 
+Successful Response
 
-**Описание**: Successful Response
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `array`
+**Название:**
 
-**Название**: Response Get All Methods Api Delivery My Get
-
-**Элементы массива:**
-
-**Тип**: `object`
-
-**Название**: DeliveryMethodResponse
+DeliveryMethodResponse
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`delivery_method`|string, Enum['telegram', 'email']|Да|DeliveryMethodEnum|
-|`contact_value`|string \| null|Нет|Contact Value|
-|`confirm_code`|string \| null|Нет|Confirm Code|
-|`id`|string|Да|Id|
-|`user_id`|string|Да|User Id|
 
-### Код состояния: 422
-
-
-**Описание**: Validation Error
-#### Content-Type: `application/json`
-
-
-**Тип**: `object`
-
-**Название**: HTTPValidationError
-
-**Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|array|Нет|Detail|
-
-
----
-
-# `GET /api/delivery/{method_id}`
-
-
-**Описание**: Get Method
-## Параметры:
-
-### Path параметры:
-
-|Имя|Тип|Обязательный|Формат|
-| :---: | :---: | :---: | :---: |
-|`method_id`|string|Да|uuid|
-
-### Header параметры:
-
-|Имя|Тип|Обязательный|Формат|
-| :---: | :---: | :---: | :---: |
-|`app-user-id`|string|Да|uuid|
-
-## Ответы:
-
-### Код состояния: 200
-
-
-**Описание**: Delivery method created
-#### Content-Type: `application/json`
-
-
-**Тип**: `object`
-
-**Название**: DeliveryMethodResponse
-
-**Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`delivery_method`|string, Enum['telegram', 'email']|Да|DeliveryMethodEnum|
-|`contact_value`|string \| null|Нет|Contact Value|
-|`confirm_code`|string \| null|Нет|Confirm Code|
-|`id`|string|Да|Id|
-|`user_id`|string|Да|User Id|
+| Свойство            | Тип                                 | Обязательное | Описание           |
+| ------------------- | ----------------------------------- | ------------ | ------------------ |
+| ` id `              | string                              | Да           | Id                 |
+| ` user_id `         | string                              | Да           | User Id            |
+| ` created_at `      | string                              | Да           | Created At         |
+| ` delivery_method ` | string, Enum\['telegram', 'email'\] | Да           | DeliveryMethodEnum |
+| ` contact_value `   | string                              | Да           | Contact Value      |
+| ` meta_data `       | object                              | Да           | MetaData           |
 
 ### Код состояния: 403
 
+No access to delivery method
 
-**Описание**: No access to delivery method
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: ErrorResponse
+ErrorResponse
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|string|Да|Detail|
+
+| Свойство   | Тип    | Обязательное | Описание |
+| ---------- | ------ | ------------ | -------- |
+| ` detail ` | string | Да           | Detail   |
 
 ### Код состояния: 422
 
+Validation Error
 
-**Описание**: Validation Error
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: HTTPValidationError
+HTTPValidationError
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|array|Нет|Detail|
 
-# `DELETE /api/delivery/{method_id}`
+| Свойство   | Тип   | Обязательное | Описание |
+| ---------- | ----- | ------------ | -------- |
+| ` detail ` | array | Нет          | Detail   |
 
+## DELETE
 
-**Описание**: Delete Method
-## Параметры:
+\[delivery\]
 
-### Path параметры:
+Delete Method
 
-|Имя|Тип|Обязательный|Формат|
-| :---: | :---: | :---: | :---: |
-|`method_id`|string|Да|uuid|
+### path
 
-### Header параметры:
+| Имя           | Тип    | Обязательный | Формат |
+| ------------- | ------ | ------------ | ------ |
+| ` method_id ` | string | Да           | uuid   |
 
-|Имя|Тип|Обязательный|Формат|
-| :---: | :---: | :---: | :---: |
-|`app-user-id`|string|Да|uuid|
+### header
+
+| Имя             | Тип    | Обязательный | Формат |
+| --------------- | ------ | ------------ | ------ |
+| ` app-user-id ` | string | Да           | uuid   |
 
 ## Ответы:
 
 ### Код состояния: 204
 
+Successful Response
 
-**Описание**: Successful Response
 ### Код состояния: 403
 
+No access to delivery method
 
-**Описание**: No access to delivery method
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: ErrorResponse
+ErrorResponse
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|string|Да|Detail|
+
+| Свойство   | Тип    | Обязательное | Описание |
+| ---------- | ------ | ------------ | -------- |
+| ` detail ` | string | Да           | Detail   |
 
 ### Код состояния: 422
 
+Validation Error
 
-**Описание**: Validation Error
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: HTTPValidationError
+HTTPValidationError
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|array|Нет|Detail|
 
+| Свойство   | Тип   | Обязательное | Описание |
+| ---------- | ----- | ------------ | -------- |
+| ` detail ` | array | Нет          | Detail   |
 
----
+# /api/notification/my
 
-# `GET /api/notification/my`
+## GET
 
+\[notifications\]
 
-**Описание**: Get All Notifications
-## Параметры:
+Get All Notifications
 
-### Header параметры:
+### query
 
-|Имя|Тип|Обязательный|Формат|
-| :---: | :---: | :---: | :---: |
-|`app-user-id`|string|Да|uuid|
+| Имя      | Тип     | Обязательный | Формат |
+| -------- | ------- | ------------ | ------ |
+| ` page ` | integer | Нет          |  -     |
+| ` size ` | integer | Нет          |  -     |
+
+### header
+
+| Имя             | Тип    | Обязательный | Формат |
+| --------------- | ------ | ------------ | ------ |
+| ` app-user-id ` | string | Да           | uuid   |
 
 ## Ответы:
 
 ### Код состояния: 200
 
+Successful Response
 
-**Описание**: Successful Response
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `array`
+**Название:**
 
-**Название**: Response Get All Notifications Api Notification My Get
-
-**Элементы массива:**
-
-**Тип**: `object`
-
-**Название**: NotificationResponse
+Page\[NotificationResponse\]
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`user_id`|string|Да|User Id|
-|`title`|string|Да|Title|
-|`content`|string|Да|Content|
-|`id`|string|Да|Id|
-|`created_at`|string|Да|Created At|
-|`is_read`|boolean|Да|Is Read|
+
+| Свойство  | Тип     | Обязательное | Описание |
+| --------- | ------- | ------------ | -------- |
+| ` items ` | array   | Да           | Items    |
+| ` total ` | integer | Да           | Total    |
+| ` page `  | integer | Да           | Page     |
+| ` size `  | integer | Да           | Size     |
+| ` pages ` | integer | Да           | Pages    |
 
 ### Код состояния: 422
 
+Validation Error
 
-**Описание**: Validation Error
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: HTTPValidationError
+HTTPValidationError
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|array|Нет|Detail|
 
+| Свойство   | Тип   | Обязательное | Описание |
+| ---------- | ----- | ------------ | -------- |
+| ` detail ` | array | Нет          | Detail   |
 
----
+# /api/notification/{notification\_id}
 
-# `GET /api/notification/{notification_id}`
+## GET
 
+\[notifications\]
 
-**Описание**: Get Notification
-## Параметры:
+Get Notification
 
-### Path параметры:
+### path
 
-|Имя|Тип|Обязательный|Формат|
-| :---: | :---: | :---: | :---: |
-|`notification_id`|string|Да|uuid|
+| Имя                 | Тип    | Обязательный | Формат |
+| ------------------- | ------ | ------------ | ------ |
+| ` notification_id ` | string | Да           | uuid   |
 
-### Header параметры:
+### header
 
-|Имя|Тип|Обязательный|Формат|
-| :---: | :---: | :---: | :---: |
-|`app-user-id`|string|Да|uuid|
+| Имя             | Тип    | Обязательный | Формат |
+| --------------- | ------ | ------------ | ------ |
+| ` app-user-id ` | string | Да           | uuid   |
 
 ## Ответы:
 
 ### Код состояния: 200
 
+Successful Response
 
-**Описание**: Successful Response
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: NotificationResponse
+NotificationResponse
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`user_id`|string|Да|User Id|
-|`title`|string|Да|Title|
-|`content`|string|Да|Content|
-|`id`|string|Да|Id|
-|`created_at`|string|Да|Created At|
-|`is_read`|boolean|Да|Is Read|
+
+| Свойство       | Тип     | Обязательное | Описание   |
+| -------------- | ------- | ------------ | ---------- |
+| ` id `         | string  | Да           | Id         |
+| ` user_id `    | string  | Да           | User Id    |
+| ` title `      | string  | Да           | Title      |
+| ` content `    | string  | Да           | Content    |
+| ` created_at ` | string  | Да           | Created At |
+| ` is_read `    | boolean | Да           | Is Read    |
 
 ### Код состояния: 403
 
+No access to notification
 
-**Описание**: No access to notification
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: ErrorResponse
+ErrorResponse
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|string|Да|Detail|
+
+| Свойство   | Тип    | Обязательное | Описание |
+| ---------- | ------ | ------------ | -------- |
+| ` detail ` | string | Да           | Detail   |
 
 ### Код состояния: 422
 
+Validation Error
 
-**Описание**: Validation Error
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: HTTPValidationError
+HTTPValidationError
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|array|Нет|Detail|
 
-# `PATCH /api/notification/{notification_id}`
+| Свойство   | Тип   | Обязательное | Описание |
+| ---------- | ----- | ------------ | -------- |
+| ` detail ` | array | Нет          | Detail   |
 
+## DELETE
 
-**Описание**: Read Notification
-## Параметры:
+\[notifications\]
 
-### Path параметры:
+Delete Notification
 
-|Имя|Тип|Обязательный|Формат|
-| :---: | :---: | :---: | :---: |
-|`notification_id`|string|Да|uuid|
+### path
 
-### Header параметры:
+| Имя                 | Тип    | Обязательный | Формат |
+| ------------------- | ------ | ------------ | ------ |
+| ` notification_id ` | string | Да           | uuid   |
 
-|Имя|Тип|Обязательный|Формат|
-| :---: | :---: | :---: | :---: |
-|`app-user-id`|string|Да|uuid|
+### header
+
+| Имя             | Тип    | Обязательный | Формат |
+| --------------- | ------ | ------------ | ------ |
+| ` app-user-id ` | string | Да           | uuid   |
+
+## Ответы:
+
+### Код состояния: 204
+
+Notification was deleted
+
+### Код состояния: 403
+
+No access to notification
+
+**Content-Type:** ` application/json `
+
+**Тип:** ` object `
+
+**Название:**
+
+ErrorResponse
+
+**Свойства:**
+
+| Свойство   | Тип    | Обязательное | Описание |
+| ---------- | ------ | ------------ | -------- |
+| ` detail ` | string | Да           | Detail   |
+
+### Код состояния: 422
+
+Validation Error
+
+**Content-Type:** ` application/json `
+
+**Тип:** ` object `
+
+**Название:**
+
+HTTPValidationError
+
+**Свойства:**
+
+| Свойство   | Тип   | Обязательное | Описание |
+| ---------- | ----- | ------------ | -------- |
+| ` detail ` | array | Нет          | Detail   |
+
+## PATCH
+
+\[notifications\]
+
+Read Notification
+
+### path
+
+| Имя                 | Тип    | Обязательный | Формат |
+| ------------------- | ------ | ------------ | ------ |
+| ` notification_id ` | string | Да           | uuid   |
+
+### header
+
+| Имя             | Тип    | Обязательный | Формат |
+| --------------- | ------ | ------------ | ------ |
+| ` app-user-id ` | string | Да           | uuid   |
 
 ## Ответы:
 
 ### Код состояния: 200
 
+Successful Response
 
-**Описание**: Successful Response
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: NotificationResponse
+NotificationResponse
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`user_id`|string|Да|User Id|
-|`title`|string|Да|Title|
-|`content`|string|Да|Content|
-|`id`|string|Да|Id|
-|`created_at`|string|Да|Created At|
-|`is_read`|boolean|Да|Is Read|
+
+| Свойство       | Тип     | Обязательное | Описание   |
+| -------------- | ------- | ------------ | ---------- |
+| ` id `         | string  | Да           | Id         |
+| ` user_id `    | string  | Да           | User Id    |
+| ` title `      | string  | Да           | Title      |
+| ` content `    | string  | Да           | Content    |
+| ` created_at ` | string  | Да           | Created At |
+| ` is_read `    | boolean | Да           | Is Read    |
 
 ### Код состояния: 403
 
+No access to notification
 
-**Описание**: No access to notification
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: ErrorResponse
+ErrorResponse
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|string|Да|Detail|
+
+| Свойство   | Тип    | Обязательное | Описание |
+| ---------- | ------ | ------------ | -------- |
+| ` detail ` | string | Да           | Detail   |
 
 ### Код состояния: 422
 
+Validation Error
 
-**Описание**: Validation Error
-#### Content-Type: `application/json`
+**Content-Type:** ` application/json `
 
+**Тип:** ` object `
 
-**Тип**: `object`
+**Название:**
 
-**Название**: HTTPValidationError
+HTTPValidationError
 
 **Свойства:**
-|Свойство|Тип|Обязательное|Описание|
-| :---: | :---: | :---: | :---: |
-|`detail`|array|Нет|Detail|
 
+| Свойство   | Тип   | Обязательное | Описание |
+| ---------- | ----- | ------------ | -------- |
+| ` detail ` | array | Нет          | Detail   |
 
----
