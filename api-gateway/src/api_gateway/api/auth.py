@@ -1,12 +1,13 @@
 from typing import Annotated
 
 import httpx
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from api_gateway.config import config
 from api_gateway.dependencies import get_refresh_token_from_cookies
 from api_gateway.schemas import (
+    ErrorResponse,
     TokenResponse,
     UserRegisterRequest,
     UserResponse,
@@ -17,7 +18,21 @@ from .utils import error_handler
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
-@router.post("/register")
+@router.post(
+    "/register",
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_201_CREATED: {
+            "description": "User was registered",
+            "model": UserResponse,
+        },
+        status.HTTP_409_CONFLICT: {
+            "model": ErrorResponse,
+            "description": "User already exists",
+        },
+    },
+)
 @error_handler
 async def register(
     reg_data: UserRegisterRequest,
@@ -33,7 +48,16 @@ async def login_options():
     return Response(status_code=200)
 
 
-@router.post("/login")
+@router.post(
+    "/login",
+    response_model=TokenResponse,
+    responses={
+        status.HTTP_401_UNAUTHORIZED: {
+            "model": ErrorResponse,
+            "description": "Incorrect username or password",
+        },
+    },
+)
 @error_handler
 async def login(
     response: Response,
@@ -73,7 +97,7 @@ async def refresh_token(
         return res.json()
 
 
-@router.post("/logout")
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 @error_handler
 async def logout(
     response: Response,
