@@ -49,40 +49,41 @@
 
 В `.env` файле в корне проекта нужно указать следующие переменные окружения:
 
-`LOG_LEVEL="INFO"` - Уровень логирования приложения DEBUG/INFO/WARNING/ERROR/CRITICAL.  
-`DB_USER="postgres"` - Имя пользователя PostgreSQL.  
-`DB_PASS="your_password"` - Пароль пользователя PostgreSQL.  
-`DB_NAME="your_db_name"` - Название базы данных PostgreSQL.  
-`DB_HOST="localhost"` - Хост PostgreSQL.  
-`DB_PORT="5432"` - Порт PostgreSQL.  
-
-`RMQ_DLQ_FAILED_REMINDERS_NAME="<your_dlq_name>"` - Название dead letter queue RabbitMQ для обработки ошибок отправки напоминаний.  
-`RMQ_DLX_FAILED_REMINDERS_NAME="<your_dlx_name>"` - Название обменника для DLQ RabbitMQ для обработки ошибок отправки напоминаний.  
-`RMQ_USER_ADD_QUEUE="<your_queue_name>"` - Название очереди событий регистрации пользователей.  
-`RMQ_DELIVERY_METHOD_ADD_QUEUE="<your_queue_name>"` - Название очереди RabbitMQ для публикации событий добавления метода доставки.  
-`RMQ_DELIVERY_METHOD_REMOVE_QUEUE="<your_queue_name>"` - Название очереди RabbitMQ для публикации событий удаления метода доставки.  
-`RMQ_REMINDER_DEACTIVATE_QUEUE="<your_queue_name>"` - Название очереди RabbitMQ для обработки деактивированных напоминаний (напоминаний без метода доставки).  
-
-`RMQ_USER="guest"` - Имя пользователя RabbitMQ.  
-`RMQ_PASS="<your_password>"` - Пароль пользователя RabbitMQ.  
-`RMQ_HOST="localhost"` - Хост RabbitMQ.  
-`RMQ_PORT="5672"` - Порт RabbitMQ.  
-
-`REDIS_HOST="localhost"` - Хост Redis.  
-`REDIS_PORT="6379"` - Порт Redis.  
-`REDIS_PASSWORD="<your_password>"` - Пароль Redis.  
+| Переменная                       | Пример / значение по умолчанию | Описание                                                            |
+| -------------------------------- | ------------------------------ | ------------------------------------------------------------------- |
+| LOG_LEVEL                        | INFO                           | Уровень логирования приложения (DEBUG/INFO/WARNING/ERROR/CRITICAL)  |
+| DB_USER                          | postgres                       | Имя пользователя PostgreSQL                                         |
+| DB_PASS                          | your_password                  | Пароль пользователя PostgreSQL                                      |
+| DB_NAME                          | your_db_name                   | Название базы данных PostgreSQL                                     |
+| DB_HOST                          | localhost                      | Хост PostgreSQL                                                     |
+| DB_PORT                          | 5432                           | Порт PostgreSQL                                                     |
+| RMQ_DLQ_FAILED_REMINDERS_NAME    | <your_dlq_name>                | Название dead letter queue RabbitMQ для ошибок отправки напоминаний |
+| RMQ_DLX_FAILED_REMINDERS_NAME    | <your_dlx_name>                | Название обменника для DLQ RabbitMQ                                 |
+| RMQ_USER_ADD_QUEUE               | <your_queue_name>              | Название очереди событий регистрации пользователей                  |
+| RMQ_DELIVERY_METHOD_ADD_QUEUE    | <your_queue_name>              | Название очереди для публикации событий добавления метода доставки  |
+| RMQ_DELIVERY_METHOD_REMOVE_QUEUE | <your_queue_name>              | Название очереди для публикации событий удаления метода доставки    |
+| RMQ_REMINDER_DEACTIVATE_QUEUE    | <your_queue_name>              | Название очереди для обработки деактивированных напоминаний         |
+| RMQ_USER                         | guest                          | Имя пользователя RabbitMQ                                           |
+| RMQ_PASS                         | <your_password>                | Пароль пользователя RabbitMQ                                        |
+| RMQ_HOST                         | localhost                      | Хост RabbitMQ                                                       |
+| RMQ_PORT                         | 5672                           | Порт RabbitMQ                                                       |
+| REDIS_HOST                       | localhost                      | Хост Redis                                                          |
+| REDIS_PORT                       | 6379                           | Порт Redis                                                          |
+| REDIS_PASSWORD                   | <your_password>                | Пароль Redis                                                        |
 
 ### Тесты
 
 В `tests/.env.test` файле нужно указать следующие переменные окружения:
 
-`TEST_DB_USER="postgres"` - Имя пользователя PostgreSQL.  
-`TEST_DB_PASS="<your_password>"` - Пароль пользователя PostgreSQL.  
-`TEST_DB_NAME="<your_db_name>"` - Название тестовой базы данных PostgreSQL.  
-`TEST_DB_HOST="localhost"` - Хост PostgreSQL.  
-`TEST_DB_PORT="5432"` - Порт PostgreSQL.  
+| Переменная   | Пример          | Описание                                                       |
+| ------------ | --------------- | -------------------------------------------------------------- |
+| TEST_DB_USER | postgres        | Имя пользователя PostgreSQL для тестов                         |
+| TEST_DB_PASS | <your_password> | Пароль пользователя PostgreSQL для тестов                      |
+| TEST_DB_NAME | <your_db_name>  | Название тестовой базы данных (должна быть отдельной и чистой) |
+| TEST_DB_HOST | localhost       | Хост PostgreSQL для тестов                                     |
+| TEST_DB_PORT | 5432            | Порт PostgreSQL для тестов                                     |
 
->Важно: используйте отдельную чистую базу только для тестов. Все данные из неё будут удалены при запуске тестов. Название тестовой базы не должно совпадать с основной.
+> Важно: используйте отдельную чистую базу только для тестов. Все данные из неё будут удалены при запуске тестов. Название тестовой базы не должно совпадать с основной.
 
 
 ## Установка и запуск
