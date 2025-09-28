@@ -48,37 +48,43 @@
 
 В `.env` файле в корне проекта нужно указать следующие переменные окружения:
 
-`LOG_LEVEL="INFO"` - Уровень логирования приложения DEBUG/INFO/WARNING/ERROR/CRITICAL.  
-`DB_USER="postgres"` - Имя пользователя PostgreSQL.  
-`DB_PASS="your_password"` - Пароль пользователя PostgreSQL.  
-`DB_NAME="your_db_name"` - Название базы данных PostgreSQL.  
-`DB_HOST="localhost"` - Хост PostgreSQL.  
-`DB_PORT="5432"` - Порт PostgreSQL.  
+Переменные приложения и БД:
 
-Настройки RabbitMQ:
+| Переменная | Значение (пример) | Описание                                                            |
+| ---------- | ----------------: | ------------------------------------------------------------------- |
+| LOG_LEVEL  |              INFO | Уровень логирования приложения (DEBUG/INFO/WARNING/ERROR/CRITICAL). |
+| DB_USER    |          postgres | Имя пользователя PostgreSQL.                                        |
+| DB_PASS    |     your_password | Пароль пользователя PostgreSQL.                                     |
+| DB_NAME    |      your_db_name | Название базы данных PostgreSQL.                                    |
+| DB_HOST    |         localhost | Хост PostgreSQL.                                                    |
+| DB_PORT    |              5432 | Порт PostgreSQL.                                                    |
 
-`RMQ_DLQ_FAILED_REMINDERS_NAME="<your_dlq_name>"` - Название dead letter queue для сообщений о неуспешной отправке напоминаний.  
-`RMQ_DLX_FAILED_REMINDERS_NAME="<your_dlx_name>"` - Название dead letter exchange (DLX) для пересылки ошибок.  
-`RMQ_DELIVERY_METHOD_ADD_QUEUE="<your_queue_name>"` - Очередь для событий добавления метода доставки.  
-`RMQ_DELIVERY_METHOD_REMOVE_QUEUE="<your_queue_name>"` - Очередь для событий удаления метода доставки.  
-`RMQ_REMINDER_DEACTIVATE_QUEUE="<your_queue_name>"` - Очередь для уведомления о деактивированных напоминаниях.  
-`RMQ_REMINDERS_QUEUE="<your_queue_name>"` - Очередь для отправки напоминаний (основная очередь).
+Переменные RabbitMQ:
 
-`RMQ_USER="guest"` - Имя пользователя RabbitMQ.  
-`RMQ_PASS="<your_password>"` - Пароль RabbitMQ.  
-`RMQ_HOST="localhost"` - Хост RabbitMQ.  
-`RMQ_PORT="5672"` - Порт RabbitMQ.  
-
+| Переменная                       | Значение (пример) | Описание                                                                  |
+| -------------------------------- | ----------------- | ------------------------------------------------------------------------- |
+| RMQ_DLQ_FAILED_REMINDERS_NAME    | <your_dlq_name>   | Название dead letter queue для сообщений об ошибках отправке напоминаний. |
+| RMQ_DLX_FAILED_REMINDERS_NAME    | <your_dlx_name>   | Название dead letter exchange (DLX) для пересылки ошибок.                 |
+| RMQ_DELIVERY_METHOD_ADD_QUEUE    | <your_queue_name> | Очередь для событий добавления метода доставки.                           |
+| RMQ_DELIVERY_METHOD_REMOVE_QUEUE | <your_queue_name> | Очередь для событий удаления метода доставки.                             |
+| RMQ_REMINDER_DEACTIVATE_QUEUE    | <your_queue_name> | Очередь для уведомления о деактивированных напоминаниях.                  |
+| RMQ_REMINDERS_QUEUE              | <your_queue_name> | Очередь для отправки напоминаний (основная очередь).                      |
+| RMQ_USER                         | guest             | Имя пользователя RabbitMQ.                                                |
+| RMQ_PASS                         | <your_password>   | Пароль RabbitMQ.                                                          |
+| RMQ_HOST                         | localhost         | Хост RabbitMQ.                                                            |
+| RMQ_PORT                         | 5672              | Порт RabbitMQ.                                                            |
 
 ### Тесты
 
 В `tests/.env.test` файле нужно указать следующие переменные окружения:
 
-`TEST_DB_USER="postgres"` - Имя пользователя PostgreSQL.  
-`TEST_DB_PASS="<your_password>"` - Пароль пользователя PostgreSQL.  
-`TEST_DB_NAME="<your_db_name>"` - Название тестовой базы данных PostgreSQL.  
-`TEST_DB_HOST="localhost"` - Хост PostgreSQL.  
-`TEST_DB_PORT="5432"` - Порт PostgreSQL.  
+| Переменная   | Значение (пример) | Описание                                  |
+| ------------ | ----------------- | ----------------------------------------- |
+| TEST_DB_USER | postgres          | Имя пользователя PostgreSQL.              |
+| TEST_DB_PASS | <your_password>   | Пароль пользователя PostgreSQL.           |
+| TEST_DB_NAME | <your_db_name>    | Название тестовой базы данных PostgreSQL. |
+| TEST_DB_HOST | localhost         | Хост PostgreSQL.                          |
+| TEST_DB_PORT | 5432              | Порт PostgreSQL.                          |
 
 > Важно: используйте отдельную чистую базу только для тестов. Все данные из неё будут удалены при запуске тестов. Название тестовой базы не должно совпадать с основной.
 
