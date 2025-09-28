@@ -47,35 +47,36 @@
 
 В `.env` файле в корне проекта нужно указать следующие переменные окружения:
 
-
-`LOG_LEVEL="INFO"` - Уровень логирования приложения DEBUG/INFO/WARNING/ERROR/CRITICAL  
-`DB_USER="postgres"` - Имя пользователя PostgreSQL  
-`DB_PASS="your_password"` - Пароль пользователя PostgreSQL  
-`DB_NAME="your_db_name"` - Название базы данных PostgreSQL  
-`DB_HOST="localhost"` - Хост PostgreSQL  
-`DB_PORT="5432"` - Порт PostgreSQL  
-
-`RMQ_USER_ADD_QUEUE="<queue_name>"` - Название очереди событий регистрации пользователей  
-`RMQ_USER="guest"` - Имя пользователя RabbitMQ  
-`RMQ_PASS="<your_password>"` - Пароль пользователя RabbitMQ  
-`RMQ_HOST="localhost"` - Хост RabbitMQ  
-`RMQ_PORT="5672"` - Порт RabbitMQ  
-
-`ALGORITHM="RS256"` - Алгоритм подписи JWT токенов. Поддерживается только `RS256`  
-`ACCESS_TOKEN_EXPIRE_MINUTES="15"` - Срок действия access token в минутах  
-`REFRESH_TOKEN_EXPIRE_DAYS="7"` - Срок действия refresh token в днях  
-`KEY_PAIR_EXPIRES_DAYS="15"` - Срок действия пары ключей для подписи JWT в днях  
-`ROTATING_BEFORE_EXPIRING_DAYS="2"` - Время в днях, за которое до истечения срока действия пары ключей выполняется ротация - выпуск новой пары ключей. Должно быть меньше чем `KEY_PAIR_EXPIRES_DAYS`. Например, срок действия пары ключей установлен в 15 дней, а `ROTATING_BEFORE_EXPIRING_DAYS` в 2 дня, таким образом за два дня до истечения пары ключей (13 дней с момента выпуска) будет выпущена новая пара ключей. Обе пары будут существовать одновременно, позволяя валидировать токены, подписанные старой парой ключей, при этом новые токены будут подписаны новой парой ключей, что позволит просто перейти с одной пары ключей на другую незаметно для пользователей.  
+| Переменная                      | Значение по умолчанию | Описание                                                                             |
+| ------------------------------- | --------------------- | ------------------------------------------------------------------------------------ |
+| `LOG_LEVEL`                     | `INFO`                | Уровень логирования DEBUG/INFO/WARNING/ERROR/CRITICAL                                |
+| `DB_USER`                       | `postgres`            | Имя пользователя PostgreSQL                                                          |
+| `DB_PASS`                       | `your_password`       | Пароль пользователя PostgreSQL                                                       |
+| `DB_NAME`                       | `your_db_name`        | Название базы данных PostgreSQL                                                      |
+| `DB_HOST`                       | `localhost`           | Хост PostgreSQL                                                                      |
+| `DB_PORT`                       | `5432`                | Порт PostgreSQL                                                                      |
+| `RMQ_USER_ADD_QUEUE`            | `<queue_name>`        | Название очереди событий регистрации пользователей                                   |
+| `RMQ_USER`                      | `guest`               | Имя пользователя RabbitMQ                                                            |
+| `RMQ_PASS`                      | `<your_password>`     | Пароль пользователя RabbitMQ                                                         |
+| `RMQ_HOST`                      | `localhost`           | Хост RabbitMQ                                                                        |
+| `RMQ_PORT`                      | `5672`                | Порт RabbitMQ                                                                        |
+| `ALGORITHM`                     | `RS256`               | Алгоритм подписи JWT токенов. Поддерживается только `RS256`                          |
+| `ACCESS_TOKEN_EXPIRE_MINUTES`   | `15`                  | Срок действия access token в минутах                                                 |
+| `REFRESH_TOKEN_EXPIRE_DAYS`     | `7`                   | Срок действия refresh token в днях                                                   |
+| `KEY_PAIR_EXPIRES_DAYS`         | `15`                  | Срок действия пары ключей для подписи JWT в днях                                     |
+| `ROTATING_BEFORE_EXPIRING_DAYS` | `2`                   | Время в днях, за которое до истечения срока действия пары ключей выполняется ротация |
 
 ## Тесты
 
 В `tests/.env.test` файле нужно указать следующие переменные окружения:
 
-`TEST_DB_USER="postgres"` - Имя пользователя PostgreSQL  
-`TEST_DB_PASS="<your_password>"` - Пароль пользователя PostgreSQL  
-`TEST_DB_NAME="<your_db_name>"` - Название тестовой базы данных PostgreSQL  
-`TEST_DB_HOST="localhost"` - Хост PostgreSQL  
-`TEST_DB_PORT="5432"` - Порт PostgreSQL  
+| Переменная     | Значение по умолчанию | Описание                                 |
+| -------------- | --------------------- | ---------------------------------------- |
+| `TEST_DB_USER` | `postgres`            | Имя пользователя PostgreSQL              |
+| `TEST_DB_PASS` | `<your_password>`     | Пароль пользователя PostgreSQL           |
+| `TEST_DB_NAME` | `<your_db_name>`      | Название тестовой базы данных PostgreSQL |
+| `TEST_DB_HOST` | `localhost`           | Хост PostgreSQL                          |
+| `TEST_DB_PORT` | `5432`                | Порт PostgreSQL                          |
 
 >Важно: используйте отдельную чистую базу только для тестов. Все данные из неё будут удалены при запуске тестов. Название тестовой базы не должно совпадать с основной.
 
