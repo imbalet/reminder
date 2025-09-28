@@ -3,17 +3,17 @@ import logging
 import signal
 
 import aio_pika
+from rmq_service import ConsumeService, ExchangeConfig, QueueConfig
 
 from notification_service.config import config
-from notification_service.services import SenderInterface, TelegramSender
+from notification_service.logger import setup_logger
 from notification_service.schemas import (
+    DeliveryMethodEnum,
     Message,
     Reminder,
-    DeliveryMethodEnum,
     ResultStatusEnum,
 )
-from notification_service.logger import setup_logger
-from rmq_service import ConsumeService, QueueConfig, ExchangeConfig
+from notification_service.services import SenderInterface, TelegramSender
 
 setup_logger()
 logger = logging.getLogger(__name__)
