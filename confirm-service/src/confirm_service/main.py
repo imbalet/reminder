@@ -1,9 +1,9 @@
 import asyncio
 import logging
 
-from confirm_service.services import TelegramService
 from confirm_service.logger import setup_logger
 from confirm_service.redis_pool import redis
+from confirm_service.services import TelegramService
 
 setup_logger()
 logger = logging.getLogger(__name__)
