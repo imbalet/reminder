@@ -52,11 +52,20 @@ async def startup_event(app: FastAPI):
 
     yield
 
+    logger.info("Stop signal received")
+
     for i in all_tasks["tasks"]:
-        try:
-            await i
-        except asyncio.CancelledError:
-            pass
+        logger.info("Stopping task %s", i.get_name())
+        i.cancel()
+
+    try:
+        await asyncio.gather(
+            *all_tasks["tasks"],
+            return_exceptions=True,
+        )
+    except asyncio.CancelledError:
+        pass
+    logger.info("All tasks stopped")
 
     await app.state.channel_pool.close()
     await app.state.connection_pool.close()
