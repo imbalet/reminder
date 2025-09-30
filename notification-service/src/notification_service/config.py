@@ -17,7 +17,6 @@ class Config(BaseSettings):
 
     TG_BOT_TOKEN: str
 
-    RMQ_DLQ_FAILED_REMINDERS_NAME: str
     RMQ_DLX_FAILED_REMINDERS_NAME: str
     RMQ_REMINDERS_QUEUE: str
     RMQ_USER: str

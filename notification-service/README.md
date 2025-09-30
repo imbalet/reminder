@@ -37,7 +37,6 @@
 | ----------------------------- | ------------------------------------------------------------------------ | ------------------------------ |
 | LOG_LEVEL                     | Уровень логирования приложения: DEBUG/INFO/WARNING/ERROR/CRITICAL        | INFO                           |
 | TG_BOT_TOKEN                  | Токен Telegram-бота, используемый для отправки уведомлений               | <your_telegram_bot_token>      |
-| RMQ_DLQ_FAILED_REMINDERS_NAME | Название dead letter queue для обработки неуспешных отправок напоминаний | <your_dlq_name>                |
 | RMQ_DLX_FAILED_REMINDERS_NAME | Название обменника (DLX) для DLQ                                         | <your_dlx_name>                |
 | RMQ_REMINDERS_QUEUE           | Основная очередь для сообщений о напоминаниях                            | <your_reminders_queue_name>    |
 | RMQ_USER                      | Имя пользователя RabbitMQ                                                | guest                          |

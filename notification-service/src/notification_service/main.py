@@ -77,6 +77,7 @@ async def process_rmq_message(message: aio_pika.abc.AbstractIncomingMessage, **k
                         "result": "error",
                         "error": str(e),
                     },
+                    exc_info=True,
                 )
                 raise
 
@@ -88,6 +89,7 @@ async def process_rmq_message(message: aio_pika.abc.AbstractIncomingMessage, **k
                 "result": "error",
                 "error": str(e),
             },
+            exc_info=True,
         )
         raise
 
@@ -111,7 +113,6 @@ async def main():
     consume_service = ConsumeService(
         channel_pool=channel_pool,
         queue_config=QueueConfig(name=config.RMQ_REMINDERS_QUEUE),
-        dlq=QueueConfig(name=config.RMQ_DLQ_FAILED_REMINDERS_NAME),
         dlx=ExchangeConfig(
             name=config.RMQ_DLX_FAILED_REMINDERS_NAME, type=aio_pika.ExchangeType.FANOUT
         ),
