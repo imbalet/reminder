@@ -1,11 +1,11 @@
-from httpx import AsyncClient
 import pytest
+from httpx import AsyncClient
 
 from auth_service.schemas import (
-    UserRegisterRequest,
-    UserAuth,
-    UserResponse,
     TokenResponse,
+    UserAuth,
+    UserRegisterRequest,
+    UserResponse,
 )
 
 
@@ -16,7 +16,7 @@ async def test_valid_register(
     response = await async_client.post(
         "/api/auth/register", json=sample_register_user_data.model_dump()
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     res = UserResponse.model_validate(response.json())
     assert res.email == sample_register_user_data.email
 
@@ -66,7 +66,6 @@ async def test_valid_logout(
     response = await async_client.post(
         "/api/auth/logout", cookies={"refresh_token": refresh_token}
     )
-    assert response.status_code == 200
-    assert "message" in response.json()
+    assert response.status_code == 204
     assert "set-cookie" in response.headers
     assert "refresh_token" not in response.cookies

@@ -1,21 +1,20 @@
 import datetime
 import json
-from pathlib import Path
 import secrets
-
-import pytest
-from pytest_mock import MockerFixture
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from auth_service.services.security_service import (
-    SecurityService,
-    DataStorage,
-    ROTATING_BEFORE_EXPIRING_DAYS,
-)
-from auth_service.services.security_service import int_to_base64url
+import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from pytest_mock import MockerFixture
+
 from auth_service.schemas import KeyPair
+from auth_service.services.security_service import (
+    DataStorage,
+    SecurityService,
+    int_to_base64url,
+)
 
 
 @pytest.mark.parametrize(
@@ -323,11 +322,11 @@ def test_rotate_keys_mocks():
 @pytest.mark.parametrize(
     "expires_at, expected",
     [
-        (datetime_offset(days=ROTATING_BEFORE_EXPIRING_DAYS + 2), False),
-        (datetime_offset(days=ROTATING_BEFORE_EXPIRING_DAYS + 1, hours=1), False),
-        (datetime_offset(days=ROTATING_BEFORE_EXPIRING_DAYS + 1, minutes=1), False),
-        (datetime_offset(days=ROTATING_BEFORE_EXPIRING_DAYS + 1), True),
-        (datetime_offset(days=ROTATING_BEFORE_EXPIRING_DAYS), True),
+        (datetime_offset(days=2 + 2), False),
+        (datetime_offset(days=2 + 1, hours=1), False),
+        (datetime_offset(days=2 + 1, minutes=1), False),
+        (datetime_offset(days=2 + 1), True),
+        (datetime_offset(days=2), True),
         (datetime_offset(days=-1), True),
         (datetime_offset(hours=-1), True),
         (datetime_offset(minutes=-1), True),

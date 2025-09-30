@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Config(BaseSettings):
@@ -15,8 +15,7 @@ class Config(BaseSettings):
             f"{self.TEST_DB_HOST}:{self.TEST_DB_PORT}/{self.TEST_DB_NAME}"
         )
 
-    class Config:
-        env_file = "tests/.env.test"
+    model_config = SettingsConfigDict(env_file="tests/.env.test")
 
 
 config = Config()  # type: ignore

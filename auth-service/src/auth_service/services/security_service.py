@@ -2,20 +2,16 @@ import base64
 import datetime
 import json
 import os
-from pathlib import Path
 import secrets
 import tempfile
+from pathlib import Path
 
+from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.backends import default_backend
 
-from auth_service.schemas import KeyPair
 from auth_service.config import config
-
-
-KEY_PAIR_EXPIRES_DAYS = config.KEY_PAIR_EXPIRES_DAYS
-ROTATING_BEFORE_EXPIRING_DAYS = config.ROTATING_BEFORE_EXPIRING_DAYS
+from auth_service.schemas import KeyPair
 
 
 def int_to_base64url(value: int) -> str:
@@ -184,7 +180,7 @@ class SecurityService:
         kid = f"{secrets.token_urlsafe(8)}_{int(iss_time.timestamp())}"
         return KeyPair(
             kid=kid,
-            expires_at=iss_time + datetime.timedelta(days=KEY_PAIR_EXPIRES_DAYS),
+            expires_at=iss_time + datetime.timedelta(days=config.KEY_PAIR_EXPIRES_DAYS),
             private_key=private_key,
             public_key=public_key,
             _private_filename=f"{kid}.pem",
@@ -252,7 +248,7 @@ class SecurityService:
     def rotate_keys_if_need(self):
         if (
             self.current_key_pair.expires_at - datetime.datetime.now(datetime.UTC)
-        ).days <= ROTATING_BEFORE_EXPIRING_DAYS:
+        ).days <= config.ROTATING_BEFORE_EXPIRING_DAYS:
             self.rotate_keys()
 
     def get_last_key_pair(self):

@@ -101,7 +101,7 @@ async def test_read(
     mock_notification_service,
     notification_data: NotificationResponse,
 ):
-    nt = notification_data.copy()
+    nt = notification_data.model_copy()
     nt.is_read = True
     mock_notification_service.read.return_value = nt
 

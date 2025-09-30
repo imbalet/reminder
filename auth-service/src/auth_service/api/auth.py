@@ -150,5 +150,3 @@ async def logout(
         await token_service.revoke_token(refresh_token_data.jti)
 
     response.delete_cookie(key="refresh_token", path="/api/auth")
-
-    return Response(status_code=status.HTTP_204_NO_CONTENT)

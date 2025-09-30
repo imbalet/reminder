@@ -3,24 +3,26 @@ from unittest.mock import AsyncMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+
 from auth_service.schemas import (
     TokenResponse,
     UserAuth,
-    UserResponse,
     UserRegisterRequest,
+    UserResponse,
 )
-from auth_service.main import app
-from auth_service.dependencies import (
-    get_async_session_factory,
-    get_security_service,
-    get_user_register_event_service,
-    get_channel_pool,
-)
-from auth_service.services import SecurityService
 
 
 @pytest.fixture
 async def async_client(async_session_factory):
+    from auth_service.dependencies import (
+        get_async_session_factory,
+        get_channel_pool,
+        get_security_service,
+        get_user_register_event_service,
+    )
+    from auth_service.main import app
+    from auth_service.services import SecurityService
+
     app.dependency_overrides[get_async_session_factory] = lambda: async_session_factory
     app.dependency_overrides[get_security_service] = lambda: SecurityService(
         Path(".secrets")
@@ -59,7 +61,7 @@ async def registered_user(
     response = await async_client.post(
         "/api/auth/register", json=sample_register_user_data.model_dump()
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     return UserResponse.model_validate(response.json())
 
 
