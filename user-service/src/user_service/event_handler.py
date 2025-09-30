@@ -24,7 +24,9 @@ async def failed_reminders_callback(
             content=f"Reminder with title '{reminder.title}' failed to send.",
         )
     except Exception as e:
-        logger.error(f"Error validating failed reminder. Raw data: {data}", exc_info=e)
+        logger.error(
+            f"Error validating failed reminder. Raw data: {data}", exc_info=True
+        )
 
 
 async def deactivated_reminders_callback(

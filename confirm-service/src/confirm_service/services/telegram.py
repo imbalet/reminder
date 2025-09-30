@@ -3,16 +3,15 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
-from aiogram.enums import ParseMode
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
+from aiogram.enums import ParseMode
 from aiogram.filters.command import Command
 from aiogram.types import Message
 
 from confirm_service.config import config
-from confirm_service.services import ConfirmCodesService
 from confirm_service.redis_pool import redis
-
+from confirm_service.services import ConfirmCodesService
 
 logger = logging.getLogger(__name__)
 dp = Dispatcher()
@@ -61,6 +60,7 @@ async def link_handler(message: Message) -> None:
                 "operation": "create_confirm_code",
                 "result": "error",
             },
+            exc_info=True,
         )
         await message.answer("Unexpected error")
 
