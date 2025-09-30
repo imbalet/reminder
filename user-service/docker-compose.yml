@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:17.6
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  app:
+    env_file:
+      - .env
+    stop_grace_period: 30s
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+    command: sh -c "alembic upgrade head || exit 1 && exec uvicorn user_service.main:app --host 0.0.0.0 --port 8000"
+
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+    ports:
+      - "${APP_PORT}:8000"
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  pgdata:
