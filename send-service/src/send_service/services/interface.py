@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from notification_service.schemas import Message, Result
+from send_service.schemas import Message, Result
 
 
 class SenderInterface(ABC):

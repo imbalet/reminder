@@ -117,12 +117,12 @@ services:
       - app-network
     restart: unless-stopped
 
-  notification-service:
+  send-service:
     env_file:
       - .env
     stop_grace_period: 30s
     build:
-      context: ./notification-service/
+      context: ./send-service/
       dockerfile: Dockerfile
     environment:
       DB_HOST: db

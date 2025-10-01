@@ -1,7 +1,7 @@
 import httpx
 
-from notification_service.schemas import Message, Result, ResultStatusEnum
-from notification_service.services import SenderInterface
+from send_service.schemas import Message, Result, ResultStatusEnum
+from send_service.services import SenderInterface
 
 
 class TelegramSender(SenderInterface):

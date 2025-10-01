@@ -1,4 +1,4 @@
-# Notification service <!-- omit from toc -->
+# Send service <!-- omit from toc -->
 
 Микросервис для отправки напоминаний пользователям по указанным каналам связи.
 
@@ -80,13 +80,13 @@ pip3 install -e .
 #### Запуск
 
 ```bash
-python src/notification_service/main.py
+python src/send_service/main.py
 ```
 
 Или
 
 ```bash
-python -m notification_service.main
+python -m send_service.main
 ```
 
 
@@ -98,13 +98,13 @@ python -m notification_service.main
 Сборка:
 
 ```bash
-docker build . -t "notification-service"
+docker build . -t "send-service"
 ```
 
 Запуск:
 
 ```bash
-docker run -d --env-file .env --name app-notification-service notification-service:latest
+docker run -d --env-file .env --name app-send-service send-service:latest
 ```
 
 > Важно, перед запуском необходимо верно указать все переменные окружения в файле `.env`.  
@@ -115,7 +115,7 @@ docker run -d --env-file .env --name app-notification-service notification-servi
 Остановка:
 
 ```bash
-docker stop app-notification-service
+docker stop app-send-service
 ```
 
 

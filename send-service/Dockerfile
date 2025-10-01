@@ -32,6 +32,6 @@ USER nonroot
 WORKDIR /app
 EXPOSE 8000
 
-CMD ["python", "-m", "notification_service.main"]
+CMD ["python", "-m", "send_service.main"]
 
 

@@ -1,6 +1,6 @@
 import logging
 
-from notification_service.config import config
+from send_service.config import config
 
 
 def setup_logger():

@@ -205,29 +205,6 @@ wheels = [
 ]
 
 [[package]]
-name = "notification-service"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "aio-pika" },
-    { name = "httpx" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "requests" },
-    { name = "rmq-service" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aio-pika", specifier = ">=9.5.5" },
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "pydantic", specifier = ">=2.11.7" },
-    { name = "pydantic-settings", specifier = ">=2.10.1" },
-    { name = "requests", specifier = ">=2.32.4" },
-    { name = "rmq-service", git = "https://github.com/imbalet/rmq_service" },
-]
-
-[[package]]
 name = "pamqp"
 version = "3.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -394,6 +371,29 @@ version = "0.1.0"
 source = { git = "https://github.com/imbalet/rmq_service#40d79094e938b0fcfbf115479c47bb150a561b09" }
 dependencies = [
     { name = "aio-pika" },
+]
+
+[[package]]
+name = "send-service"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "aio-pika" },
+    { name = "httpx" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "requests" },
+    { name = "rmq-service" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aio-pika", specifier = ">=9.5.5" },
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "pydantic", specifier = ">=2.11.7" },
+    { name = "pydantic-settings", specifier = ">=2.10.1" },
+    { name = "requests", specifier = ">=2.32.4" },
+    { name = "rmq-service", git = "https://github.com/imbalet/rmq_service" },
 ]
 
 [[package]]

@@ -4,16 +4,15 @@ import signal
 
 import aio_pika
 from rmq_service import ConsumeService, ExchangeConfig, QueueConfig
-
-from notification_service.config import config
-from notification_service.logger import setup_logger
-from notification_service.schemas import (
+from send_service.config import config
+from send_service.logger import setup_logger
+from send_service.schemas import (
     DeliveryMethodEnum,
     Message,
     Reminder,
     ResultStatusEnum,
 )
-from notification_service.services import SenderInterface, TelegramSender
+from send_service.services import SenderInterface, TelegramSender
 
 setup_logger()
 logger = logging.getLogger(__name__)
@@ -125,7 +124,7 @@ async def main():
 
     stop_event = asyncio.Event()
 
-    logger.info("Notification service started")
+    logger.info("Send service started")
 
     def _signal_handler():
         logger.info("Shutdown signal received")
