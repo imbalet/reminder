@@ -1,5 +1,16 @@
 # Confirm service
 
+- [Confirm service](#confirm-service)
+  - [Функционал](#функционал)
+  - [Стек](#стек)
+  - [Установка и запуск](#установка-и-запуск)
+    - [Конфигурация](#конфигурация)
+    - [Локальный запуск](#локальный-запуск)
+      - [Установка зависимостей](#установка-зависимостей)
+      - [Запуск](#запуск)
+    - [Запуск из Docker](#запуск-из-docker)
+  - [Работа с Redis](#работа-с-redis)
+
 
 ## Функционал
 
@@ -12,42 +23,44 @@
 - aiogram
 
 
-## Конфигурация
 
-### Приложение
+## Установка и запуск
+
+### Конфигурация
+
+#### Приложение <!-- omit from toc -->
 
 В `.env` файле в корне проекта нужно указать следующие переменные окружения:
 
-| Переменная       | Описание                                                           | Пример / Значение по умолчанию |
-| ---------------- | ------------------------------------------------------------------ | ------------------------------ |
-| `LOG_LEVEL`      | Уровень логирования приложения (DEBUG/INFO/WARNING/ERROR/CRITICAL) | `INFO`                         |
-| `TG_BOT_TOKEN`   | Токен Telegram-бота                                                | `<your_bot_token>`             |
-| `TG_API_ADDRESS` | Адрес API Telegram (Необязательно)                                 | `""`                           |
-| `REDIS_HOST`     | Хост Redis                                                         | `localhost`                    |
-| `REDIS_PORT`     | Порт Redis                                                         | `6379`                         |
-| `REDIS_PASSWORD` | Пароль Redis                                                       | `<your_password>`              |
+| Переменная       | Пример                   | Описание                                                           |
+| ---------------- | ------------------------ | ------------------------------------------------------------------ |
+| `LOG_LEVEL`      | `INFO`                   | Уровень логирования приложения (DEBUG/INFO/WARNING/ERROR/CRITICAL) |
+| `TG_BOT_TOKEN`   | `<your_bot_token>`       | Токен Telegram-бота                                                |
+| `TG_API_ADDRESS` | `https://127.0.0.1:8081` | Адрес API Telegram (Необязательно)                                 |
+| `REDIS_HOST`     | `localhost`              | Хост Redis                                                         |
+| `REDIS_PORT`     | `6379`                   | Порт Redis                                                         |
+| `REDIS_PASSWORD` | `<your_password>`        | Пароль Redis                                                       |
 
 
 Есть возможность работать как со стандартным BOT API, так и использовать собственный сервер для снятия лимитов и прочего функционала. Например, можно использовать этот Docker образ [aiogram/telegram-bot-api](https://github.com/aiogram/telegram-bot-api). Чтобы использовать стандартный Telegram API, переменную `TG_API_ADDRESS` можно не указывать (или задать ей пустую строку `""`).
 
+### Локальный запуск
 
-## Установка и запуск
+#### Установка зависимостей 
 
-### Установка зависимостей
-
-#### UV <!-- omit from toc -->
+##### UV <!-- omit from toc -->
 
 ```bash
 uv sync
 ```
 
-#### Poetry <!-- omit from toc -->
+##### Poetry <!-- omit from toc -->
 
 ```bash
 poetry install
 ```
 
-#### pip <!-- omit from toc -->
+##### pip <!-- omit from toc -->
 
 ```bash
 # Создать виртуальное окружение
@@ -58,7 +71,7 @@ pip3 install -e .
 ```
 
 
-### Запуск
+#### Запуск
 
 ```bash
 python src/confirm_service/main.py
@@ -68,6 +81,34 @@ python src/confirm_service/main.py
 
 ```bash
 python -m confirm_service.main
+```
+
+### Запуск из Docker
+
+При использовании этого метода, запускается два контейнера: с приложением и с базой данных.
+Прочие зависимости (RabbitMQ, Redis) должны запускаться отдельно.
+
+Сборка:
+
+```bash
+docker build . -t "confirm-service"
+```
+
+Запуск:
+
+```bash
+docker run -d --env-file .env --name app-confirm-service confirm-service:latest
+```
+
+> Важно, перед запуском необходимо верно указать все переменные окружения в файле `.env`.  
+> При использовании локальных Redis, RabbitMQ необходимо указать ip адрес интерфейса хоста.
+> Узнать его можно командой `ip addr show docker0`  
+> Или же использовать `host.docker.internal` в поддерживаемых системах.
+
+Остановка:
+
+```bash
+docker stop app-confirm-service
 ```
 
 ## Работа с Redis
