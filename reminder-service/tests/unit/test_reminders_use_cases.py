@@ -4,8 +4,12 @@ from uuid import UUID
 
 import pytest
 
-from reminder_service.schemas import ReminderEdit
-from reminder_service.schemas.reminders import ReminderCreate, ReminderResponse
+from reminder_service.schemas import (
+    ReminderCreate,
+    ReminderEdit,
+    ReminderResponse,
+    Status,
+)
 from reminder_service.use_cases import (
     AddReminderUseCase,
     BadRequestException,
@@ -107,6 +111,69 @@ async def test_edit_reminder_invalid_methods(
     uc = EditReminderUseCase(mock_reminder_service)
     with pytest.raises(BadRequestException):
         await uc.execute(user_id, reminder.id, new_data)
+
+
+async def test_edit_reminder_deactivated_future(
+    mock_reminder_service: AsyncMock, reminder: ReminderResponse, user_id: UUID
+):
+    new_data = ReminderEdit(
+        delivery_methods_ids=[i.id for i in reminder.delivery_methods]
+    )
+    reminder.status = Status.INACTIVE
+    reminder.remind_date = datetime.now(UTC) + timedelta(days=1)
+    mock_reminder_service.edit.return_value = reminder
+
+    uc = EditReminderUseCase(mock_reminder_service)
+    await uc.execute(user_id, reminder.id, new_data)
+
+    mock_reminder_service.set_status.assert_awaited_once_with(
+        reminder.id, Status.PENDING
+    )
+
+
+async def test_edit_reminder_deactivated_past(
+    mock_reminder_service: AsyncMock, reminder: ReminderResponse, user_id: UUID
+):
+    new_data = ReminderEdit(
+        delivery_methods_ids=[i.id for i in reminder.delivery_methods]
+    )
+    reminder.status = Status.INACTIVE
+    reminder.remind_date = datetime.now(UTC) - timedelta(days=1)
+    mock_reminder_service.edit.return_value = reminder
+
+    uc = EditReminderUseCase(mock_reminder_service)
+    await uc.execute(user_id, reminder.id, new_data)
+
+    mock_reminder_service.set_status.assert_awaited_once_with(
+        reminder.id, Status.FAILED
+    )
+
+
+async def test_edit_reminder_deactivated_no_activate(
+    mock_reminder_service: AsyncMock, reminder: ReminderResponse, user_id: UUID
+):
+    new_data = ReminderEdit(title="new")
+    reminder.status = Status.INACTIVE
+    reminder.delivery_methods = []
+    mock_reminder_service.edit.return_value = reminder
+
+    uc = EditReminderUseCase(mock_reminder_service)
+    await uc.execute(user_id, reminder.id, new_data)
+
+    mock_reminder_service.set_status.assert_not_awaited()
+
+
+async def test_edit_reminder_no_deactivated(
+    mock_reminder_service: AsyncMock, reminder: ReminderResponse, user_id: UUID
+):
+    new_data = ReminderEdit(title="new")
+    reminder.status = Status.PENDING
+    mock_reminder_service.edit.return_value = reminder
+
+    uc = EditReminderUseCase(mock_reminder_service)
+    await uc.execute(user_id, reminder.id, new_data)
+
+    mock_reminder_service.set_status.assert_not_awaited()
 
 
 async def test_send_reminders(

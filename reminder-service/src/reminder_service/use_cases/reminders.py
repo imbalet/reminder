@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import UTC, datetime
 from uuid import UUID
 
 from rmq_service import Message, ProduceService
@@ -9,6 +10,7 @@ from reminder_service.schemas import (
     ReminderCreate,
     ReminderEdit,
     ReminderResponse,
+    Status,
 )
 from reminder_service.services.reminder_service import ReminderService
 from reminder_service.use_cases import BadRequestException, ForbiddenException
@@ -158,6 +160,11 @@ class EditReminderUseCase:
                     "result": "success",
                 },
             )
+            if res.status == Status.INACTIVE and len(res.delivery_methods) >= 1:
+                if res.remind_date >= datetime.now(UTC):
+                    await self.reminder_service.set_status(res.id, Status.PENDING)
+                else:
+                    await self.reminder_service.set_status(res.id, Status.FAILED)
         except ValueError:
             raise BadRequestException("Invalid delivery method(s)")
 
