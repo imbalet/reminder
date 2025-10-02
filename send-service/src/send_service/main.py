@@ -4,6 +4,7 @@ import signal
 
 import aio_pika
 from rmq_service import ConsumeService, ExchangeConfig, QueueConfig
+
 from send_service.config import config
 from send_service.logger import setup_logger
 from send_service.schemas import (
@@ -22,13 +23,28 @@ senders: dict[DeliveryMethodEnum, SenderInterface] = {
 }
 
 
-async def process_rmq_message(message: aio_pika.abc.AbstractIncomingMessage, **kwargs):
+async def process_rmq_message(data: bytes, **kwargs):
     try:
-        decoded_message = message.body.decode()
-        reminder = Reminder.model_validate_json(decoded_message)
+        reminder = Reminder.model_validate_json(data)
         notification_message = Message(title=reminder.title, content=reminder.content)
+    except Exception as e:
+        logger.exception(
+            "Message decoding failed",
+            extra={
+                "operation": "process_message",
+                "result": "error",
+                "error": str(e),
+            },
+            exc_info=True,
+        )
+        raise
 
+    sent: set[tuple[DeliveryMethodEnum, str]] = set()
+    for _ in range(3):  # TODO: CHANGE RETRIES
         for request in reminder.delivery_methods:
+            if (request.delivery_method, request.contact_value) in sent:
+                continue
+
             sender = senders.get(request.delivery_method, None)
             method_type = request.delivery_method.value
 
@@ -41,7 +57,7 @@ async def process_rmq_message(message: aio_pika.abc.AbstractIncomingMessage, **k
                         "result": "error",
                     },
                 )
-                raise Exception()
+                continue
 
             try:
                 res = await sender.send(
@@ -57,8 +73,9 @@ async def process_rmq_message(message: aio_pika.abc.AbstractIncomingMessage, **k
                             "result": "error",
                         },
                     )
-                    raise Exception()
+                    continue
                 else:
+                    sent.add((request.delivery_method, request.contact_value))
                     logger.info(
                         "Sent reminder",
                         extra={
@@ -78,19 +95,9 @@ async def process_rmq_message(message: aio_pika.abc.AbstractIncomingMessage, **k
                     },
                     exc_info=True,
                 )
-                raise
-
-    except Exception as e:
-        logger.exception(
-            "Message processing failed",
-            extra={
-                "operation": "process_message",
-                "result": "error",
-                "error": str(e),
-            },
-            exc_info=True,
-        )
-        raise
+                continue
+        if len(sent) == len(reminder.delivery_methods):
+            break
 
 
 def get_channel_pools():
@@ -119,7 +126,7 @@ async def main():
     await consume_service.setup()
 
     consume_task = asyncio.create_task(
-        consume_service.consume(callback=process_rmq_message)
+        consume_service.consume(callback=process_rmq_message, retries=1)
     )
 
     stop_event = asyncio.Event()
