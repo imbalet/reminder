@@ -3,11 +3,12 @@ from uuid import UUID
 
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import apaginate
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from reminder_service.models import (
     DeliveryMethodOrm,
+    ReminderDeliveryMethodOrm,
     RemindersOrm,
 )
 from reminder_service.schemas import ReminderEdit, ReminderResponse, Status
@@ -184,10 +185,18 @@ class ReminderService:
 
     async def deactivate_reminders_by_method(self, delivery_method_id: UUID):
         async with self.session_factory() as session:
+            subq = (
+                select(ReminderDeliveryMethodOrm.reminder_id)
+                .group_by(ReminderDeliveryMethodOrm.reminder_id)
+                .having(func.count(ReminderDeliveryMethodOrm.delivery_method_id) == 1)
+                .subquery()
+            )
+
             stmt = (
                 update(RemindersOrm)
                 .where(
                     RemindersOrm.status == Status.PENDING,
+                    RemindersOrm.id.in_(select(subq.c.reminder_id)),
                     RemindersOrm.delivery_methods.any(
                         DeliveryMethodOrm.id == delivery_method_id
                     ),

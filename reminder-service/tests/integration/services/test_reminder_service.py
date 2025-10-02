@@ -545,7 +545,7 @@ async def test_deactivate_reminders_by_method_with_other_method(
     assert deactivated[0].status == Status.INACTIVE
 
 
-async def test_deactivate_reminders_by_method_two_methods(
+async def test_deactivate_reminders_by_method_two_reminders(
     reminder_service: ReminderService,
     sample_db_delivery_method_telegram: DeliveryMethod,
     user_id: UUID,
@@ -565,10 +565,37 @@ async def test_deactivate_reminders_by_method_two_methods(
         delivery_method_ids=[sample_db_delivery_method_telegram.id],
     )
 
-    orphans = await reminder_service.deactivate_reminders_by_method(
+    deactivated = await reminder_service.deactivate_reminders_by_method(
         sample_db_delivery_method_telegram.id
     )
 
-    assert len(orphans) == 2
-    assert orphans[0].status == Status.INACTIVE
-    assert orphans[1].status == Status.INACTIVE
+    assert len(deactivated) == 2
+    assert deactivated[0].status == Status.INACTIVE
+    assert deactivated[1].status == Status.INACTIVE
+
+
+async def test_deactivate_reminders_by_method_two_methods(
+    reminder_service: ReminderService,
+    sample_db_delivery_method_telegram: DeliveryMethod,
+    sample_db_delivery_method_email: DeliveryMethod,
+    user_id: UUID,
+):
+    rem = await reminder_service.create(
+        title="title",
+        content="content",
+        user_id=user_id,
+        remind_date=datetime.now(UTC),
+        delivery_method_ids=[
+            sample_db_delivery_method_telegram.id,
+            sample_db_delivery_method_email.id,
+        ],
+    )
+
+    deactivated = await reminder_service.deactivate_reminders_by_method(
+        sample_db_delivery_method_telegram.id
+    )
+
+    rem_from_db = await reminder_service.get(rem.id)
+
+    assert len(deactivated) == 0
+    assert rem_from_db and rem_from_db.status == Status.PENDING
