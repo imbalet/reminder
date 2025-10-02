@@ -43,7 +43,7 @@ class ReminderResponse(ReminderBase):
 
 
 class ReminderEdit(BaseModel):
-    title: str | None
-    content: str | None
-    remind_date: datetime | None
-    delivery_methods_ids: list[UUID] | None
+    title: str | None = None
+    content: str | None = None
+    remind_date: datetime | None = None
+    delivery_methods_ids: list[UUID] | None = None
