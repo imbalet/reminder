@@ -2,7 +2,7 @@ import datetime
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel
-from sqlalchemy import DateTime, ForeignKey, UniqueConstraint, text
+from sqlalchemy import DateTime, Enum, ForeignKey, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -39,7 +39,9 @@ class DeliveryMethodsOrm(Base):
     user_id: Mapped[UUID] = mapped_column(
         ForeignKey(UserOrm.id, ondelete="CASCADE"), index=True
     )
-    delivery_method: Mapped[DeliveryMethod]
+    delivery_method: Mapped[DeliveryMethod] = mapped_column(
+        Enum(DeliveryMethod, name="deliverymethod", native_enum=True), nullable=False
+    )
     contact_value: Mapped[str]
     is_confirmed: Mapped[bool] = mapped_column(server_default="FALSE")
     created_at: Mapped[datetime.datetime] = mapped_column(
