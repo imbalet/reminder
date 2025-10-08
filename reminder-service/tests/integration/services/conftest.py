@@ -60,13 +60,16 @@ def user_id():
 
 @pytest.fixture
 async def sample_db_delivery_method_telegram(
-    delivery_methods_service: DeliveryMethodService, user_id
+    delivery_methods_service: DeliveryMethodService,
+    user_id,
+    delivery_method_tg: DeliveryMethod,
 ):
     res = await delivery_methods_service.create(
         id=uuid4(),
-        delivery_method=DeliveryMethodEnum.TELEGRAM,
-        contact_value="123",
+        delivery_method=delivery_method_tg.delivery_method,
+        contact_value=delivery_method_tg.contact_value,
         user_id=user_id,
+        meta_data=delivery_method_tg.meta_data,
     )
     return DeliveryMethod.model_validate(res, from_attributes=True)
 
@@ -80,6 +83,7 @@ async def sample_db_delivery_method_email(
         delivery_method=DeliveryMethodEnum.EMAIL,
         contact_value="example@example.com",
         user_id=user_id,
+        meta_data={}
     )
     return DeliveryMethod.model_validate(res, from_attributes=True)
 

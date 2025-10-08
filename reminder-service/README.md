@@ -298,27 +298,33 @@ class Reminder(BaseModel):
 Reminder service использует эти события для локального хранения копии данных о методах доставки. 
 
 Структура сообщения:
-
 ```python
 class DeliveryMethodEnum(str, Enum):
     TELEGRAM = "telegram"
     EMAIL = "email"
+
+class MetaData(BaseModel):
+    username: str | None = None
 
 class DeliveryMethodRMQ(BaseModel):
     id: UUID
     user_id: UUID
     delivery_method: DeliveryMethodEnum
     contact_value: str
+    meta_data: MetaData
 ```
 
-Пример сообщения:
+`MetaData` - объект с метаданными метода доставки. На данный момент реализует хранение имени пользователя telegram для возможности идентификации клиентом метода доставки.   
+
+Пример сообщения:  
 
 ```json
 {
   "id": "91f23b16-3f6a-4f20-9d34-6d3a2a48fbb1",
   "user_id": "a3f7d8b2-8f21-4b91-9c72-1b9f5a7c2e4d",
   "delivery_method": "telegram",
-  "contact_value": "1234"
+  "contact_value": "1234",
+  "meta_data": {"username": "user"}
 }
 ```
 
@@ -426,13 +432,15 @@ class ReminderResponse(ReminderBase):
       "id": "1e3d5c7a-8b9f-4d12-9abc-1234567890ab",
       "user_id": "9a1b2c3d-4e5f-6789-0abc-def123456789",
       "delivery_method": "telegram",
-      "contact_value": "1234"
+      "contact_value": "1234",
+      "meta_data": {"username": "user"}
     },
     {
       "id": "2a4b6c8d-9e0f-1a23-4bcd-9876543210fe",
       "user_id": "9a1b2c3d-4e5f-6789-0abc-def123456789",
       "delivery_method": "email",
-      "contact_value": "user@example.com"
+      "contact_value": "user@example.com",
+      "meta_data": {}
     }
   ]
 }

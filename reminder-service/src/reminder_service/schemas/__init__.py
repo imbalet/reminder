@@ -1,4 +1,4 @@
-from .delivery_methods import DeliveryMethod, DeliveryMethodEnum
+from .delivery_methods import DeliveryMethod, DeliveryMethodEnum, MetaData
 from .reminders import (
     DeactivatedReminder,
     ReminderCreate,
@@ -16,5 +16,6 @@ __all__ = [
     "Status",
     "DeliveryMethodEnum",
     "DeliveryMethod",
+    "MetaData",
     "ErrorResponse",
 ]

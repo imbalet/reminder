@@ -82,6 +82,7 @@ async def test_create_with_invalid_delivery_method_other_user(
         delivery_method=sample_db_delivery_method_telegram.delivery_method,
         contact_value=sample_db_delivery_method_telegram.contact_value,
         user_id=uuid4(),
+        meta_data=sample_db_delivery_method_telegram.meta_data
     )
 
     with pytest.raises(ValueError):
@@ -226,6 +227,7 @@ async def test_edit_delivery_methods_add(
         delivery_method=sample_db_delivery_method_telegram.delivery_method,
         contact_value="123456",
         user_id=sample_db_reminder.user_id,
+        meta_data=sample_db_delivery_method_telegram.meta_data,
     )
     new_data = ReminderEdit(
         delivery_methods_ids=[

@@ -15,6 +15,7 @@ from reminder_service.schemas import (
     ReminderResponse,
     Status,
 )
+from reminder_service.schemas.delivery_methods import MetaData
 from reminder_service.services import DeliveryMethodService, ReminderService
 
 # Services
@@ -62,6 +63,7 @@ def delivery_method_tg(user_id):
         user_id=user_id,
         delivery_method=DeliveryMethodEnum.TELEGRAM,
         contact_value="contact",
+        meta_data=MetaData(username="user"),
     )
 
 

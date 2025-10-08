@@ -13,6 +13,7 @@ async def test_create(
         delivery_method=delivery_method_tg.delivery_method,
         contact_value=delivery_method_tg.contact_value,
         user_id=delivery_method_tg.user_id,
+        meta_data=delivery_method_tg.meta_data,
     )
 
     from_db = await delivery_methods_service.get(res.id)

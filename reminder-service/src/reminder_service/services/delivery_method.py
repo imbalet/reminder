@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from reminder_service.exceptions import AlreadyExistsError
 from reminder_service.models import DeliveryMethodOrm, RemindersOrm
-from reminder_service.schemas import DeliveryMethod, DeliveryMethodEnum
+from reminder_service.schemas import DeliveryMethod, DeliveryMethodEnum, MetaData
 
 
 class DeliveryMethodService:
@@ -20,6 +20,7 @@ class DeliveryMethodService:
         delivery_method: DeliveryMethodEnum,
         contact_value: str,
         user_id: UUID,
+        meta_data: MetaData | dict | None,
     ) -> DeliveryMethod:
         async with self.session_factory() as session:
             try:
@@ -28,6 +29,7 @@ class DeliveryMethodService:
                     delivery_method=delivery_method,
                     contact_value=contact_value,
                     user_id=user_id,
+                    meta_data=meta_data,
                 )
                 session.add(new_reminder)
                 await session.commit()

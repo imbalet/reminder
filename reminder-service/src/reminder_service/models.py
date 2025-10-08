@@ -3,10 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
+from pydantic import BaseModel
 from sqlalchemy import DateTime, ForeignKey, UniqueConstraint, text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-from reminder_service.schemas import DeliveryMethodEnum
+from reminder_service.schemas import DeliveryMethodEnum, MetaData
 from reminder_service.schemas.reminders import Status
 
 
@@ -54,6 +56,7 @@ class DeliveryMethodOrm(Base):
     delivery_method: Mapped[DeliveryMethodEnum]
     contact_value: Mapped[str]
     user_id: Mapped[UUID]
+    meta_data: Mapped[dict] = mapped_column(JSONB, server_default=text("'{}'::jsonb"))
 
     __table_args__ = (
         UniqueConstraint(
@@ -67,11 +70,17 @@ class DeliveryMethodOrm(Base):
         delivery_method: DeliveryMethodEnum,
         contact_value: str,
         user_id: UUID,
+        meta_data: MetaData | dict | None,
     ):
         self.id = id
         self.user_id = user_id
         self.delivery_method = delivery_method
         self.contact_value = contact_value
+        self.meta_data = (
+            meta_data.model_dump(exclude_none=True)
+            if isinstance(meta_data, BaseModel)
+            else meta_data or {}
+        )
 
 
 class ReminderDeliveryMethodOrm(Base):

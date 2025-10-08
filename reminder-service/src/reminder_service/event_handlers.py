@@ -38,6 +38,7 @@ async def handle_add_delivery_method(
         delivery_method=method.delivery_method,
         contact_value=method.contact_value,
         user_id=method.user_id,
+        meta_data=method.meta_data,
     )
     logger.info("Delivery method with id %s was added", method.id)
 
