@@ -7,11 +7,16 @@ from pydantic import BaseModel, ConfigDict
 from .delivery_methods import DeliveryMethodEnum
 
 
+class MetaData(BaseModel):
+    username: str | None = None  # Only for telegram
+
+
 class DeliveryMethod(BaseModel):
     id: UUID
     user_id: UUID
     delivery_method: DeliveryMethodEnum
     contact_value: str
+    meta_data: MetaData
 
 
 class Status(Enum):

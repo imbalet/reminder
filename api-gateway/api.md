@@ -287,7 +287,7 @@ ReminderResponse
 | `created_at`       | string                                                  | Да           | Время создания (ISO 8601)                   |
 | `status`           | string, Enum\['pending', 'sent', 'failed', 'inactive'\] | Да           | Текущий статус отправки напоминания         |
 | `edited_at`        | string \| null                                          | Да           | Время последнего редактирования (или null)  |
-| `delivery_methods` | array                                                   | Да           | Список UUID методов доставки                |
+| `delivery_methods` | array                                                   | Да           | Массив объектов методов доставки            |
 
 ### Код состояния: 400
 
@@ -303,17 +303,17 @@ ReminderResponse
 
 **Свойства:**
 
-| Свойство           | Тип                                                     | Обязательное | Описание                                                     |
-| ------------------ | ------------------------------------------------------- | ------------ | ------------------------------------------------------------ |
-| `title`            | string                                                  | Да           | Название                                                     |
-| `content`          | string                                                  | Да           | Содержимое напоминания                                       |
-| `remind_date`      | string                                                  | Да           | Дата и время напоминания                                     |
-| `id`               | string                                                  | Да           | UUID                                                         |
-| `user_id`          | string                                                  | Да           | UUID пользователя                                            |
-| `created_at`       | string                                                  | Да           | Дата и время создания                                        |
-| `status`           | string, Enum\['pending', 'sent', 'failed', 'inactive'\] | Да           | Статус                                                       |
-| `edited_at`        | string \| null                                          | Да           | Дата и время редактирования                                  |
-| `delivery_methods` | array                                                   | Да           | Массив методов доставки напоминания (объекты НАЗВАНИЕ СХЕМЫ) |
+| Свойство           | Тип                                                     | Обязательное | Описание                         |
+| ------------------ | ------------------------------------------------------- | ------------ | -------------------------------- |
+| `title`            | string                                                  | Да           | Название                         |
+| `content`          | string                                                  | Да           | Содержимое напоминания           |
+| `remind_date`      | string                                                  | Да           | Дата и время напоминания         |
+| `id`               | string                                                  | Да           | UUID                             |
+| `user_id`          | string                                                  | Да           | UUID пользователя                |
+| `created_at`       | string                                                  | Да           | Дата и время создания            |
+| `status`           | string, Enum\['pending', 'sent', 'failed', 'inactive'\] | Да           | Статус                           |
+| `edited_at`        | string \| null                                          | Да           | Дата и время редактирования      |
+| `delivery_methods` | array                                                   | Да           | Массив объектов методов доставки |
 
 ### Код состояния: 422
 
@@ -420,17 +420,17 @@ ReminderResponse
 
 **Свойства:**
 
-| Свойство           | Тип                                                     | Обязательное | Описание         |
-| ------------------ | ------------------------------------------------------- | ------------ | ---------------- |
-| `title`            | string                                                  | Да           | Title            |
-| `content`          | string                                                  | Да           | Content          |
-| `remind_date`      | string                                                  | Да           | Remind Date      |
-| `id`               | string                                                  | Да           | Id               |
-| `user_id`          | string                                                  | Да           | User Id          |
-| `created_at`       | string                                                  | Да           | Created At       |
-| `status`           | string, Enum\['pending', 'sent', 'failed', 'inactive'\] | Да           | Status           |
-| `edited_at`        | string \| null                                          | Да           | Edited At        |
-| `delivery_methods` | array                                                   | Да           | Delivery Methods |
+| Свойство           | Тип                                                     | Обязательное | Описание                         |
+| ------------------ | ------------------------------------------------------- | ------------ | -------------------------------- |
+| `title`            | string                                                  | Да           | Название                         |
+| `content`          | string                                                  | Да           | Содержимое напоминания           |
+| `remind_date`      | string                                                  | Да           | Дата и время напоминания         |
+| `id`               | string                                                  | Да           | UUID                             |
+| `user_id`          | string                                                  | Да           | UUID пользователя                |
+| `created_at`       | string                                                  | Да           | Дата и время создания            |
+| `status`           | string, Enum\['pending', 'sent', 'failed', 'inactive'\] | Да           | Статус                           |
+| `edited_at`        | string \| null                                          | Да           | Дата и время редактирования      |
+| `delivery_methods` | array                                                   | Да           | Массив объектов методов доставки |
 
 ### Код состояния: 403
 
@@ -569,17 +569,17 @@ ReminderResponse
 
 **Свойства:**
 
-| Свойство           | Тип                                                     | Обязательное | Описание         |
-| ------------------ | ------------------------------------------------------- | ------------ | ---------------- |
-| `title`            | string                                                  | Да           | Title            |
-| `content`          | string                                                  | Да           | Content          |
-| `remind_date`      | string                                                  | Да           | Remind Date      |
-| `id`               | string                                                  | Да           | Id               |
-| `user_id`          | string                                                  | Да           | User Id          |
-| `created_at`       | string                                                  | Да           | Created At       |
-| `status`           | string, Enum\['pending', 'sent', 'failed', 'inactive'\] | Да           | Status           |
-| `edited_at`        | string \| null                                          | Да           | Edited At        |
-| `delivery_methods` | array                                                   | Да           | Delivery Methods |
+| Свойство           | Тип                                                     | Обязательное | Описание                         |
+| ------------------ | ------------------------------------------------------- | ------------ | -------------------------------- |
+| `title`            | string                                                  | Да           | Название                         |
+| `content`          | string                                                  | Да           | Содержимое напоминания           |
+| `remind_date`      | string                                                  | Да           | Дата и время напоминания         |
+| `id`               | string                                                  | Да           | UUID                             |
+| `user_id`          | string                                                  | Да           | UUID пользователя                |
+| `created_at`       | string                                                  | Да           | Дата и время создания            |
+| `status`           | string, Enum\['pending', 'sent', 'failed', 'inactive'\] | Да           | Статус                           |
+| `edited_at`        | string \| null                                          | Да           | Дата и время редактирования      |
+| `delivery_methods` | array                                                   | Да           | Массив объектов методов доставки |
 
 ### Код состояния: 403
 
