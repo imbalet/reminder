@@ -327,13 +327,18 @@ class DeliveryMethodEnum(str, Enum):
     TELEGRAM = "telegram"
     EMAIL = "email"
 
+class MetaData(BaseModel):
+    username: str | None = None
 
 class DeliveryMethodRMQ(BaseModel):
     id: UUID
     user_id: UUID
     delivery_method: DeliveryMethodEnum
     contact_value: str
+    meta_data: MetaData
 ```
+
+`MetaData` - объект с метаданными метода доставки. На данный момент реализует хранение имени пользователя telegram для возможности идентификации клиентом метода доставки.   
 
 Пример сообщения:  
 
@@ -342,7 +347,8 @@ class DeliveryMethodRMQ(BaseModel):
   "id": "91f23b16-3f6a-4f20-9d34-6d3a2a48fbb1",
   "user_id": "a3f7d8b2-8f21-4b91-9c72-1b9f5a7c2e4d",
   "delivery_method": "telegram",
-  "contact_value": "1234"
+  "contact_value": "1234",
+  "meta_data": {"username": "user"}
 }
 ```
 

@@ -44,3 +44,4 @@ class DeliveryMethodRMQ(BaseModel):
     user_id: UUID
     delivery_method: DeliveryMethodEnum
     contact_value: str
+    meta_data: MetaData
