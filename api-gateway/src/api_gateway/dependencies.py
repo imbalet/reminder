@@ -12,14 +12,21 @@ from api_gateway.security import decode_jwt, oauth2_scheme
 
 
 async def get_jwks_pyjwt(token: Annotated[str, Depends(oauth2_scheme)]):
-    jwks_client = jwt.PyJWKClient(
-        config.JWKS_URL,
-        cache_keys=True,
-        max_cached_keys=5,
-        cache_jwk_set=True,
-        lifespan=3600,
-    )
-    signing_key = jwks_client.get_signing_key_from_jwt(token)
+    try:
+        jwks_client = jwt.PyJWKClient(
+            config.JWKS_URL,
+            cache_keys=True,
+            max_cached_keys=5,
+            cache_jwk_set=True,
+            lifespan=3600,
+        )
+        signing_key = jwks_client.get_signing_key_from_jwt(token)
+    except jwt.exceptions.PyJWKClientError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     pem_key = signing_key.key.public_bytes(
         encoding=serialization.Encoding.PEM,
@@ -28,7 +35,7 @@ async def get_jwks_pyjwt(token: Annotated[str, Depends(oauth2_scheme)]):
     public_key = serialization.load_pem_public_key(pem_key)
 
     if not isinstance(public_key, rsa.RSAPublicKey):
-        raise TypeError("Полученный ключ не является RSA ключом")
+        raise TypeError("Received key is not a RSA key")
     return public_key
 
 
