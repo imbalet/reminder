@@ -52,6 +52,16 @@ class ReminderEdit(BaseValidationModel):
     remind_date: datetime | None = Field(default=None)
     delivery_methods_ids: list[UUID] | None = Field(default=None)
 
+    @field_validator("remind_date")
+    def validate_remind_date(cls, v: datetime) -> datetime:
+        current_time = datetime.now(timezone.utc)
+        if v.tzinfo is None:
+            v = v.replace(tzinfo=timezone.utc)
+
+        if v <= current_time:
+            raise ValueError("Reminder date must be in the future")
+        return v
+
 
 class DeactivatedReminder(ReminderBase):
     id: UUID
