@@ -1,5 +1,6 @@
 from .delivery_methods import DeliveryMethod, DeliveryMethodEnum, MetaData
 from .reminders import (
+    EDITABLE_STATUSES,
     DeactivatedReminder,
     ReminderCreate,
     ReminderEdit,
@@ -9,6 +10,7 @@ from .reminders import (
 from .response import ErrorResponse
 
 __all__ = [
+    "EDITABLE_STATUSES",
     "DeactivatedReminder",
     "ReminderCreate",
     "ReminderEdit",

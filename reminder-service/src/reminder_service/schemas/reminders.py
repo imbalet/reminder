@@ -15,6 +15,9 @@ class Status(Enum):
     INACTIVE = "inactive"
 
 
+EDITABLE_STATUSES = [Status.PENDING, Status.INACTIVE]
+
+
 class ReminderBase(BaseModel):
     title: str = Field(min_length=3, max_length=100)
     content: str = Field(min_length=3, max_length=2048)

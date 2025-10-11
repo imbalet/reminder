@@ -11,7 +11,12 @@ from reminder_service.models import (
     ReminderDeliveryMethodOrm,
     RemindersOrm,
 )
-from reminder_service.schemas import ReminderEdit, ReminderResponse, Status
+from reminder_service.schemas import (
+    EDITABLE_STATUSES,
+    ReminderEdit,
+    ReminderResponse,
+    Status,
+)
 
 
 class ReminderService:
@@ -67,7 +72,7 @@ class ReminderService:
             stmt = (
                 select(RemindersOrm)
                 .filter_by(user_id=user_id)
-                .order_by(RemindersOrm.created_at.desc())
+                .order_by(RemindersOrm.remind_date.asc())
             )
             pages: Page = await apaginate(
                 session, stmt, Params(page=page, size=page_size)
@@ -101,7 +106,9 @@ class ReminderService:
     ) -> ReminderResponse | None:
         async with self.session_factory() as session:
             reminder = await session.get(RemindersOrm, reminder_id)
-            if not reminder or reminder.user_id != user_id:
+            if (
+                not reminder or reminder.user_id != user_id
+            ) or reminder.status not in EDITABLE_STATUSES:
                 return None
             update_data = data.model_dump(exclude_unset=True)
             for field, value in update_data.items():
