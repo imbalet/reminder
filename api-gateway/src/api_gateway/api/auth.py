@@ -109,4 +109,3 @@ async def logout(
         res.raise_for_status()
         for cookie_header in res.headers.get_list("Set-Cookie"):
             response.headers.append("Set-Cookie", cookie_header)
-        return res.json()
