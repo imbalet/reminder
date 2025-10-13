@@ -31,13 +31,14 @@
 
 В `.env` файле в корне проекта нужно указать следующие переменные окружения:
 
-| Переменная      | Пример                   | Описание                                                                        |
-| --------------- | ------------------------ | ------------------------------------------------------------------------------- |
-| `LOG_LEVEL`     | `INFO`                   | Уровень логирования приложения (DEBUG/INFO/WARNING/ERROR/CRITICAL)              |
-| `AUTH_URL`      | `http://127.0.0.1:8000`  | URL auth-сервиса, предоставляющего API регистрации, авторизации и JWKS endpoint |
-| `REMINDER_URL`  | `http://127.0.0.1:8001`  | URL reminder-service, к которому проксируются запросы                           |
-| `USER_URL`      | `http://127.0.0.1:8002`  | URL user-service, к которому проксируются запросы                               |
-| `JWKS_ENDPOINT` | `/.well-known/jwks.json` | Путь к JWKS endpoint на `AUTH_URL` (например `/.well-known/jwks.json`)          |
+| Переменная        | Пример                                      | Описание                                                                        |
+| ----------------- | ------------------------------------------- | ------------------------------------------------------------------------------- |
+| `LOG_LEVEL`       | `INFO`                                      | Уровень логирования приложения (DEBUG/INFO/WARNING/ERROR/CRITICAL)              |
+| `AUTH_URL`        | `http://127.0.0.1:8000`                     | URL auth-сервиса, предоставляющего API регистрации, авторизации и JWKS endpoint |
+| `REMINDER_URL`    | `http://127.0.0.1:8001`                     | URL reminder-service, к которому проксируются запросы                           |
+| `USER_URL`        | `http://127.0.0.1:8002`                     | URL user-service, к которому проксируются запросы                               |
+| `JWKS_ENDPOINT`   | `/.well-known/jwks.json`                    | Путь к JWKS endpoint на `AUTH_URL` (например `/.well-known/jwks.json`)          |
+| `ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost:80` | Разрешенные frontend origins для CORS                                           |
 
 
 ### Локальный запуск

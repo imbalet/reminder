@@ -82,7 +82,8 @@
 | `AUTH_SERVICE_DB`                  | `users`                                    | Название базы данных для auth-service                                                |
 | `USER_SERVICE_DB`                  | `user-profiles`                            | Название базы данных для user-service                                                |
 | `REMINDER_SERVICE_DB`              | `reminders`                                | Название базы данных для reminder-service                                            |
-| `POSTGRES_DATABASES`               | `user-profiles users reminders `           | Список всех создаваемых баз данных                                                   |
+| `POSTGRES_DATABASES`               | `user-profiles,users,reminders `           | Список всех создаваемых баз данных                                                   |
+| `ALLOWED_ORIGINS`                  | `http://localhost,http://127.0.0.1`        | Разрешенные origins для CORS                                                         |
 
 Для конфигурации можно воспользоваться файлом `.env.example`, заполнив только переменные `RMQ_PASS`, `REDIS_PASSWORD`, `DB_PASS`, `TG_BOT_TOKEN`.  
 Необходимо создать бота в Telegram и получить токен при помощи [BotFather](https://t.me/BotFather).  

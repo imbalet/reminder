@@ -1,6 +1,7 @@
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,9 +19,14 @@ class Config(BaseSettings):
     REMINDER_URL: str
     USER_URL: str
     JWKS_ENDPOINT: str
+    allowed_origins_raw: str = Field(..., alias="ALLOWED_ORIGINS")
 
     @property
-    def JWKS_URL(self):
+    def ALLOWED_ORIGINS(self) -> List[str]:
+        return [origin.strip() for origin in self.allowed_origins_raw.split(",")]
+
+    @property
+    def JWKS_URL(self) -> str:
         return f"{self.AUTH_URL}{self.JWKS_ENDPOINT}"
 
     model_config = SettingsConfigDict(env_file=".env")

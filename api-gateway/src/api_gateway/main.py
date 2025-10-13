@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -7,9 +9,12 @@ from api_gateway.api import (
     notification_router,
     reminder_router,
 )
+from api_gateway.config import config
 from api_gateway.logger import setup_logger
 
 setup_logger()
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     swagger_ui_parameters={
@@ -18,16 +23,17 @@ app = FastAPI(
     },
 )
 
+origins = [str(i) for i in config.ALLOWED_ORIGINS]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+logging.info("set allowed origins %s", origins)
 
 app.include_router(auth_router)
 app.include_router(reminder_router)
