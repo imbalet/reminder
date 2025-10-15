@@ -31,6 +31,10 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 USER nonroot
 
+RUN mkdir -p /app/.secrets \
+    && chown -R nonroot:nonroot /app/.secrets \
+    && chmod 700 /app/.secrets
+
 WORKDIR /app
 EXPOSE 8000
 

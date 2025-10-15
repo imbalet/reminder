@@ -153,6 +153,8 @@ services:
       RMQ_PASS: ${RMQ_PASS}
       RMQ_HOST: rabbitmq
       RMQ_PORT: 5672
+    volumes:
+      - secrets:/app/.secrets
     command: sh -c "alembic upgrade head || exit 1 && exec uvicorn auth_service.main:app --host 0.0.0.0 --port 8000"
     depends_on:
       db:
@@ -188,3 +190,4 @@ networks:
 
 volumes:
   pgdata:
+  secrets:
